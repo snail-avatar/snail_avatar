@@ -1,0 +1,236 @@
+# =============================================================================
+# ResistanceCalculator 节点说明文件
+# =============================================================================
+node_type_id: "ResistanceCalculator"
+node_display_name: "行驶阻力计算"
+node_category: "力学分析"
+node_description: "计算行驶阻力。计算滚阻、风阻、拖滞阻力（稳态阻力，不含惯性力），其中包含根据整备质量和最大载荷质量计算经济性测试质量的逻辑。输入：车速数组、车辆质量、阻力参数。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+
+  vel:
+    name: "原始的速度时间序列"
+    unit: "m/s"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "原始速度数据的时间序列数据（长度N）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "vel"
+
+  vel_ave:
+    name: "平均速度时间序列"
+    unit: "m/s"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "驾驶循环平均速度的时间序列数据（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "vel_ave"
+
+  a:
+    name: "加速度时间序列"
+    unit: "m/s²"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "驾驶循环加速度的时间序列数据（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "a" 
+    
+  mass_curb:
+    name: "整备质量"
+    unit: "kg"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "整备质量"
+    default: 2200
+
+  mass_maxload:
+    name: "最大载荷质量"
+    unit: "kg"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "最大载荷质量"
+    default: 400
+
+  r_in:
+    name: "转动惯量"
+    unit: "kg·m²"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "整车等效转动惯量（等效到轮端）"
+    default: 9
+
+  rad:
+    name: "车轮半径"
+    unit: "m"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "轮胎滚动半径"
+    default: 0.34
+    
+  rr_part:
+    name: "轮胎台架滚阻系数"
+    unit: "‰"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "轮胎台架测试滚动阻力系数"
+    default: 6.5
+    
+  rr_gain:
+    name: "滚动阻力增益"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "滚动阻力修正系数"
+    default: 1.0
+    
+  cd_wt:
+    name: "风阻系数"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "整车风阻系数"
+    default: 0.22
+    
+  cd_gain:
+    name: "风阻系数增益"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "风阻修正系数"
+    default: 1.08
+    
+  aero:
+    name: "迎风面积"
+    unit: "m²"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "整车迎风面积"
+    default: 2.6
+    
+  dst:
+    name: "空气密度"
+    unit: "kg/m³"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "环境空气密度"
+    default: 1.185
+    
+  f_brake_res:
+    name: "前轮制动卡钳拖滞力矩"
+    unit: "Nm"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "前轮制动卡钳拖滞力矩"
+    default: 1.5
+
+  r_brake_res:
+    name: "后轮制动卡钳拖滞力矩"
+    unit: "Nm"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "后轮制动卡钳拖滞力矩"
+    default: 1.5
+  
+  f_bearing_res:
+    name: "前轮轴承拖滞力矩"
+    unit: "Nm"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "前轮轴承拖滞力矩"
+    default: 0.8
+
+  r_bearing_res:
+    name: "后轮轮轴承拖滞力矩"
+    unit: "Nm"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "后轮轴承拖滞力矩"
+    default: 0.8
+    
+  rad:
+    name: "车轮半径"
+    unit: "m"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "轮胎滚动半径"
+    default: 0.341
+
+# =============================================================================
+# 数值求解器输出变量定义
+# =============================================================================
+outputs:
+  cd:
+    name: "实际风阻系数"
+    unit: ""
+    type: "float"
+    schema_type: "intermediate"
+    description: "修正后的实际风阻系数"
+
+  rr:
+    name: "实际滚阻系数"
+    unit: "‰"
+    type: "float"
+    schema_type: "intermediate"
+    description: "修正后的实际滚阻系数"
+
+  mass:
+    name: "经济性测试质量"
+    unit: "kg"
+    type: "float"
+    schema_type: "intermediate"
+    description: "修正后的经济性测试质量"
+
+  f_roll:
+    name: "滚动阻力"
+    unit: "N"
+    type: "float"
+    schema_type: "intermediate"
+    description: "恒定滚动阻力"
+   
+  f_drg:
+    name: "拖滞阻力"
+    unit: "N"
+    type: "float"
+    schema_type: "intermediate"
+    description: "恒定拖滞阻力"
+
+  f_aer:
+    name: "空气阻力时间序列"
+    unit: "N"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "随速度变化的空气阻力数组（长度N-1）"
+    
+  f_road_load:
+    name: "道路阻力时间序列"
+    unit: "N"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "道路阻力数组（风阻+滚阻+拖滞）（长度N-1）"
+    
+  f_inert:
+    name: "惯性力时间序列"
+    unit: "N"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "随速度变化的惯性力数组（长度N-1）"
+
+  drag_force_stats:
+    name: "行驶阻力统计特征参数"
+    unit: "dict"
+    type: "dict"
+    schema_type: "intermediate"
+    description: "包含平均风阻、滚阻、拖滞阻力，各部分阻力的比例等统计信息"
+  
+# =============================================================================
+# 语义求解器输出变量定义
+# =============================================================================
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "包含平均风阻、滚阻、拖滞阻力，各部分阻力的比例等统计信息的自然语言摘要"

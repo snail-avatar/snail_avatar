@@ -1,0 +1,13 @@
+"""Snail Avatar FastAPI 后端依赖"""
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.9.0
+pydantic-settings>=2.6.0
+
+# 项目内部依赖（已安装在系统 Python 中）
+# - DashSDK (阿里云百炼): pip install dashscope
+# - PyYAML: pip install pyyaml
+# - openpyxl: pip install openpyxl
+# - chromadb: pip install chromadb
+# - numpy, pandas, matplotlib: 数据计算与可视化
+# 以上依赖在现有环境中已安装，无需额外声明

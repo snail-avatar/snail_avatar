@@ -1,0 +1,49 @@
+# =============================================================================
+# 能量回收制动力分配分析流程拓扑定义
+# =============================================================================
+# 参照：能量回收制动力分配计算方法_编程输入版.md
+#
+# 节点依赖（输入准备层并列）：
+#   node_0_VehicleParam（整车参数预处理，来自 MemoryDB SSTS 参数）
+#     ├─→ node_1_IBuilder（I 曲线构建）
+#     ├─→ node_2_MBuilder（M 曲线构建）
+#     │       └─→ node_3_StrategyLine（最优制动力分配策略线）
+#     ├─→ node_4_MotorLimit ──┐
+#     └─→ node_5_BatteryLimit ─┤
+#                              │
+#   node_ssts_MotorAnalysis（电驱参数分析，来自 SSTSSandbox 零部件文件）
+#     ├─→ node_4_MotorLimit ──┤
+#     └─→ node_5_BatteryLimit ─┘──→ node_6_FinalFusion（最终融合）
+# =============================================================================
+workflow_id: "ENERGY_REGEN"
+workflow_name: "能量回收制动力分配分析"
+version: "1.1.0"
+description: "基于 I 曲线、M 曲线和电驱/电池限值的能量回收制动力分配计算"
+
+calculation_type: "energy_regeneration"
+energy_type: "ev"   # 能源形式，与车型匹配；FWD/RWD/AWD 驱动类型在节点内部区分
+
+nodes:
+  node_0_VehicleParam:
+    upstream: []
+
+  node_ssts_MotorAnalysis:
+    upstream: []
+
+  node_1_IBuilder:
+    upstream: ["node_0_VehicleParam"]
+
+  node_2_MBuilder:
+    upstream: ["node_0_VehicleParam"]
+
+  node_3_StrategyLine:
+    upstream: ["node_0_VehicleParam", "node_1_IBuilder", "node_2_MBuilder"]
+
+  node_4_MotorLimit:
+    upstream: ["node_0_VehicleParam", "node_ssts_MotorAnalysis"]
+
+  node_5_BatteryLimit:
+    upstream: ["node_0_VehicleParam", "node_ssts_MotorAnalysis"]
+
+  node_6_FinalFusion:
+    upstream: ["node_3_StrategyLine", "node_4_MotorLimit", "node_5_BatteryLimit"]

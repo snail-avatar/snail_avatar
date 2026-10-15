@@ -1,0 +1,219 @@
+# =============================================================================
+# EVEnergyConsumptionLtem_m20 节点说明文件
+# =============================================================================
+node_type_id: "EVEnergyConsumptionLtem_m20"
+node_display_name: "-20℃工况能耗计算"
+node_category: "能量综合【低温修正】"
+node_description: "最小物理过程5C：低温-20℃工况整车能耗综合计算。计算低温-20℃环境下的车端能耗、网端能耗、续驶里程及里程衰减率。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  # 从 node_1 获取循环参数
+  cycle_distance:
+    name: "循环总里程"
+    unit: "km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "驾驶循环的总行驶距离（单位：公里）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "cycle_distance"
+
+  cycle_time:
+    name: "循环总时长"
+    unit: "s"
+    type: "float"
+    schema_type: "intermediate"
+    description: "驾驶循环的总时间（单位：秒）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "cycle_time"
+
+  # 从 node_4C 获取低温-20℃电驱能量
+  e_elc_div_m20:
+    name: "低温-20℃电驱驱动能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃电驱端驱动能量数组（长度N-1）"
+    source_node: "node_4C_EDUEnergyLtem_m20"
+    source_var: "e_elc_div_m20"
+
+  e_elc_reg_m20:
+    name: "低温-20℃电驱回收能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃电驱端回收能量数组（长度N-1）"
+    source_node: "node_4C_EDUEnergyLtem_m20"
+    source_var: "e_elc_reg_m20"
+
+  # 从 node_5 获取标准工况结果（用于对比）
+  e_dc:
+    name: "标准工况车端能耗"
+    unit: "kWh/100km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "标准工况下的电池端能耗"
+
+  mile_ev:
+    name: "标准工况纯电续驶里程"
+    unit: "km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "标准工况下的纯电续驶里程"
+
+  e_ac:
+    name: "标准工况网端能耗"
+    unit: "kWh/100km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "标准工况下的充电网端能耗"
+
+  # SSTS 参数 - 低温 -20℃修正因子
+  thermal_power_m20:
+    name: "低温-20℃加热功率"
+    unit: "W"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "低温-20℃环境下热管理系统平均功率消耗"
+    default: 900.0
+
+  bat_loss_m20:
+    name: "低温-20℃电池能量衰减率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "低温-20℃环境下电池可用能量衰减比例"
+    default: 0.85
+
+  # SSTS参数 - 复用参数
+  ev_lp:
+    name: "低压功率"
+    unit: "W"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "低压系统功率消耗"
+    default: 200.0
+
+  charge_lp:
+    name: "充电低压功率"
+    unit: "W"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "充电低压系统功率消耗"
+    default: 100.0
+
+  dcdc_eff:
+    name: "DC/DC效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "DC/DC转换器效率"
+    default: 0.95
+
+  charge_dcdc_eff:
+    name: "充电DC/DC效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "充电DC/DC转换器效率"
+    default: 0.9
+
+  charge_time:
+    name: "充电时间"
+    unit: "h"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "充电时间"
+    default: 8
+
+  e_gain:
+    name: "效率增益"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "能耗修正系数"
+    default: 1.0
+
+  bat_eff:
+    name: "电池效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "电池充放电效率"
+    default: 0.98
+
+  obc_eff:
+    name: "OBC效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "车载充电机效率"
+    default: 0.95
+
+  bat_eng:
+    name: "电池标称能量"
+    unit: "kWh"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "电池包标称能量"
+    default: 80.0
+
+  bat_deepth:
+    name: "电池放电深度"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "电池放电深度（0-1）"
+    default: 0.97
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+  # VTS结果输出
+  mile_decay_m20:
+    name: "低温工况@-20℃里程衰减率"
+    unit: "%"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "低温-20℃工况相对于标准工况的里程衰减百分比"
+
+  # intermediate 输出
+  e_dc_ltem_m20:
+    name: "低温-20℃工况车端能耗"
+    unit: "kWh/100km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "低温-20℃工况下的电池端能耗"
+
+  e_ac_ltem_m20:
+    name: "低温-20℃工况网端能耗"
+    unit: "kWh/100km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "低温-20℃工况下的充电网端能耗"
+
+  mile_ev_ltem_m20:
+    name: "低温-20℃工况续驶里程"
+    unit: "km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "低温-20℃工况下的纯电续驶里程"
+
+  # 能耗统计特征
+  ltem_energy_stats_m20:
+    name: "低温-20℃能耗统计特征"
+    unit: ""
+    type: "dict"
+    schema_type: "intermediate"
+    description: "低温-20℃工况下的能耗统计信息"
+
+  # 语义求解器输出
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "低温-20℃工况能耗分析的自然语言摘要"

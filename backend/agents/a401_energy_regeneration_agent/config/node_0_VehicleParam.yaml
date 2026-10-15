@@ -1,0 +1,107 @@
+# =============================================================================
+# VehicleParam 节点说明文件
+# =============================================================================
+node_type_id: "VehicleParam"
+node_display_name: "整车参数预处理"
+node_category: "基础参数"
+node_description: "读取整车 SSTS 参数并做单位换算，输出 G/L_m/a/b/hg/R 基础量。主减速比 i0 已下沉到 node_MotorAnalysis 从沙箱 Motor 零部件的 reducer sheet 按方案读取。对应计算方法文档 §1-2。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  # --- SSTS 参数（从 MemoryDB 读取，db_key={base}_result_{suffix}）---
+  mass_curb:
+    name: "整备质量"
+    unit: "kg"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "整车整备质量"
+
+  mass_maxload:
+    name: "最大载荷质量"
+    unit: "kg"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "最大允许载质量；满载质量 = mass_curb + mass_maxload（制动校核用满载，与 power agent 爬坡工况一致）"
+
+  wheel_base:
+    name: "轴距"
+    unit: "m"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "轴距 L"
+
+  mass_centroid_x:
+    name: "质心到前轴距离"
+    unit: "m"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "a；b 由 wheel_base - mass_centroid_x 派生（对齐 power 已有 key）"
+
+  mass_centroid_z:
+    name: "质心Z坐标（相对前轮轮心）"
+    unit: "m"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "质心相对于前轮轮心的高度（乘用车坐标系 z 轴向上）；制动力节点内部换算为离地高度 = rad + mass_centroid_z"
+
+  rad:
+    name: "轮胎滚动半径"
+    unit: "m"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "R（对齐 economy/power 已有 key）"
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+  G:
+    name: "整车重力"
+    unit: "N"
+    type: "float"
+    schema_type: "intermediate"
+    description: "G = m · g"
+
+  L_m:
+    name: "轴距"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+    description: "换算后的轴距"
+
+  a:
+    name: "质心到前轴距离"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+
+  b:
+    name: "质心到后轴距离"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+
+  hg:
+    name: "质心高度"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+
+  R:
+    name: "轮胎滚动半径"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+
+  # =============================================================================
+  # 语义求解器输出变量定义
+  # =============================================================================
+
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "整车参数预处理计算节点的自然语言分析报告（Markdown 格式）"

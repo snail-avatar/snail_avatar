@@ -1,0 +1,108 @@
+# =============================================================================
+# EDUEnergyLtem_m20 节点说明文件
+# =============================================================================
+node_type_id: "EDUEnergyLtem_m20"
+node_display_name: "-20℃电驱能量计算"
+node_category: "效率转换【低温修正】"
+node_description: "最小物理过程4C：低温-20℃电驱能量计算。将低温-20℃轮端能量通过电驱系统效率转换为低温电驱端的能量需求。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  # 从 node_1 获取循环总里程
+  cycle_distance:
+    name: "循环总里程"
+    unit: "km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "驾驶循环的总行驶距离（单位：公里）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "cycle_distance"
+
+  # 从 node_3C 获取低温-20℃轮端能量
+  e_wheel_div_m20:
+    name: "低温-20℃轮端驱动能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃轮端驱动能量数组（长度N-1）"
+    source_node: "node_3C_WheelEnergyLtem_m20"
+    source_var: "e_wheel_div_m20"
+
+  e_wheel_reg_m20:
+    name: "低温-20℃轮端回收能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃轮端回收能量数组（长度N-1）"
+    source_node: "node_3C_WheelEnergyLtem_m20"
+    source_var: "e_wheel_reg_m20"
+
+  # SSTS参数（与 node_4 相同）
+  mot_div_eff:
+    name: "电机驱动效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "电机驱动工况平均效率"
+    default: 0.9
+
+  mot_reg_eff:
+    name: "电机回收效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "电机制动回收平均效率"
+    default: 0.9
+
+  axle_eff:
+    name: "传动效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "传动系统机械效率"
+    default: 0.997
+
+  m_b_energy:
+    name: "机械制动能量比例"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "机械制动能量损失比例"
+    default: 0.003
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+  # TimeSeries输出（低温-20℃电驱端能量数组）
+  e_elc_div_m20:
+    name: "低温-20℃电驱驱动能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃电驱端驱动能量数组（长度N-1）"
+
+  e_elc_reg_m20:
+    name: "低温-20℃电驱回收能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃电驱端回收能量数组（长度N-1）"
+
+  # 统计特征
+  edu_energy_stats_m20:
+    name: "低温-20℃电驱能量统计特征"
+    unit: "dict"
+    type: "dict"
+    schema_type: "intermediate"
+    description: "低温-20℃电驱驱动能量总和、回收能量总和、系统效率等统计信息"
+
+  # 语义求解器输出
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "低温-20℃电驱能量分析的自然语言摘要"

@@ -1,0 +1,107 @@
+# =============================================================================
+# FinalFusion 节点说明文件
+# =============================================================================
+node_type_id: "FinalFusion"
+node_display_name: "最终回收制动力融合"
+node_category: "最终融合"
+node_description: |
+  三链路并行融合：对 FWD/RWD/AWD 各链路分别做
+  min(F_edrv, F_bat_axle) → min(F_Mot^max, F_drive_req) → 实际回收制动力 map。
+  含 semantic_solve 分析 + generate_visualization 输出图表。对应计算方法文档 §9。
+
+# =============================================================================
+# 输入变量定义（风格 A：dict 嵌套 ndarray）
+# =============================================================================
+inputs:
+  # --- 从 node_3_StrategyLine：三链路策略曲线 ---
+  Z_array:
+    name: "制动强度扫描数组"
+    unit: "-"
+    type: "ndarray"
+    schema_type: "intermediate"
+    source_node: "node_3_StrategyLine"
+    source_var: "Z_array"
+
+  strategy_curves:
+    name: "三链路策略曲线"
+    unit: "dict"
+    type: "object"
+    schema_type: "intermediate"
+    source_node: "node_3_StrategyLine"
+    source_var: "strategy_curves"
+    description: |
+      {"fwd": {"F_drive": ndarray, "F_front": ndarray, "F_rear": ndarray,
+               "segment_id": ndarray, "valid": True},
+       "rwd": {...}, "awd": {...}}
+
+  # --- 从 node_4_MotorLimit：电驱限值 ---
+  F_edrv_max:
+    name: "电驱总量限值（降级用）"
+    unit: "N"
+    type: "ndarray"
+    schema_type: "intermediate"
+    source_node: "node_4_MotorLimit"
+    source_var: "F_edrv_max"
+    description: "主 T_max_map 算的总量，per_axle_maps 缺失时降级用"
+
+  per_axle_maps:
+    name: "分轴电驱限值"
+    unit: "dict"
+    type: "object"
+    schema_type: "intermediate"
+    source_node: "node_4_MotorLimit"
+    source_var: "per_axle_maps"
+    description: |
+      {"front": ndarray_or_None, "rear": ndarray_or_None}
+
+  # --- 从 node_5_BatteryLimit：电池总量 ---
+  F_bat_max:
+    name: "电池充电功率限值（总量）"
+    unit: "N"
+    type: "ndarray"
+    schema_type: "intermediate"
+    source_node: "node_5_BatteryLimit"
+    source_var: "F_bat_max"
+
+  # --- 从 node_0_VehicleParam ---
+  G:
+    name: "整车重力"
+    unit: "N"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "G"
+
+# =============================================================================
+# 输出变量定义（风格 A：dict 嵌套 stats + 有效/无效标记）
+# =============================================================================
+outputs:
+  fusion_results:
+    name: "三链路融合结果"
+    unit: "dict"
+    type: "object"
+    schema_type: "intermediate"
+    description: |
+      {"fwd": {"F_mot_cmd": ndarray, "stats": {...}, "valid": bool,
+               "invalid_reason": str_or_None},
+       "rwd": {...}, "awd": {...}}
+
+  comparison:
+    name: "三链路关键指标对比"
+    unit: "dict"
+    type: "object"
+    schema_type: "intermediate"
+    description: |
+      {"fwd": {"max_F_mot_cmd": float, "coverage_ratio": float, ...},
+       "rwd": {...}, "awd": {...}, ...}
+
+  # =============================================================================
+  # 语义求解器输出变量定义
+  # =============================================================================
+
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "最终回收制动力融合计算节点的自然语言分析报告（Markdown 格式）"

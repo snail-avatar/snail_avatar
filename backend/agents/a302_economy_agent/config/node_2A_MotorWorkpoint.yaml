@@ -1,0 +1,80 @@
+# =============================================================================
+# MotorWorkpoint 节点说明文件
+# =============================================================================
+node_type_id: "MotorWorkpoint"
+node_display_name: "电驱工作点计算"
+node_category: "电驱分析【旁支】"
+node_description: "电驱机械端工作点计算。计算电驱动力、扭矩、转速。【旁支分析节点】计算结果用于电驱工作点计算，不参与主能量流计算。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  f_road_load:
+    name: "道路阻力时间序列"
+    unit: "N"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "道路阻力数组（风阻+滚阻+拖滞）（长度N-1）"
+    source_node: "node_2_ResistanceCalculator"
+    source_var: "f_road_load"
+
+  f_inert:
+    name: "惯性力时间序列"
+    unit: "N"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "惯性力数组（长度N-1）"
+    source_node: "node_2_ResistanceCalculator"
+    source_var: "f_inert"
+    
+  rad:
+    name: "车轮半径"
+    unit: "m"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "轮胎滚动半径"
+    default: 0.341
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+
+  t_motor:
+    name: "电驱工作扭矩时间序列"
+    unit: "Nm"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "电驱工作扭矩数组（长度N-1）"    
+
+  t_drive:
+    name: "驱动扭矩时间序列"
+    unit: "Nm"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "驱动工况下的电驱工作扭矩数组（长度N-1）"    
+    
+  t_brake:
+    name: "制动扭矩时间序列"
+    unit: "Nm"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "制动工况下的电驱工作扭矩数组（修正为正数，长度N-1）"    
+
+  motor_torque_stats:
+    name: "电驱工作扭矩统计特征参数"
+    unit: "dict"
+    type: "dict"
+    schema_type: "intermediate"
+    description: "包含驱动工况平均扭矩，制动工况平均扭矩，各平均扭矩的比例等统计信息"
+    
+# =============================================================================
+# 语义求解器输出变量定义
+# =============================================================================
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "包含驱动工况平均扭矩，制动工况平均扭矩，各平均扭矩的比例等统计信息的自然语言摘要"

@@ -1,0 +1,172 @@
+# =============================================================================
+# EVEnergyConsumption 节点说明文件
+# =============================================================================
+node_type_id: "EVEnergyConsumption"
+node_display_name: "纯电整车能耗计算"
+node_category: "能量综合"
+node_description: "最小物理过程5：整车能耗综合计算。计算电池驱动能量、回收能量、低压能耗、车端能耗、网端能耗及纯电续驶里程。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  # 从 node_1 获取循环总里程和总时长
+  cycle_distance:
+    name: "循环总里程"
+    unit: "km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "驾驶循环的总行驶距离（单位：公里）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "cycle_distance"
+
+  cycle_time:
+    name: "循环总时长"
+    unit: "s"
+    type: "float"
+    schema_type: "intermediate"
+    description: "驾驶循环的总时间（单位：秒）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "cycle_time"
+
+  # 从 node_4 获取电驱能量
+  e_elc_div:
+    name: "电驱驱动能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "电驱端驱动能量数组（长度N-1）"
+    source_node: "node_4_EDUEnergy"
+    source_var: "e_elc_div"
+
+  e_elc_reg:
+    name: "电驱回收能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "电驱端回收能量数组（长度N-1）"
+    source_node: "node_4_EDUEnergy"
+    source_var: "e_elc_reg"
+
+  # SSTS参数
+  ev_lp:
+    name: "低压功率"
+    unit: "W"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "低压系统功率消耗"
+    default: 200.0
+
+  charge_lp:
+    name: "充电低压功率"
+    unit: "W"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "充电低压系统功率消耗"
+    default: 100.0
+
+  dcdc_eff:
+    name: "DC/DC效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "DC/DC转换器效率"
+    default: 0.95
+
+  charge_dcdc_eff:
+    name: "充电DC/DC效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "充电DC/DC转换器效率"
+    default: 0.9
+
+  charge_time:
+    name: "充电时间"
+    unit: "h"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "充电时间"
+    default: 8
+
+  e_gain:
+    name: "效率增益"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "能耗修正系数"
+    default: 1.0
+
+  bat_eff:
+    name: "电池效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "电池充放电效率"
+    default: 0.98
+
+  obc_eff:
+    name: "OBC效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "车载充电机效率"
+    default: 0.95
+
+  bat_eng:
+    name: "电池标称能量"
+    unit: "kWh"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "电池包标称能量"
+    default: 80.0
+
+  bat_deepth:
+    name: "电池放电深度"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "电池放电深度（0-1）"
+    default: 0.97
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+  # VTS结果输出（直接输出到 MemoryCore）
+  e_dc:
+    name: "车端能耗"
+    unit: "kWh/100km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "电池端能耗（kWh/100km）"
+
+  e_ac:
+    name: "网端能耗"
+    unit: "kWh/100km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "充电网端能耗（kWh/100km）"
+
+  mile_ev:
+    name: "纯电续驶里程"
+    unit: "km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "纯电模式下的续驶里程（km）"
+
+  # 能耗统计特征
+  vehicle_energy_stats:
+    name: "整车能耗统计特征"
+    unit: ""
+    type: "dict"
+    schema_type: "intermediate"
+    description: "电池驱动能量、回收能量、低压能耗、车端能耗、网端能耗、纯电续驶里程等统计信息"
+
+  # 语义求解器输出
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "整车能耗分析的自然语言摘要"

@@ -1,0 +1,109 @@
+# =============================================================================
+# DriveCycleAnalyzer 节点说明文件
+# =============================================================================
+node_type_id: "DriveCycleAnalyzer"
+node_display_name: "驾驶循环分析"
+node_category: "运动学分析"
+node_description: "驾驶循环的运动学分析，计算加速度数组和循环特征参数。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  drive_cycle:
+    name: "经济性驾驶循环"
+    unit: ""
+    type: "str"
+    schema_type: "ssts_vts"
+    description: "经济性性能评估和管控所应用的驾驶循环曲线名称"
+
+# =============================================================================
+# 数值求解器输出变量定义
+# =============================================================================
+outputs:  
+  vel:
+    name: "原始的速度时间序列"
+    unit: "m/s"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "原始速度数据的时间序列数据（长度N）"
+
+  vel_ave:
+    name: "平均速度时间序列"
+    unit: "m/s"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "平均速度的时间序列数据（长度N-1）"
+
+  lth:
+    name: "行驶距离时间序列"
+    unit: "m"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "行驶距离的时间序列数据（长度N-1）"
+   
+  a:
+    name: "加速度时间序列"
+    unit: "m/s²"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "加速度数据的时间序列数据（长度N-1）"
+
+  cycle_distance:
+    name: "循环总里程"
+    unit: "km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "驾驶循环的总行驶距离（单位：公里）"
+
+  cycle_time:
+    name: "循环总时长"
+    unit: "s"
+    type: "float"
+    schema_type: "intermediate"
+    description: "驾驶循环的总时间（单位：秒）"
+
+  idle_mask:
+    name: "怠速段掩码"
+    unit: ""
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "怠速段掩码数组（长度N-1）"
+
+  acc_mask:
+    name: "加速段掩码"
+    unit: ""
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "加速段掩码数组（长度N-1）"
+
+  dec_mask:
+    name: "减速段掩码"
+    unit: ""
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "减速段掩码数组（长度N-1）"
+
+  const_mask:
+    name: "恒速段掩码"
+    unit: ""
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "恒速段掩码数组（长度N-1）"
+
+  cycle_stats:
+    name: "循环特征参数"
+    unit: "dict"
+    type: "dict"
+    schema_type: "intermediate"
+    description: "包含循环总里程、循环总时长、平均速度（排除0速度）、均方根速度（排除0速度）、最高车速、最大加速度、最大减速度、平均加速度、平均减速度、各工况比例等统计信息"
+
+# =============================================================================
+# 语义求解器输出变量定义
+# =============================================================================
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "驾驶循环的总里程、总时长、平均速度（排除0速度）、均方根速度（排除0速度）、最高车速、最大加速度、最大减速度、平均加速度、平均减速度、各工况比例等统计信息的自然语言摘要"

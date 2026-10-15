@@ -1,0 +1,152 @@
+node_type_id: TireAdhesionLimit
+node_display_name: 平路附着极限
+node_category: 数据预处理
+node_description: 计算半载状态水平路面上车轮能够提供的最大驱动力和最大加速度（FWD/RWD/4WD模式）
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+
+inputs:
+  mass_curb:
+    name: 整备质量
+    unit: kg
+    type: float
+    schema_type: ssts_vts
+    description: 整备质量
+    default: 1927.0
+
+  mass_maxload:
+    name: 最大载质量
+    unit: kg
+    type: float
+    schema_type: ssts_vts
+    description: 最大载质量
+    default: 2299.0
+
+  wheel_base:
+    name: 轴距
+    unit: m
+    type: float
+    schema_type: ssts_vts
+    description: 轴距
+    default: 2.85
+
+  mass_centroid_x:
+    name: 质心x坐标
+    unit: m
+    type: float
+    schema_type: ssts_vts
+    description: 质心到前轴距离
+    default: 1.246
+
+  mass_centroid_z:
+    name: 质心Z坐标
+    unit: m
+    type: float
+    schema_type: ssts_vts
+    description: 质心高度
+    default: 0.21
+
+  rad:
+    name: 轮胎滚动半径
+    unit: m
+    type: float
+    schema_type: ssts_vts
+    description: 轮胎滚动半径
+    default: 0.359
+
+  r_in:
+    name: 转动惯量
+    unit: kgm^2
+    type: float
+    schema_type: ssts_vts
+    description: 转动惯量
+    default: 9.0
+
+  road_adh:
+    name: 路面附着系数
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 路面附着系数
+    default: 0.9
+
+# =============================================================================
+# 数值求解器输出变量定义
+# =============================================================================
+
+outputs:
+  mass_half_load:
+    name: 半载质量
+    unit: kg
+    type: float
+    schema_type: intermediate
+    description: 半载质量
+
+  mass_half_load_equ:
+    name: 加速等效质量
+    unit: kg
+    type: float
+    schema_type: intermediate
+    description: 加速计算等效质量
+
+  f_half_r:
+    name: 静态后轮附着力
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: 半载状态下后轮静态附着力
+
+  a_f_max:
+    name: 前驱最大加速度
+    unit: m/s²
+    type: float
+    schema_type: intermediate
+    description: 前驱模式下考虑轴荷转移的最大加速度
+
+  a_r_max:
+    name: 后驱最大加速度
+    unit: m/s²
+    type: float
+    schema_type: intermediate
+    description: 后驱模式下考虑轴荷转移的最大加速度
+
+  a_4wd_max:
+    name: 四驱最大加速度
+    unit: m/s²
+    type: float
+    schema_type: intermediate
+    description: 四驱模式下考虑轴荷转移的最大加速度
+
+  F_f_acc:
+    name: 加速时前轴载荷
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: RWD模式下达到最大加速度时的前轴载荷
+
+  F_r_acc:
+    name: 加速时后轴载荷
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: RWD模式下达到最大加速度时的后轴载荷
+
+  weight_transfer:
+    name: 轴荷转移量
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: RWD模式下从前往后转移的载荷量
+
+# =============================================================================
+# 语义求解器输出变量定义
+# =============================================================================
+
+  semantic_summary:
+    name: 语义分析摘要
+    unit: ''
+    type: str
+    schema_type: intermediate
+    description: 附着力极限计算的自然语言摘要

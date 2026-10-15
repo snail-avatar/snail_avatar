@@ -1,0 +1,73 @@
+# =============================================================================
+# 电动车经济性计算流程拓扑定义
+# =============================================================================
+# 【此文件唯一职责】定义DAG拓扑连接关系
+# 参照：计算工作流说明文档.txt
+#
+# 原则：分离关注点
+#   - 本文件 = 节点依赖关系 + UI布局位置
+#   - 节点元数据(inputs/outputs) = node_X_xxx.yaml（单一真相源）
+# =============================================================================
+workflow_id: "EV_ECO_CALC"
+workflow_name: "电动车经济性计算流程"
+version: "2.0.0"
+description: "纯电动汽车经济性完整计算流程，约定优于配置架构"
+
+# 计算类型标识（用于匹配车型配置）
+calculation_type: "economy"  # 经济性计算
+energy_type: "ev"            # 能源形式
+
+# =============================================================================
+# 拓扑节点列表（只存连接关系，元数据在对应node_X_xxx.yaml）
+# =============================================================================
+nodes:
+  node_0_Cd_wt_calculator:
+    upstream: []
+  
+  node_1_DriveCycleAnalyzer:
+    upstream: []
+  
+  node_2_ResistanceCalculator:
+    upstream: ["node_0_Cd_wt_calculator", "node_1_DriveCycleAnalyzer"]
+  
+  node_2A_MotorWorkpoint:
+    upstream: ["node_2_ResistanceCalculator"]
+  
+  node_3_WheelEnergy:
+    upstream: ["node_2_ResistanceCalculator"]
+
+  node_4_EDUEnergy:
+    upstream: ["node_3_WheelEnergy"]
+
+  node_5_EVEnergyConsumption:
+    upstream: ["node_1_DriveCycleAnalyzer", "node_4_EDUEnergy"]
+
+  node_5A_EVEnergyConsumptionHtem:
+    upstream: ["node_1_DriveCycleAnalyzer", "node_5_EVEnergyConsumption"]
+
+  # 低温-7℃工况流程
+  node_2B_ResistanceCalculatorLtem_m7:
+    upstream: ["node_0_Cd_wt_calculator", "node_1_DriveCycleAnalyzer"]
+
+  node_3B_WheelEnergyLtem_m7:
+    upstream: ["node_1_DriveCycleAnalyzer", "node_2B_ResistanceCalculatorLtem_m7"]
+
+  node_4B_EDUEnergyLtem_m7:
+    upstream: ["node_3B_WheelEnergyLtem_m7"]
+
+  node_5B_EVEnergyConsumptionLtem_m7:
+    upstream: ["node_1_DriveCycleAnalyzer", "node_4B_EDUEnergyLtem_m7", "node_5_EVEnergyConsumption"]
+
+  # 低温-20℃工况流程
+  node_2C_ResistanceCalculatorLtem_m20:
+    upstream: ["node_0_Cd_wt_calculator", "node_1_DriveCycleAnalyzer"]
+
+  node_3C_WheelEnergyLtem_m20:
+    upstream: ["node_1_DriveCycleAnalyzer", "node_2C_ResistanceCalculatorLtem_m20"]
+
+  node_4C_EDUEnergyLtem_m20:
+    upstream: ["node_3C_WheelEnergyLtem_m20"]
+
+  node_5C_EVEnergyConsumptionLtem_m20:
+    upstream: ["node_1_DriveCycleAnalyzer", "node_4C_EDUEnergyLtem_m20", "node_5_EVEnergyConsumption"]
+

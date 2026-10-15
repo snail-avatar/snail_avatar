@@ -1,0 +1,212 @@
+# =============================================================================
+# WheelEnergyLtem_m20 节点说明文件
+# =============================================================================
+node_type_id: "WheelEnergyLtem_m20"
+node_display_name: "-20℃轮端能量计算"
+node_category: "能量积分【低温修正】"
+node_description: "最小物理过程3C：低温-20℃轮端能量积分计算。计算低温-20℃环境下的各阻力能耗和动能变化，最终得到低温轮端驱动/制动能量。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  # 从 node_1 获取
+  cycle_distance:
+    name: "循环总里程"
+    unit: "km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "驾驶循环的总行驶距离（单位：公里）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "cycle_distance"
+
+  acc_mask:
+    name: "加速段掩码"
+    unit: ""
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "加速段掩码数组（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "acc_mask"
+
+  dec_mask:
+    name: "减速段掩码"
+    unit: ""
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "减速段掩码数组（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "dec_mask"
+
+  const_mask:
+    name: "恒速段掩码"
+    unit: ""
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "恒速段掩码数组（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "const_mask"
+
+  vel_ave:
+    name: "区间平均速度"
+    unit: "m/s"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "区间平均速度的时间序列数据（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "vel_ave"
+
+  lth:
+    name: "行驶距离时间序列"
+    unit: "m"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "行驶距离的时间序列数据（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "lth"
+
+  a:
+    name: "加速度时间序列"
+    unit: "m/s²"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "加速度的时间序列数据（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "a"
+
+  # 从 node_2C 获取低温-20℃阻力
+  f_road_load_m20:
+    name: "低温-20℃道路阻力时间序列"
+    unit: "N"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃道路阻力数组（风阻+滚阻+拖滞）（长度N-1）"
+    source_node: "node_2C_ResistanceCalculatorLtem_m20"
+    source_var: "f_road_load_m20"
+
+  f_aer_m20:
+    name: "低温-20℃空气阻力时间序列"
+    unit: "N"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃空气阻力数组（长度N-1）"
+    source_node: "node_2C_ResistanceCalculatorLtem_m20"
+    source_var: "f_aer_m20"
+
+  f_roll_m20:
+    name: "低温-20℃滚动阻力"
+    unit: "N"
+    type: "float"
+    schema_type: "intermediate"
+    description: "低温-20℃滚动阻力（恒定值）"
+    source_node: "node_2C_ResistanceCalculatorLtem_m20"
+    source_var: "f_roll_m20"
+
+  f_drg_m20:
+    name: "低温-20℃拖滞阻力"
+    unit: "N"
+    type: "float"
+    schema_type: "intermediate"
+    description: "低温-20℃拖滞阻力（恒定值）"
+    source_node: "node_2C_ResistanceCalculatorLtem_m20"
+    source_var: "f_drg_m20"
+
+  mass:
+    name: "测试质量"
+    unit: "kg"
+    type: "float"
+    schema_type: "intermediate"
+    description: "经济性测试质量（半载）"
+    source_node: "node_2C_ResistanceCalculatorLtem_m20"
+    source_var: "mass"
+
+  # SSTS参数
+  r_in:
+    name: "转动惯量"
+    unit: "kg·m²"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "整车等效转动惯量（等效到轮端）"
+    default: 9.0
+
+  rad:
+    name: "车轮半径"
+    unit: "m"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "轮胎滚动半径"
+    default: 0.341
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+  e_aer_m20:
+    name: "低温-20℃风阻能耗时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃空气阻力消耗的能量数组（长度N-1）"
+
+  e_roll_m20:
+    name: "低温-20℃滚阻能耗时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃滚动阻力消耗的能量数组（长度N-1）"
+
+  e_drg_m20:
+    name: "低温-20℃拖滞能耗时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃拖滞阻力消耗的能量数组（长度N-1）"
+
+  e_road_load_m20:
+    name: "低温-20℃道路阻力能耗时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃道路总阻力消耗的能量数组（长度N-1）"
+
+  e_kin_m20:
+    name: "低温-20℃动能变化时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃工况每个时间间隔的动能变化（长度N-1）"
+
+  e_wheel_m20:
+    name: "低温-20℃轮端总能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃轮端总能量（阻力能耗+动能变化）（长度N-1）"
+
+  e_wheel_div_m20:
+    name: "低温-20℃驱动能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃驱动工况下的轮端能量（正值）（长度N-1）"
+
+  e_wheel_reg_m20:
+    name: "低温-20℃回收能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-20℃制动工况下的轮端能量（负值）（长度N-1）"
+
+  wheel_energy_stats_m20:
+    name: "低温-20℃轮端能量统计特征"
+    unit: "dict"
+    type: "dict"
+    schema_type: "intermediate"
+    description: "低温-20℃工况下的轮端能量统计信息"
+
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "低温-20℃轮端能量分析的自然语言摘要"

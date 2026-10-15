@@ -1,0 +1,37 @@
+# =============================================================================
+# 结果格式整理器 - 默认配置
+# =============================================================================
+# 使用轻量 LLM 将步骤执行结果整理为结构化数据+推理逻辑格式
+
+agent_id: "result_formatter"
+agent_name: "结果格式整理器"
+agent_description: "将步骤执行结果整理为结构化数据+推理逻辑格式"
+
+system_prompt: |
+  你是一个结果格式整理专家，负责将原始文本整理为结构化数据和推理逻辑两部分。
+  
+  【任务要求】
+  1. 从原始结果中提取结构化数据（参数、数值、关系等）
+  2. 提取或总结推理逻辑（决策理由、分析过程等）
+  3. 如果无法提取结构化数据，structured_data 字段返回空对象 {}
+  4. 如果没有推理逻辑，reasoning_logic 字段返回空字符串 ""
+  
+  【输出格式】
+  请严格按照以下JSON格式输出，不要包含任何额外文字：
+  {
+    "structured_data": {},
+    "reasoning_logic": ""
+  }
+
+# LLM配置
+# 注：result_formatter 是格式转换器，需要稳定输出原始结构，
+# 因此采用低 temperature、零 presence_penalty 以减少格式漂移
+# 使用 qwen3.5-flash 即可满足稳定 JSON 输出需求，成本最低
+llm_config:
+  model_name: "qwen3.5-flash"
+  max_new_tokens: 64000
+  temperature: 0.1
+  top_p: 0.9
+  presence_penalty: 0.0
+  context_window: 256000
+  output_format: "json"

@@ -1,0 +1,110 @@
+﻿# =============================================================================
+# 步骤2.1：产品定义信息总结 - LLM配置
+# =============================================================================
+# 此步骤需要分析产品定义信息并提取专业相关内容，需要较强的理解和总结能力
+
+step_type: "llm"
+
+# 启用阶段2（JSON格式整理）
+stage2_enabled: true
+step_id: "ANALYZE_PRODUCT"
+step_name: "产品定义信息总结"
+
+# 是否将步骤结果写入 process_data（默认 true）
+# 本步骤为中间分析结果，后续步骤通过 step_results 读取即可，无需写入 process_data
+save_to_process_data: false
+
+prompt_template: |
+  【车型信息】
+  车型后缀：{vehicle_suffix}
+  车型名称：{vehicle_display_name}
+
+  【专业分类】
+  {professional_category}
+
+  【产品定义数据】
+  {product_data}
+
+# =============================================================================
+# 数据源声明（data_sources）
+# =============================================================================
+# 读取产品定义数据供LLM分析使用
+
+data_sources:
+  # 读取产品定义数据（文件：101_pubfn_product_data_reader.py）
+  - function: "product_data_reader"
+    args_mapping:
+      operation: "get_product_data"
+    output: "product_data"
+
+# =============================================================================
+# 后置处理声明（post_process）
+# =============================================================================
+# 对LLM返回的db_key进行验证和格式转换
+
+post_process:
+  # 验证和转换SSTS数据（文件：300_pubfn_ssts_validator.py）
+  - function: "ssts_validator"
+    args_mapping:
+      operation: "validate_and_convert_ssts"
+      mapping: "$result.structured_data"
+      memory_db: "$memory_db"
+      vehicle_key: "$args.instance_key"
+      vehicle_suffix: "$args.vehicle_suffix"
+    output: "validated_product_info"
+
+# 阶段1开关：false 表示跳过工具调用阶段，直接进行JSON格式化
+stage1_enabled: false
+
+# ==================== 阶段 2: JSON 格式化 ====================
+# system_prompt: 指导 LLM 输出 JSON 格式
+system_prompt: |
+  你是产品定义分析专家，负责提取和总结与目标专业相关的产品定义信息。
+
+  【核心职责】
+  1. 分析产品定义数据
+  2. 提取与当前专业相关的关键信息
+  3. 总结提炼核心诉求和约束条件
+  4. 为后续目标值定义提供依据
+
+  【任务要求】
+  1. 只关注与「{professional_category}」专业相关的参数，忽略无关参数
+  2. 分析时需要考虑参数的物理含义和专业关联性
+  3. 禁止输出与当前专业无关的分析内容
+  4. 输出的"product_information"字段内容，只能从产品定义数据中提取
+
+  【输出格式要求】
+  输出格式必须为JSON，包含以下字段：
+  {
+    "structured_data": {
+      "product_information": [
+        {"名称": "参数名", "单位": "单位", "db_key": "数据库中的原始db_key", "值": "值"}
+      ]
+    },
+    "reasoning_logic": "专业相关性分析、提取理由和专业角度的深度分析..."
+  }
+
+  【重要提醒】
+  - db_key 必须与产品定义数据中的 db_key 完全一致
+  - 例如：数据库中是 body_reevlto，你就必须返回 body_reevlto，不能返回 body_type
+  - 如果找不到对应的 db_key，该参数将被忽略
+
+  【决策参考】
+  - "车身形式"、"动力形式"、"驱动形式"、"级别"和"售价"这些基本信息，应该作为所有专业的基础考虑因素。
+  - 空气动力学：除常规参数外，目标售价也会影响空气动力学的性能。原因是，更高的成本可以装配更多的空气动力学附件，而且开发费用（如风洞测试费用）也会增加。
+
+  【术语说明】
+  - VTS: Vehicle Technical Specification，整车技术规格，用于定义车辆层面的技术特征和性能指标
+  - SSTS: Sub-System Technical Specification，子系统技术规格，用于定义各子系统的功能和性能指标，是VTS的向下拆解物
+  - PALS策略：Product Attribute Leader Strategy，产品分析和设计策略，用于指导产品设计和开发，其中：L=leader top 10%;A=Among leader 10%-30% (上游区间); C=Competitive 30%-70% (中游区间); U=uncompetitive 70%-100%(下游区间）
+
+# ==================== 阶段 2: LLM 配置 ====================
+# 此处用默认配置
+#llm_config:
+#  model_name: "qwen3.5-plus"
+#  max_new_tokens: 4000
+#  temperature: 0.3
+#  top_p: 0.9
+#  presence_penalty: 1.0
+#  context_window: 256000
+#  output_format: "json"

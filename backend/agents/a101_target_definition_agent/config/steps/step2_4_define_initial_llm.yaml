@@ -1,0 +1,225 @@
+﻿# =============================================================================
+# 步骤2.4：定义初版目标值 - LLM配置
+# =============================================================================
+# 此步骤需要根据产品定义、法规要求和参考数据，推理确定初版VTS和SSTS目标值
+# 采用单阶段模式（stage1关闭，仅stage2）：
+#   - 关闭 stage1 (function calling)：避免 LLM 循环调用 calculator 浪费时间
+#   - 仅 stage2 执行推理 + 直接输出 JSON
+#   - 工作本质：让 LLM 根据信息"脑补推理"合理的目标值，而非计算目标值
+
+step_type: "llm"
+
+# ★ 关闭阶段1（function calling）：
+#   calculator 只能做简单数学运算，无法执行车辆动力学公式；
+#   且 LLM 容易循环调用 calculator → 耗时十几分钟。
+#   step2_4 的本质是"基于行业经验/法规/参考数据拍合理值"，不需要 tool call。
+stage1_enabled: false
+
+# 启用阶段2（JSON格式输出）
+stage2_enabled: true
+save_to_process_data: false  # 禁用自动 process_data 写入，由 post_process 中的专门函数处理
+step_id: "DEFINE_INITIAL"
+step_name: "定义初版目标值"
+
+prompt_template: |
+  【车型信息】
+  车型后缀：{vehicle_suffix}
+  车型名称：{vehicle_display_name}
+
+  【专业分类】
+  {professional_category}
+
+  【产品定义信息】
+  {product_info_json}
+
+  【VTS/SSTS 参数映射关系】
+  {mappings_json}
+
+  【法规要求及参考数据】
+  {references_json}
+
+# =============================================================================
+# 数据源声明（data_sources）
+# =============================================================================
+# 使用 step2_4 私有函数从 process_data 和 step_results 提取数据
+# 私有函数：a101_step2_4_extract_data.py
+
+data_sources:
+  # 提取产品定义信息（从 step_results）
+  - function: "step2_4_extract_data"
+    args_mapping:
+      sandbox: "$sandbox"
+      operation: "get_product_info"
+    output: "product_info_json"
+
+  # ★ 提取过滤后的 VTS/SSTS 映射关系
+  # 核心设计：一个 SSTS 可能被多个专业（空气动力学→动力性→经济性）共享。
+  # 如果前置专业已经定义了某 SSTS 的值（DB 里有 target value），
+  # 本 step2_4 就不再让 LLM 重复定义——过滤掉已定义的 SSTS，只展示未定义的。
+  # mappings_json 里会包含一个"已定义SSTS参考"文本块，让 LLM 知道哪些值已确定。
+  - function: "step2_4_extract_data"
+    args_mapping:
+      sandbox: "$sandbox"
+      operation: "get_filtered_mappings"
+      memory_db: "$memory_db"
+      instance_key: "$args.instance_key"
+    output: "mappings_json"
+
+  # ★ 获取 DB 中已定义的 SSTS 字典（供 post_process 使用）
+  # validate_targets：用它过滤 baseline，不让"已定义但被过滤掉的 SSTS"被当成缺失
+  # save_targets：回填时用 DB 值覆盖 process_data，确保所有 SSTS（包括已定义的）都有值
+  - function: "step2_4_extract_data"
+    args_mapping:
+      sandbox: "$sandbox"
+      operation: "get_defined_ssts_db"
+      memory_db: "$memory_db"
+      instance_key: "$args.instance_key"
+    output: "defined_ssts_db"
+
+  # 提取法规要求及参考数据（从 step_results）
+  - function: "step2_4_extract_data"
+    args_mapping:
+      sandbox: "$sandbox"
+      operation: "get_references"
+    output: "references_json"
+
+# ==================== System Prompt（整合原 stage1 + stage2） ====================
+# 整合原因：stage1 关闭后，原 stage1 的"角色定义/任务说明/去重规则"
+# 需要合并到这里，让 LLM 在单次 JSON 输出中完成所有推理。
+system_prompt: |
+  你是目标值定义专家。
+
+  【工作目标 - 核心定位】
+  本步骤的目标是**定义VTS和SSTS参数的初始目标值**，为后续仿真计算和优化提供起点。
+
+  ⚠️ 重要说明：
+  - 本步骤关注的是「目标值的合理性」，而非「目标值的计算逻辑」
+  - SSTS参数的初始值应基于行业经验、法规标准、对标数据直接给定
+  - VTS参数的计算公式验证是后续步骤（workflow仿真）的职责
+
+  【工作流程】
+  1. 分析产品定义信息（车型级别、动力形式、售价区间等）
+  2. 结合法规要求和参考数据，确定本专业所有参数的合理初始值
+  3. 给出每个值的依据说明（参考来源、经验范围等）
+
+  【核心任务】
+  定义初版的VTS和SSTS目标值：
+  1. VTS目标值：列出关键指标及其目标值
+  2. SSTS目标值：按二级专业分组输出（注意去重规则，见下方）
+  3. 说明每个目标值的设定依据（法规要求、参考数据、行业经验等）
+  4. 评估每个参数的置信度（高/中/低）和风险
+
+  【重要】SSTS 参数输出规则（必须严格遵守）
+  - 同一个 SSTS db_key 可能出现在多个二级专业的输入列表中（因为一个参数影响多个 VTS 指标），这是正常的。
+  - 输出时，每个 SSTS db_key 只需要在**第一次出现**的二级专业中输出完整信息（name, db_key, value, unit, confidence, basis）。
+  - 后续二级专业中即使该 SSTS 仍在输入列表中，也不要再重复输出——SSTS_parameter 可以为空数组 []。
+  - VTS_items 必须完整输出（所有 VTS 都要有 target value）。
+  - ⚠️ 映射关系中的 SSTS_parameter 列表**只包含尚未定义的 SSTS**。已由前置专业定义的 SSTS 值已在"已定义SSTS参考"中列出，本步骤不需要重新定义它们。请专注于未定义的 SSTS 参数。
+
+  【输出格式 - 严格遵守】
+  按照如下的JSON格式输出核心任务的推理结果（按二级专业分组，SSTS参数只出现一次）：
+  {
+    "structured_data": {
+      "category": "{专业分类}",
+      "sub_category": [
+        {
+          "{二级专业名}": [
+            {
+              "VTS_items": [
+                {
+                  "name": "VTS参数名",
+                  "db_key": "db_key",
+                  "value": "值",
+                  "unit": "单位",
+                  "confidence": "high/medium/low",
+                  "basis": "依据说明（参考来源、经验范围等）"
+                }
+              ],
+              "SSTS_parameter": [
+                {
+                  "name": "SSTS参数名",
+                  "db_key": "db_key",
+                  "value": "值",
+                  "unit": "单位",
+                  "confidence": "high/medium/low",
+                  "basis": "依据说明（参考来源、经验范围等）"
+                }
+              ],
+              "计算公式": "公式描述"
+            }
+          ]
+        }
+      ],
+      "reasoning_logic": "目标值设定理由、依据来源、风险评估和参数置信度评估总结..."
+    }
+  }
+
+  【强制约束 - 必须严格遵守，违反将导致流程失败】
+  ⚠️ 必须输出完整数据后才能闭合JSON，禁止在未写完所有参数时提前闭合花括号
+  ⚠️ sub_category 中的每个二级专业都必须出现，不能遗漏任何一个
+  ⚠️ 每个二级专业下的 VTS_items 必须包含该专业所有 VTS 参数，不能遗漏
+  ⚠️ SSTS_parameter 允许为空数组 []（因去重规则，后续二级专业的 SSTS 不再重复输出）
+  ⚠️ 示例中 VTS_items 和 SSTS_parameter 各展示了1条，实际输出必须包含全部参数，不局限于示例条数
+  ⚠️ value 字段必须填写具体数值（数字），禁止留空或写 null
+  ⚠️ 禁止输出任何JSON之外的文字、注释或Markdown标记
+
+# ==================== LLM 配置 ====================
+llm_config:
+  model_name: "qwen3.5-plus"
+  max_new_tokens: 20000  # 足够容纳所有 VTS + SSTS 的 JSON 输出
+  temperature: 0.3
+  top_p: 0.9
+  presence_penalty: 1.0
+  context_window: 256000
+  output_format: "json"
+
+# =============================================================================
+# post_process（后处理钩子）
+# =============================================================================
+# 在 LLM 输出结果之后，按顺序执行的后处理函数链。
+# 用于验证 LLM 输出、条件性修订、回填沙箱、写入数据库。
+#
+# 执行顺序：
+#   1. db_schema_sync             → DB schema 校验 + 修正 db_key 后缀 + remove_unknown
+#   2. step2_4_validate_targets   → 只删幻觉，不补充（validate 不负责补 None 占位）
+#   3. step2_4_revise_if_needed   → 条件性修订缺失参数（missing=0 时自动跳过）
+#   4. step2_4_save_targets       → 回填沙箱 + 写入 DB（llm_ssts_by_key 扁平索引天然支持去重）
+# =============================================================================
+
+post_process:
+  # 后处理 1：DB schema 校验 + 修正（★通用公共函数，自包含所有校验+修正逻辑）
+  - function: "db_schema_sync"
+    args_mapping:
+      mapping: "$result.structured_data"
+      memory_db: "$memory_db"
+      instance_key: "$args.instance_key"
+      remove_unknown: true
+      write_back: true
+      step_id: "DEFINE_INITIAL"
+      professional_category: "$args.professional_category"
+      sandbox: "$sandbox"
+    output: "synced_mapping"
+
+  # 后处理 2：验证 LLM 输出的目标值（只删幻觉，不补充）
+  - function: "step2_4_validate_targets"
+    args_mapping:
+      sandbox: "$sandbox"
+      professional_category: "$args.professional_category"
+      result: "$post.synced_mapping"
+      defined_ssts_db: "$data_sources.defined_ssts_db"
+    output: "validated_targets"
+
+  # 后处理 3：条件性修订缺失参数
+  - function: "step2_4_revise_if_needed"
+    args_mapping:
+      targets: "$post.validated_targets"
+    output: "revised_targets"
+
+  # 后处理 4：回填沙箱 + 写入DB
+  - function: "step2_4_save_targets"
+    args_mapping:
+      sandbox: "$sandbox"
+      memory_db: "$memory_db"
+      instance_key: "$args.instance_key"
+      targets: "$post.revised_targets"
+      defined_ssts_db: "$data_sources.defined_ssts_db"

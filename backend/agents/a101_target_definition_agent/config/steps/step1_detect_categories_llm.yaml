@@ -1,0 +1,247 @@
+﻿# =============================================================================
+# LLM 类 Step 配置文件完整示例
+# =============================================================================
+# 本文件是 LLM 类 step 的配置模板，包含所有可用的配置项。
+# 后续新建 LLM 类 step 时，可参考本文件的配置结构。
+#
+# 配置结构共 5 个部分：
+#   1. 基本信息和 Schema
+#   2. data_sources（数据源加载）
+#   3. functions（LLM 可调用的函数列表）
+#   4. prompt 和 LLM 配置
+#   5. post_process（后处理钩子）
+#
+# 其中 data_sources、functions、post_process 三部分均为可选，按需配置。
+# =============================================================================
+
+
+# =============================================================================
+# 第 1 部分：基本信息和 Schema
+# =============================================================================
+# 定义步骤的类型、标识、名称，以及 LLM function calling 的 schema。
+# 这部分是必填项。
+
+# 步骤类型：llm（LLM推理型）、agent（子Agent调用型）、process（直接执行型）
+step_type: "llm"
+
+# 启用阶段2（JSON格式整理）
+stage2_enabled: true
+
+# process的沙箱私域内存，包括两个固定字段：step_results 和 process_data
+# step_results字段下包括structured_data(用于存储本步骤的结构化输出)和reasoning_logic(用于存储本步骤推理的推理逻辑)
+# process_data：存储整个process的关键运行结果，各中间step逐步填充、修改最后完成完整process推理
+# 这里确定是否将步骤结果写入 process_data（默认 true）
+# 本process的最终输出为VTS/SSTS目标值，本step的结果中后续step的前置step，不产生VTS/SSTS目标值结果
+# 本step的结果通过 step_results 读取其结果即可，无需写入 process_data
+save_to_process_data: false
+
+# 步骤标识，对应 process.yaml 中的 step_id
+step_id: "DETECT_CATEGORIES"
+
+# 步骤显示名称
+step_name: "专业目录和流程编排"
+
+# =============================================================================
+# 循环配置（框架自动处理），loop前置step专属字段
+# =============================================================================
+# 声明此步骤为循环配置前置步骤，框架自动从输出中提取循环项。
+# 循环项通过 loop_items_source 配置从 LLM 输出中提取。
+loop_config:
+  # 循环项来源：从 LLM 输出的 structured_data.categories 字段读取
+  loop_items_source: "structured_data.categories"
+  
+  # 目标循环步骤ID（可选，默认第一个循环）
+  target_loop_id: "loop_categories"
+
+# =============================================================================
+# 第 2 部分：data_sources（数据源加载）
+# =============================================================================
+# 在 LLM 推理之前，由代码直接调用的函数，用于预先加载必需的数据。
+# 调用结果存入 output 指定的变量名，可在 prompt_template 中通过 {变量名} 引用。
+#
+# 与 functions 的区别：
+#   - data_sources：代码驱动，确定性调用，每次必执行
+#   - functions：LLM 驱动，可选调用，由 LLM 决定是否调用
+#
+# 支持的变量引用格式：
+#   $args.xxx        LLM 传入的参数
+#   $memory_db       memory_db 实例
+#   $context         Agent 实例
+#   $data_sources.xxx 其他数据源的输出
+# =============================================================================
+
+data_sources:
+  # 数据源 1：获取 VTS 专业分类列表（文件：100_pubfn_vts_ssts_data_reader.py）
+  - function: "vts_ssts_data_reader" # 必填：公共函数名（对应 public_functions 中注册的类名）
+    args_mapping:  # 可选：参数映射（支持 $变量引用 和 字面量）
+      operation: "get_vts_categories" # 键=函数参数名，值=传入值
+    output: "vts_categories" # 必填：函数结果存入 data_sources 的键名
+
+  # 数据源 2：发现可用的子 Agent（文件：001_pubfn_list_sub_agents.py）
+  - function: "list_all_sub_agents"
+    output: "available_agents"
+
+
+# =============================================================================
+# 第 3 部分：functions（LLM 可调用的函数列表）
+# =============================================================================
+# 声明此步骤在阶段1（stage1）中，LLM 可以自主调用的 public function 列表。
+# LLM 会根据推理需要决定是否调用以及如何调用。
+#
+# 注意：
+#   - 此处只声明函数名称，函数的 schema 由 public_functions 模块自动提供
+#   - 如果 stage1_enabled 为 false，此配置不生效
+#   - Step 的函数列表独立于 Agent 的函数列表，不会继承
+# =============================================================================
+
+# 本步骤不需要 LLM 自主调用函数，因此 functions 为空。
+# 如果需要，按以下格式配置：
+#
+# functions:
+#   - "calculator"
+#   - "vts_ssts_data_reader"
+#   - "list_all_sub_agents"
+
+functions: []
+
+
+# =============================================================================
+# 第 4 部分：prompt 和 LLM 配置
+# =============================================================================
+# 定义 prompt 模板、系统提示词、LLM 参数等。
+# LLM 类 step 采用两阶段调用模式：
+#   - 阶段1（stage1）：函数调用阶段，LLM 可调用 functions 中的函数（可选）
+#   - 阶段2（stage2）：JSON 格式化阶段，LLM 输出结构化结果
+# =============================================================================
+
+# Prompt 模板：{变量名} 会被 data_sources 的 output 和 args 中的值替换
+prompt_template: |
+  【车型信息】
+  车型后缀：{vehicle_suffix}
+  车型名称：{vehicle_display_name}
+
+  【检测到的专业分类】
+  {vts_categories}
+
+  【可用子agent列表】
+  {available_agents}
+
+# ---- 阶段1 配置（函数调用阶段，可选） ----
+
+# 是否启用阶段1（false 表示跳过函数调用，直接进入 JSON 格式化）
+stage1_enabled: false
+
+# 阶段1的系统提示词（仅在 stage1_enabled 为 true 时生效）
+# stage1_system_prompt: |
+#   你是xxx专家，负责xxx。
+#   【工作模式】
+#   当前为分析计算阶段，你可以调用以下函数：
+#   - calculator: 数学计算
+#   ...
+
+# 阶段1的 LLM 配置（仅在 stage1_enabled 为 true 时生效，不写则调用默认配置）
+# stage1_llm_config:
+#   model_name: "qwen3.5-plus"
+#   max_new_tokens: 4000
+#   temperature: 0.3
+#   output_format: "text"
+
+# ---- 阶段2 配置（JSON 格式化阶段，必填） ----
+
+# 阶段2的系统提示词：指导 LLM 输出结构化 JSON
+system_prompt: |
+  你是目标值定义流程编排专家，负责确定各专业的执行顺序和对应的专家/计算流agent。
+
+  【核心职责】
+  1. 根据专业之间的依赖关系确定执行顺序
+  2. 为每个专业分配合适的专家agent和计算流agent
+  3. 确保流程执行的合理性和效率
+
+  【任务要求】
+  1. 根据专业之间的依赖关系和逻辑顺序，确定各专业的执行顺序
+  2. 为每个专业分配对应的专家agent（用于法规查询、参考知识获取、优化方案分析）
+  3. 为每个专业分配对应的计算流agent（用于映射关系分析、校核计算、数值优化）
+
+  【说明】
+  - 专家agent：负责法规查询、参考知识获取、优化方案分析等知识性任务
+  - 计算流agent：负责映射关系分析、校核计算、数值优化等计算性任务
+  - 部分agent可能同时具备专家和计算流能力，请根据其描述判断
+
+  【输出格式】
+  请严格按照以下JSON格式输出，不要包含其他文本：
+  {
+    "structured_data": {
+      "categories": ["专业1", "专业2", ...],
+      "expert_mapping": {"专业1": "agent_id", "专业2": "agent_id", ...},
+      "workflow_mapping": {"专业1": "agent_id", "专业2": "agent_id", ...}
+    },
+    "reasoning_logic": "执行顺序决策理由及逻辑说明..."
+  }
+
+  【术语说明】
+  - VTS: Vehicle Technical Specification，整车技术规格，用于定义车辆层面的技术特征和性能指标
+  - SSTS: Sub-System Technical Specification，子系统技术规格，用于定义各子系统的功能和性能指标，是VTS的向下拆解物
+
+# 阶段2的 LLM 配置（不写则调用默认配置）
+#llm_config:
+#  model_name: "qwen3.5-plus"
+#  max_new_tokens: 4000
+#  temperature: 0.2
+#  top_p: 0.9
+#  presence_penalty: 1.0
+#  context_window: 256000
+#  output_format: "json"
+
+
+# =============================================================================
+# 第 5 部分：post_process（后处理钩子）
+# =============================================================================
+# 在 LLM 输出结果之后，由代码直接调用的函数，用于对结果进行处理。
+# 可访问的变量：
+#   $result              LLM 的输出结果（JSON 字符串）
+#   $result.structured_data   LLM 输出中的 structured_data 字段
+#   $result.reasoning_logic   LLM 输出中的 reasoning_logic 字段
+#   $data_sources.xxx   data_sources 阶段加载的数据
+#   $post.xxx           之前 post_process 的输出
+#   $args.xxx           LLM 传入的参数
+#   $context            Agent 实例上下文
+#
+# 注意：循环项（categories）已通过 loop_config 由框架自动处理。
+#       Agent ID 映射通过 post_process 中的 set_step_agent 公共函数写入 ProcessSandbox。
+# =============================================================================
+
+post_process:
+  # 后处理 1：读取 VTS 数据并按专业顺序构建结构（文件：a101_step1_build_vts_structure.py）
+  # memory_db/vehicle_key 由框架自动注入，categories 缺省时按约定从步骤结果读取
+  # 输出结构：{专业名: [vts_items], ...}
+  - function: "build_vts_structure"
+    output: "vts_category_data"
+
+  # 后处理 2：构建专业分类映射表（新增，文件：101_pubfn_category_mapping.py）
+  # 功能：从 memory core 提取一级专业、二级专业的标准名称
+  # 用途：作为后续名称校验和自动映射的基准
+  - function: "build_category_mapping"
+    output: "category_mapping_data"
+
+  # 后处理 3：保存映射表到 process_data（新增）
+  # 供后续步骤进行名称映射时使用
+  - function: "save_data_to_process"
+    args_mapping:
+      key: "category_mapping"
+      data: "$post.category_mapping_data"
+
+  # 后处理 4：将 VTS 结构保存到 process_data（文件：205_pubfn_save_data_to_process.py）
+  # 供后续循环步骤使用
+  - function: "save_data_to_process"
+    args_mapping:
+      key: "vts_category_data"
+      data: "$post.vts_category_data"
+
+  # 后处理 5：设置 Agent 类型映射（文件：206_pubfn_set_step_agent.py）
+  # 将 LLM 输出中的 mapping 写入 ProcessSandbox，供后续 Agent 步骤按类型读取
+  # calculator_mapping: 计算类步骤使用的映射（workflow agent）
+  # expert_mapping: 专家类步骤使用的映射（expert agent）
+  - function: "set_step_agent"
+    args_mapping:
+      calculator_mapping: "$result.structured_data.workflow_mapping"
+      expert_mapping: "$result.structured_data.expert_mapping"

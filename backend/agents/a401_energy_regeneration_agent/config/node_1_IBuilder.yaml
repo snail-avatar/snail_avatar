@@ -1,0 +1,86 @@
+# =============================================================================
+# IBuilder 节点说明文件
+# =============================================================================
+node_type_id: "IBuilder"
+node_display_name: "I 曲线构建"
+node_category: "制动力分配基础"
+node_description: "构建理想制动力分配 I 曲线（前后轮同时抱死的理论最优曲线）。对应计算方法文档 §3。"
+
+# =============================================================================
+# 输入变量定义（全部从 node_0_VehicleParam 读取）
+# =============================================================================
+inputs:
+  G:
+    name: "整车重力"
+    unit: "N"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "G"
+
+  L_m:
+    name: "轴距"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "L_m"
+
+  b:
+    name: "质心到后轴距离"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "b"
+
+  hg:
+    name: "质心高度"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "hg"
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+  phi_array:
+    name: "路面附着系数数组"
+    unit: "-"
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "φ ∈ [0, 1.0] 均匀采样点数组"
+
+  F_mu1_I:
+    name: "I 曲线前轴制动力"
+    unit: "N"
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "Fμ1^I(φ)，与 phi_array 一一对齐"
+
+  F_mu2_I:
+    name: "I 曲线后轴制动力"
+    unit: "N"
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "Fμ2^I(φ) = φ·G - Fμ1^I"
+
+  Z_array:
+    name: "制动强度数组"
+    unit: "-"
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "Z = φ（I 曲线上制动强度 = 附着系数）"
+
+  # =============================================================================
+  # 语义求解器输出变量定义
+  # =============================================================================
+
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "I 曲线构建计算节点的自然语言分析报告（Markdown 格式）"

@@ -1,0 +1,1097 @@
+[
+  {
+    "role": "user",
+    "content": "[来自 main_agent 的上下文]
+      main_agent 角色描述：你是Snail Avatar，一个新能源汽车性能开发agent。
+      你可以帮助用户进行以下工作：
+      - 回答关于新能源汽车性能开发的技术问题
+      - 解释性能参数和指标的计算结果
+      - 提供车辆参数优化建议
+      - 辅助工程师进行仿真分析
+      
+      ## 响应要求
+      - 保持专业、准确的技术语言风格
+      - 用精炼的语言总结推理过程和分析结果
+      - 使用表格或列表格式展示多组数据
+      - 确保你的分析基于工程原理
+      
+        ## 工具...
+      
+      [请 pe_expert_agent 基于以上上下文回答用户问题]
+      
+      [用户当前问题]
+      请检索所有纯电动汽车动力性相关的法规及概念公式"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "id": "call_c456c67cd04b45249e3a3b44",
+        "type": "function",
+        "function": {
+          "name": "search_pe_knowledge_graph",
+          "arguments": "{\"query\": \"纯电动汽车动力性\"}"
+        }
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "content": "动力性(性能指标)
+      描述: 车辆在行驶中能达到的最高车速、加速时间、爬坡能力等
+      关联:
+        动力经济性 --[包含]--> 动力性
+        最高车速 --[组成]--> 动力性
+        加速时间 --[组成]--> 动力性
+        爬坡能力 --[组成]--> 动力性
+        电机峰值功率 --[影响]--> 动力性
+        电机峰值扭矩 --[影响]--> 动力性
+        电机峰值转速 --[影响]--> 动力性
+        电驱轮端峰值功率 --[影响]--> 动力性
+        电驱轮端峰值扭矩 --[影响]--> 动力性
+        电驱轮端峰值转速 --[影响]--> 动力性
+      
+      纯电模式常温工况能耗(性能指标)
+      描述: 纯电车型、或者可充电的混动、增程车型；在纯电模式下，按照一定的测试循环行驶，车辆的能量消耗率（单位kwh/100km）和续驶里程（单位Km）；包括车端电耗、网端电耗和纯电续驶里程。
+      关联:
+        车端电耗 --[组成]--> 纯电模式常温工况能耗
+        网端电耗 --[组成]--> 纯电模式常温工况能耗
+        纯电续驶里程 --[组成]--> 纯电模式常温工况能耗
+      
+      纯电续驶里程(性能指标)
+      描述: 纯电车型、或者可充电的混动、增程车型；从电池包满电状态开始，在动力形式为纯电的情况下，按照一定的测试循环行驶，车辆能够达到的最大行驶距离。
+      关联:
+        纯电续驶里程 --[组成]--> 纯电模式常温工况能耗
+      
+      动力经济性(学科)
+      描述: 研究车辆动力性能和经济性能的学科，涉及动力系统匹配、能量消耗、续驶里程等
+      关联:
+        动力经济性 --[包含]--> 动力性
+        动力经济性 --[包含]--> 经济性
+      
+      电驱轮端峰值功率(参数)
+      描述: 经过减速器的作用后，电驱系统能输出的最大功率，是决定车辆动力性能的关键参数
+      关联:
+        电驱轮端峰值功率 --[影响]--> 动力性
+      
+      车端电耗(性能指标)
+      描述: 纯电车型、或者可充电的混动、增程车型；在纯电模式下，按照一定的测试循环行驶，使用电池放电能量和行驶里程计算得到的能量消耗率（单位kwh/100km）。用于考察车辆本身的行驶阻力和用电器的能耗。由于此时计算所用的能量为电池包直流电的放电量，在英语环境中也被称为“dc energy consumpition”
+      关联:
+        车端电耗 --[组成]--> 纯电模式常温工况能耗
+      
+      电池峰值持续放电功率@300s(参数)
+      描述: 电池可以持续300s的最大放电功率,主要影响车辆1km最高车速或者爬坡最高车速这种准稳态动力性
+      关联:
+        电池峰值持续放电功率@300s --[影响]--> 动力性
+      
+      电池峰值持续放电功率@30min(参数)
+      描述: 电池可以持续30min的最大放电功率,主要影响车辆30min最高车速这种稳态动力性
+      关联:
+        电池峰值持续放电功率@30min --[影响]--> 动力性
+      
+      经济性(性能指标)
+      描述: 车辆在行驶过程中的能量消耗效率，用百公里油耗或电耗表示
+      关联:
+        动力经济性 --[包含]--> 经济性
+        电池标称电量 --[影响]--> 经济性
+        电池放电深度 --[影响]--> 经济性
+        机械制动能耗比例 --[影响]--> 经济性
+      
+      电机峰值功率(参数)
+      描述: 电机能输出的最大功率，是决定车辆动力性能的关键参数
+      关联:
+        电机峰值功率 --[影响]--> 动力性
+      
+      馈电模式能耗(性能指标)
+      描述: 增程或者混动车型在馈电模式时，按照一定的测试循环行驶，车辆的燃油消耗率（单位L/100km）和续驶里程（单位Km）；也称为电量保持模式或者亏电模式；包括馈电油耗和综合续驶里程。
+      关联:
+        馈电油耗 --[组成]--> 馈电模式能耗
+        综合续驶里程 --[组成]--> 馈电模式能耗
+      
+      网端电耗(性能指标)
+      描述: 纯电车型、或者可充电的混动、增程车型；在纯电模式下，按照一定的测试循环行驶，使用电网充入车辆的能量和行驶里程计算得到的能量消耗率（单位kwh/100km）。用于综合考虑电池包充放电效率、充电机效率影响下，车辆行驶的综合能耗。由于此时计算所用的能量为电网交流电的充电量，在英语环境中也被称为“ac energy consumpition”
+      关联:
+        网端电耗 --[组成]--> 纯电模式常温工况能耗
+      
+      馈电油耗(性能指标)
+      描述: 增程或者混动车型在馈电模式时，按照一定的测试循环行驶，车辆的燃油消耗率（单位L/100km）。
+      关联:
+        馈电油耗 --[组成]--> 馈电模式能耗
+      
+      电驱轮端峰值扭矩(参数)
+      描述: 经过减速器的作用后，电驱系统能输出的最大扭矩，决定车辆的加速性能
+      关联:
+        电驱轮端峰值扭矩 --[影响]--> 动力性
+      
+      电池峰值放电功率@10s(参数)
+      描述: 电池可以持续10s的最大放电功率,主要影响车辆急加速这种短时间持续的瞬时动力性
+      关联:
+        电池峰值放电功率@10s --[影响]--> 动力性
+      
+      电驱轮端峰值转速(参数)
+      描述: 经过减速器的作用后，电驱系统能输出的最大转速，影响车辆的最高车速
+      关联:
+        电驱轮端峰值转速 --[影响]--> 动力性
+      
+      综合续驶里程(性能指标)
+      描述: 对于混动或增程车型；从电池包满电、油箱满油的状态开始，在按照一定的测试循环行驶，车辆能够达到的最大行驶距离。
+      关联:
+        综合续驶里程 --[组成]--> 馈电模式能耗
+      
+      电机峰值扭矩(参数)
+      描述: 电机能输出的最大扭矩，决定车辆的加速性能
+      关联:
+        电机峰值扭矩 --[影响]--> 动力性
+      
+      坡道起步能力(性能指标)
+      描述: 车辆在满载情况下，在一定坡度的坡道上，能够起步行驶的能力；试验过程中，要求车辆首先怠速静止在在斜坡上，然后控制车辆起步，能够向前行驶即判定为合格。
+      关联:
+        坡道起步能力 --[组成]--> 爬坡能力
+      
+      电机峰值转速(参数)
+      描述: 电机能输出的最大转速，影响车辆的最高车速
+      关联:
+        电机峰值转速 --[影响]--> 动力性
+      ",
+    "tool_call_id": "call_c456c67cd04b45249e3a3b44"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "id": "call_8c04070149c84a9d881d1894",
+        "type": "function",
+        "function": {
+          "name": "search_pe_knowledge",
+          "arguments": "{\"query\": \"纯电动汽车动力性 法规 标准 测试方法\"}"
+        }
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "content": "[相关度:0.87] 来源:基于中国工况的纯电动乘用车续驶里程评价方法研究.pdf 第8页
+      化管理委员会 .电动汽车动力性能 试验方法 ：GB/T18385—2005［S］.北京：中国标准出版社 ，2005.General Administration of Quality Supervision ，Inspection andQuarantine of the People 􀆳s Republic of China ，StandardizationAdministrationofthePeople 􀆳sRepublicofChina .Electricvehiclepower performance test method ：GB/T18385—2005［S］.Bei⁃jing：ChinaStandardPress ，2005.［14］Electric road vehicles⁃reference energy consumption and range⁃testproceduresforpassengercarsandlightcommercialvehicles ：ISO8714：2002［S/OL］.［2002-11］.https：//www.iso.org/stan⁃dard/34087.html？browse=tc.［15］Uniformprovisionsconcerningtheapprovalofpassengercarspow ⁃eredbyaninternalcombustionengineonly ，orpoweredbyahy ⁃brid electric power train with regard to the measurement of theemissionofcarbondioxideandfuelconsumptionand/orthemea ⁃surementofelectricenergyconsumptionandelectricrange ，andof categories M1and N1vehicles powered by an electric powertrainonlywithregardtothemeasurementofelectricenergycon ⁃sumption and electric range :UN ECE R101：2013［S/OL］.［2013-4］.https：//unece.org/transport/vehicle⁃regulations⁃wp 29/standards/addenda⁃ 1958⁃agreement⁃regulations- 101-120.［16］中华人民共和国国家市场监督管理总局 ，中华人民共和国国家标准化管理委员会 .中国汽车行驶工况第 1部分：轻型汽车：GB/T38146.1—2019［S］.北京：中国标准出版社 ，2019.StateAdministrationforMarketRegulationofthePeople 􀆳sRepub⁃licofChina ，StandardizationAdministrationofthePeople 􀆳sRe⁃publicofChina .Chinaautomotivetestcycle⁃part 1：light⁃dutyve⁃hicles：GB/T38146.1—2019［S］.Beijing：ChinaStandardPress ，2019.［17］Global technical regulation on worldwide harmonized light vehi ⁃cles test procedures （WLTP）:UN GTR15［S/OL］.［2019-12］.https：//wiki.unece.org/display/trans/Latest+GTR+ 15.［18］李礼夫，韦毅，龚定旺，等.纯电动汽车动力电池续驶里程与行驶工况分析 ［J］.机械设计与制造 ，2018（11） ：139-142.LI L F，WEI Y，GONG D W ，et al.Research on the effects ofdrivingcycleondrivingrangeofpowerbatteryofpureelectricve ⁃hicle［J］.MachineryDesign&Manufacture ，2018（11） ：139-142.［19］解难，胡月昆，杨帆，等.环境温度对电动汽车续驶里程影响的试验研究 ［J］.重庆理工大学学报 （自然科学版 ） ，2018，32（6） ：21-25.XIEN，HUYK，YANGF，etal.Researchontheinfluenceof
+      
+      [相关度:0.87] 来源:GBT18385-2024 纯电动汽车动力性能试验方法.pdf 第1页
+      ICS43.120
+      CCST47
+      中华人民共和国国家标准
+      GB/T18385—2024
+      代替GB/T18385—2005
+      纯电动汽车 动力性能 试验方法
+      Batteryelectricvehicles—Powerperformance—Testmethod
+      2024-08-23发布 2025-03-01实施
+      国家市场监督管理总局
+      国家标准化管理委员会发布
+      
+      [相关度:0.87] 来源:GBT18385-2024 纯电动汽车动力性能试验方法.pdf 第5页
+      纯电动汽车  动力性能  试验方法
+      1 范围
+      本文件描述了纯电动汽车动力性能的试验方法 。
+      本文件适用于 M类和N类纯电动汽车 。
+      2 规范性引用文件
+      下列文件中的内容通过文中的规范性引用而构成本文件必不可少的条款 。其中,注日期的引用文
+      件,仅该日期对应的版本适用于本文件 ;不注日期的引用文件 ,其最新版本 (包括所有的修改单 )适用于
+      本文件。
+      G B/T3 7 3 0. 1 汽车、挂车及汽车列车的术语和定义  第1部分:类型
+      G B/T3 7 3 0. 2 道路车辆  质量 词汇和代码
+      G B/T8 1 7 0 数值修约规则与极限数值的表示和判定
+      G B/T1 2 4 2 8 客车装载质量计算方法
+      G B/T1 2 5 3 4 汽车道路试验方法通则
+      G B/T1 2 5 4 5. 1 汽车燃料消耗量试验方法  第1部分:乘用车燃料消耗量试验方法
+      G B1 8 3 5 2. 6 2 0 1 6 轻型汽车污染物排放限值及测量方法 (中国第六阶段 )
+      G B/T1 9 5 9 6 2 0 1 7 电动汽车术语
+      G B/T2 7 8 4 0 2 0 2 1 重型商用车辆燃料消耗量测量方法
+      3 术语和定义
+      G B/T1 9 5 9 6 2 0 1 7 、G B/T3 7 3 0. 1 和G B/T3 7 3 0. 2 界定的以及下列术语和定义适用于本文件 。
+      3.1
+      可充电储能系统  r e c h a rge a b l ee l e c t r i c a l e n e r g ys t o r agesys t e m;R E E S S
+      可充电的且可提供电能的能量储存系统 。
+      [来源:G B1 8 3 8 4 2 0 2 0 ,3. 1]
+      3.2
+      荷电状态  s t age - o f - c h a r ge;S O C
+      当前蓄电池中按照规定放电条件可以释放的容量占可用容量的百分比 。
+      [来源:G B/T1 9 5 9 6 2 0 1 7 ,3. 3. 3. 2. 5 ]
+      3.3
+      3 0m i n最高车速  m a x i m u mt h i r t y- m i n u t e ss pe e d
+      纯电动汽车能持续行驶 3 0m i n以上的最高平均车速 。
+      [来源:G B/T1 9 5 9 6 2 0 1 7 ,3. 1. 3. 1. 7 ,有修改]
+      3.4
+      最高车速  m a x i m u ms pe e d
+      按规定的试验方法 ,纯电动汽车能保持的最高稳定平均速度 。G B/T1 8 3 8 5—2 0 2 4
+      
+      [相关度:0.77] 来源:GBT18385-2024 纯电动汽车动力性能试验方法.pdf 第3页
+      前 言
+      本文件按照 G B/T1. 1 2 0 2 0 《标准化工作导则  第1部分:标准化文件的结构和起草规则 》的规定
+      起草。
+      本文件代替 G B/T1 8 3 8 5 2 0 0 5 《电动汽车  动力性能  试验方法 》 ,与G B/T1 8 3 8 5 2 0 0 5 相
+      比,除结构调整和编辑性改动外 ,主要技术变化如下 :
+      “术语和定义 ”一章引导语增加引用了 G B/T1 9 5 9 6 2 0 1 7 、G B/T3 7 3 0. 1 和G B/T3 7 3 0. 2 (见
+      第3章) ;
+      增加了术语 “可充电储能系统 ” “荷电状态 ” “原地起步加速能力 ” “超越加速能力 ” “最大爬坡度 ”
+      及其定义 (见3. 1、3. 2、3. 5. 1、3. 5. 2、3. 7) ;
+      更改了“3 0m i n最高车速 ” “最高车速 ” “加速能力 ” “爬坡车速 ” “坡道起步能力 ”术语和定义 (见
+      3. 3、3. 4、3. 5、3. 6、3. 8,2 0 0 5年版的3. 5、3. 4、3. 6、3. 7、3. 8) ;
+      删除了术语 “电动汽车整车整备质量 ” “电动汽车试验质量 ” “动负荷半径 (轮胎) ”及其定义 (见
+      2 0 0 5年版的3. 1、3. 2、3. 3) ;
+      更改了试验车辆状态的要求 (见4. 1,2 0 0 5年版的4. 1) ;
+      更改了环境条件的要求 (见4. 2,2 0 0 5年版的4. 2) ;
+      更改了测量的参数 、单位和准确度的要求 (见4. 3,2 0 0 5年版的4. 3. 2) ;
+      更改了道路条件的要求 (见4. 4,2 0 0 5年版的4. 4) ;
+      更改了R E E S S 的充电要求 (见5. 1,2 0 0 5年版的5. 1) ;
+      删除了里程表的设定 (见2 0 0 5年版的5. 2) ;
+      更改了预热的要求 (见5. 2,2 0 0 5年版的5. 3) ;
+      更改了车辆试验质量及载荷分布的要求 (见5. 3,2 0 0 5年版的3. 2) ;
+      删除了试验顺序的要求 (见2 0 0 5年版的第 6章) ;
+      增加了试验方法通则 (见6. 1) ;
+      更改了3 0m i n最高车速试验方法 (见6. 2,2 0 0 5年版的7. 1) ;
+      删除了蓄电池完全放电和蓄电池 4 0%放电(见2 0 0 5年版的7. 2和7. 4) ;
+      更改了最高车速试验方法 (见6. 3,2 0 0 5年版的7. 3) ;
+      更改了加速能力试验方法 (见6. 4,2 0 0 5年版的7. 5) ;
+      更改了爬坡车速试验方法 (见6. 5,2 0 0 5年版的7. 6) ;
+      增加了最大爬坡度试验方法 (见6. 6) ;
+      更改了坡道起步能力试验方法 (见6. 7,2 0 0 5年版的7. 7) ;
+      增加了规范性附录 “环形道路修正因数确定方法 ” (见附录A) 。
+      请注意本文件的某些内容可能涉及专利 。本文件的发布机构不承担识别专利的责任 。
+      本文件由中华人民共和国工业和信息化部提出 。
+      本文件由全国汽车标准化技术委员会 (S AC/T C1 1 4)归口。
+      本文件起草单位 :襄阳达安汽车检测中心有限公司 、中国汽车技术研究中心有限公司 、浙江吉利远
+      程新能源商用车集团有限公司 、浙江合众新能源汽车有限公司 、重庆金康塞力斯汽车有限公司 、北京车
+      和家汽车科技有限公司 、东风商用车有限公司技术中心 、岚图汽车科技有限公司 、招商局检测车辆技术
+      研究院有限公司 、中汽研汽车检验中心 (天津)有限公司 、中国汽车工程研究院股份有限公司 、东风汽车
+      集团有限公司 、比亚迪汽车工业有限公司 、国家新能源汽车技术创新中心 、中国第一汽车股份有限公司 、
+      ⅢG B/T1 8 3 8 5—2 0 2 4
+      
+      [相关度:0.75] 来源:(EU) No 134 2014 欧盟L类车型排放及能耗标准（WMTC）.pdf 第294页
+      02014R0134 — EN — 26.12.2023 — 003.001 — 294  Appendix 2  Method of measuring the electric energy consumption of a vehicle powered by an electric powertrain only  1. Test sequence  1.1. Electric energy consumption of pure electric vehicles shal l be determined according to the procedure for the type I test in Annex II in force at the time of the approval of the vehicle. F or this purpose, a pure vehicle shall be classified according to i ts maximum attainable design vehicle speed.  If the vehicle has several driving modes which may be selected by the driver, the operator shall select that which best matches the t arget curve.  2. Test method  2.1. Principle  The following test method shall be used for measuring of the el ectric energy consumption, expressed in Wh/km:  2.2. Table Ap2-1  Parameters, units and accuracy of measurement  Parameter  Units  Accuracy  Resolution  Time  s  0,1 s  0,1 s  Distance  m  ± 0,1 percent  1  m  Temperature  K  ±  1  K  1  K  Speed  km/h  ± 1 percent  0,2 km/h  Mass  k g  ± 0,5 percent  1  k g  Energy  W h  ± 0,2 percent  Class 0,2 s according to IEC (  1 ) 687  ( 1 ) International Electrotechnical Commission.  2.3. Test vehicle  2.3.1. Condition of the vehicle  2.3.1.1. The vehicle tyres shall be inflated to the pressure sp ecified by the vehicle manufacturer when the tyres are at ambient temperature.  2.3.1.2. The viscosity of the oils for the mechanical moving pa rts shall conform to the vehicle manufacturer’s specification.  2.3.1.3. The lighting, signalling and auxiliary devices shall b e off, except those required for the testing and usual day-time operation of the ve hicle.  2.3.1.4. All energy storage systems for other than traction pur poses (electric, hydraulic, pneumatic, etc.) shall be charged to their maximum l evel as specified by the manufacturer.  2.3.1.5. If the batteries are operated above the ambient temper ature, the operator shall follow the procedure recommended by the vehicle
+      
+      [相关度:0.75] 来源:GBT18385-2024 纯电动汽车动力性能试验方法.pdf 第2页
+      目 次
+      前言 Ⅲ …………………………………………………………………………………………………………
+      1 范围 1 ………………………………………………………………………………………………………
+      2 规范性引用文件 1 …………………………………………………………………………………………
+      3 术语和定义 1 ………………………………………………………………………………………………
+      4 试验条件 2 …………………………………………………………………………………………………
+       4. 1 试验车辆状态 2 ………………………………………………………………………………………
+       4. 2 环境条件 2 ……………………………………………………………………………………………
+       4. 3 测量参数 、单位和准确度 3 ……………………………………………………………………………
+       4. 4 道路条件 3 ……………………………………………………………………………………………
+      5 试验车辆准备 4 ……………………………………………………………………………………………
+       5. 1 R E E S S 的充电 4 ………………………………………………………………………………………
+       5. 2 预热 5 …………………………………………………………………………………………………
+       5. 3 车辆试验质量及载荷分布 5 …………………………………………………………………………
+      6 试验方法 6 …………………………………………………………………………………………………
+       6. 1 通则 6 …………………………………………………………………………………………………
+       6. 2 3 0m i n 最高车速试验 6 ………………………………………………………………………………
+       6. 3 最高车速试验 7 ………………………………………………………………………………………
+       6. 4 加速能力 (v1至v)试验 8 ……………………………………………………………………………
+       6. 5 爬坡车速试验 (M1类、M类、N1类以外的纯电动汽车不适用 ) 1 0 …………………………………
+       6. 6 最大爬坡度试验 1 0 …………………………………………………………………………………
+       6. 7 坡道起步能力试验 1 1 …………………………………………………………………………………
+      附录A(规范性) 环形道路修正因数确定方法 1 2 …………………………………………………………
+      附录B(资料性) 试验记录表 1 3 ……………………………………………………………………………
+      参考文献 1 7 ……………………………………………………………………………………………………
+      ⅠG B/T1 8 3 8 5—2 0 2 4
+      
+      [相关度:0.74] 来源:GBT 18386.1-2021 电动汽车能量消耗量和续驶里程试验方法 第1部分 轻型汽车.pdf 第1页
+      ICS43.020
+      CCST47
+      中华人民共和国国家标准
+      GB/T18386.1—2021
+      部分代替GB/T18386—2017
+      电动汽车能量消耗量和续驶里程
+      试验方法 第1部分:轻型汽车
+      Testmethodsforenergyconsumptionandrangeofelectricvehicles—
+      Part1:Light-dutyvehicles
+      2021-03-09发布 2021-10-01实施
+      国家市场监督管理总局
+      国家标准化管理委员会发布
+      
+      [相关度:0.74] 来源:GBT 28382-2012 纯电动乘用车 技术条件.pdf 第4页
+      于0.3m3。
+      4.4 安全要求
+      车辆的特殊安全、制动性能、乘员保护等应符合:
+      ———GB/T18384对纯电动汽车特殊安全的规定;
+      ———GB21670对制动性能的规定;
+      ———GB11551和GB20071对乘员保护的规定;
+      ———车辆在设计时应考虑车辆起动、车速低于20km/h时,能够给车外人员发出适当的提示性
+      声响。
+      4.5 动力性能要求
+      4.5.1 30min最高车速
+      按照GB/T18385规定的试验方法测量30min最高车速,其值应不低于80km/h。
+      4.5.2 加速性能
+      按照GB/T18385规定的试验方法测量车辆0km/h~50km/h和50km/h~80km/h的加速性
+      能,其加速时间应分别不超过10s和15s。
+      4.5.3 爬坡性能
+      按照GB/T18385规定的试验方法,测量车辆爬坡车速和车辆最大爬坡度,应符合下列要求:
+      ———车辆通过4%坡度的爬坡车速不低于60km/h;
+      ———车辆通过12%坡度的爬坡车速不低于30km/h;
+      ———车辆最大爬坡度不低于20%。
+      4.6 低温起动性能要求
+      车辆在-20℃±2℃的试验环境温度下,浸车8h后,应能正常起动、行驶。
+      4.7 续驶里程
+      按照GB/T18386测量工况法续驶里程,其值应大于80km。
+      4.8 操纵稳定性要求
+      按照QC/T480进行操纵稳定性试验,其指标应满足QC/T480的要求。
+      4.9 可靠性要求
+      4.9.1 里程分配
+      可靠性行驶试验的总里程为15000km,其中强化坏路2000km,平坦公路6000km,高速路
+      2000km,工况行驶5000km(工况按照GB/T19750)。
+      可靠性行驶试验前的动力性能试验里程,以及各试验间的行驶里程等可计入可靠性试验里程。
+      4.9.2 故障
+      整个可靠性试验过程中,整车控制器及总线系统、动力蓄电池及管理系统、电机及电机控制器、车载
+      充电系统(如果有)等系统和设备不应出现危及人身安全、引起主要总成报废、对周围环境造成严重危害
+      2GB/T28382—2012
+      
+      [相关度:0.73] 来源:(EU) No 134 2014 欧盟L类车型排放及能耗标准（WMTC）.pdf 第424页
+      02014R0134 — EN — 26.12.2023 — 003.001 — 424  
+      Appendix 3  
+      Requirements concerning the methods for measuring the maximum torque 
+      and maximum continuous rated power of a pure electric propulsion type  
+      1. Requirements  
+      1.1. L-category vehicles equipped with a pure electric propulsi on shall meet all 
+      the relevant requirements with regard to the measurements of th e maximum 
+      torque and the maximum thirty minute power of ele
+      ... (内容已截断)",
+    "tool_call_id": "call_8c04070149c84a9d881d1894"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "id": "call_c911c5e80ee946bba454269b",
+        "type": "function",
+        "function": {
+          "name": "search_pe_rules",
+          "arguments": "{\"query\": \"纯电动汽车动力性 计算公式 阻力公式 动力平衡\"}"
+        }
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "content": "电驱平均效率预估(经验数据)
+      描述: 电驱搭载到某车辆后，在进行某特定驾驶循环行驶的过程中，电驱动系统（包括电机、控制器和减速器在内）表现出来的平均效率。可以按照电驱工作在驱动模式还是能量回收模式，进一步分解为“电驱驱动平均效率”和“电驱回收平均效率”
+      公式: Mot_Eff=(Mot_Div_Eff+Mot_Reg_Eff)/2
+      其中：
+      Mot_Eff 为电驱平均效率，单位1
+      Mot_Div_Eff 为电驱驱动平均效率，单位1；对于永磁同步电驱，取值范围为 0.86-0.93。
+      Mot_Reg_Eff 为电驱回收平均效率，单位1；一般略＜Mot_Div_Eff；对于永磁同步电驱，取值范围为 0.84-0.93。
+      来源: 开发经验
+      
+      整备质量预估(经验数据)
+      描述: 1.本评估方法，用于在项目最初阶段，进行整备质量的初步估算。
+      2.基本的评估方式为，根据轴距（mm）、电池电量（kwh）和是否为四驱三个因素，粗略的评估整备质量的合理值；
+      3.轴距系数代号 k_wb，单位kg/mm，物理意义为单位轴距对应的整备质量。根据车身形式（sdean或者SUV）和动力形式（纯电/混动）的差异取不同的系数。
+      4.电量系数代号 k_eng，单位kg/kwh，物理一以为单位电量对应的整备质量。根据动力形式（纯电/混动）的差异取不同的系数。
+      5.驱动形式常数代号 delta_drv，单位kg，物理意义为相对于两驱系统，四驱系统的质量增加量，两驱系统 delta_drv=0kg ；四驱系统 delta_drv=90kg 。
+      公式: curb_mass=wb*k_wb+eng*k_eng+delta_drv
+      其中：
+      curb_mass 为整备质量，单位kg
+      wb 为轴距，单位mm
+      k_wb 为轴距系数，单位kg/mm；sedan纯电车型 k_wb=0.485；sedan混动/增程车型  k_wb=0.535
+      eng 为电池标称电量，单位kwh
+      k_eng 为电量系数，单位kg/kwh；纯电车型 k_eng=6.2 ；混动/增程车型  k_eng=7.1
+      来源: 开发经验
+      
+      电驱轮端峰值扭矩(经验数据)
+      描述: 经过减速器的作用后，电驱系统能输出的最大扭矩，决定车辆的加速性能
+      公式: 对于主流的新能源车型，EDU_tmax≈4000-5500 Nm
+      
+      机械制动能耗比例预估(经验数据)
+      描述: 1.“机械制动能耗比例”物理意义为，机械制动系统消耗掉的能量和能量回收、机械制动消耗的总制动能量的比值。它用于描述车辆对应某个驾驶循环的能量回收系统的效率，值越接近于0，说明能量回收系统效率越高。对于没有能量回收功能的车辆，机械制动能耗比例=1。
+      2.“机械制动能耗比例”主要受能量回收形式的影响。
+      3.串联能量回收系统，指能量回收系统和机械制动系统解耦，可以优先进行能量回收的系统，是目前的主流方式。
+      4.并联能量回收系统，指能量回收系统和机械制动系统无法解耦，驾驶员踩下制动踏板后，两个系统同时动作；其对原制动系统的改造规模小、成本低，一般应用在售价<5万RMB或者早期的油改电车型；其能量回收效果较差。
+      公式: 1.对于纯电动车型，一般应用CLTC循环：串联能量回收系统 M_B_Energy≈0.02-0.05；并联能量回收系统 M_B_Energy≈0.1-0.2。
+      2.对于增程或者混动车型，一般应用WLTC循环：串联能量回收系统 M_B_Energy≈0.03-0.06；并联能量回收系统 M_B_Energy≈0.13-0.23。
+      来源: 开发经验
+      
+      低压功耗(经验数据)
+      描述: 这里的低压功耗，指在经济性测试工况下，低压系统的平均功率。
+      
+      公式: 1.典型电动车低压功耗范围为，110~400w；
+      2.其中智能驾驶系统是重要的变量。对于一般的低价车型（仅有部分辅助驾驶功能）的车型，低压功耗范围为，110-200w；
+      3.对于强智驾系统的车型来说，智驾系统一般会额外产生150-250w的功率。
+      4.对于混动或者增程车型，发动机启动后，额外产生约70-90w功率。
+      来源: 开发经验
+      
+      轮胎滚动半径(计算公式)
+      描述: 车轮动态滚动的等效半径；工程上可以由轮胎规格（如 235/55 R18）计算得到
+      公式: 假设子午线轮胎规格为：\"断面宽度 B （单位mm）\"/\"扁平比 AR （单位%）\" R\"轮辋直径 Dr(单位英寸)\"。例如 235/55 R18 轮胎断面宽度 B=235mm，扁平比 AR=55%，轮辋直径 Dr=18英寸。
+      则，轮胎滚动半径的计算方法为：Rad=0.971*(12.7*Dr+B*AR) 单位mm 
+      例如：235/55 R18 轮胎，滚动半径Rad=0.971*(12.7*18+235*55%)≈347mm
+      
+      电驱轮端峰值转速(经验数据)
+      描述: 经过减速器的作用后，电驱系统能输出的最大转速，影响车辆的最高车速
+      公式: 对于主流的新能源车型，EDU_spd_max≈1400-1600 rpm
+      
+      轮毂轴承内阻(经验数据)
+      描述: 轴承旋转过程的摩擦扭矩；在动力、经济性计算中，是传动系统内阻的一部分。
+      公式: 对于主流乘用车，Brake_Res≈0.5-1 Nm
+      
+      制动钳总成内阻(经验数据)
+      描述: 制动盘在旋转过程中，由于卡钳和制动盘脱离不完全产生的摩擦扭矩；在动力、经济性计算中，是传动系统内阻的重要组成部分。
+      公式: 对于主流乘用车，Brake_Res≈1-2 Nm
+      
+      电池充放电效率(经验数据)
+      描述: 电池充放电效率，指用在经济性循环测试中电池的放电能量，同用慢充（一般＜1/3C充电电流）进行的电池充电能量的比值，单位为1。用于描述电池在经济性测试工况下，电池的充/放电效率。
+      公式: 锂离子电池的充放电效率一般取值范围为0.92-0.97。
+      来源: 开发经验
+      ",
+    "tool_call_id": "call_c911c5e80ee946bba454269b"
+  },
+  {
+    "role": "assistant",
+    "content": null,
+    "tool_calls": [
+      {
+        "id": "call_24141c17edfd4390998c8a1a",
+        "type": "function",
+        "function": {
+          "name": "search_pe_knowledge",
+          "arguments": "{\"query\": \"纯电动汽车动力性概念公式 动力平衡方程 阻力计算\"}"
+        }
+      }
+    ]
+  },
+  {
+    "role": "tool",
+    "content": "[相关度:0.78] 来源:GB 18352.6-2016 轻型汽车污染物排放限值及测量方法（中国第六阶段).pdf 第95页
+      91 
+       符号  单位  描述  
+       aero 
+       N 空气阻力  
+       f 
+       N 前轴阻力（包括驱动系统）  
+       grav 
+       N 重力阻力  
+       mech  
+       N 机械阻力  
+       r 
+       N 后轴阻力（包括 驱动系统 ） 
+       tyre 
+       N 轮胎滚动阻力  
+       (dv/dt)  m/s2 加速度  
+      (dh/ds)  - 车辆前进方向试验道路坡度的正弦函数  
+      g m/s2 万有引力常数  
+      mav kg 道路载荷确定试验前后车辆质量的算术平均质量  
+      me kg 包括旋转部件 在内的试验车 等效质量  
+      ρ 
+       kg/m3 空气密度  
+      t 
+       s 时间  
+      T 
+       K 温度  
+      v 
+       km/h  车速  
+      vr 
+       km/h  相对风速  
+      Y degrees  相对于车行 驶方向的表面风速的偏离角  
+       
+      CC.4.3.2.5.1  通用形式  
+      通用运动方程如下：  
+      me(dv
+      dt)= mech+ aero+ grav 
+      式中： 
+       mech= tyre+ f+ r 
+       aero=(1
+      2)ρCD(Y)Afvr2 
+       grav=m×g×(dh
+      ds) 
+      如果整个试验路段的坡度小于等于 0.1%，可以将 Dgrav设定为 0。 
+      CC.4.3.2.5.2  机械阻力模拟  
+      机械阻力分别包括轮胎阻力 Dtyre，前后轴的摩擦损失（包括变速箱损失） Df和Dr。见
+      下列公式 : 
+       mech=Am+ mv+Cmv2 
+      式中：  
+      Am 、  m 和Cm — 可以用最小二乘法通过对试验数据进行计算。  
+      这些常数代表了动力系统和轮胎阻力的共同影响。
+      
+      [相关度:0.72] 来源:GBT18385-2024 纯电动汽车动力性能试验方法.pdf 第5页
+      纯电动汽车  动力性能  试验方法
+      1 范围
+      本文件描述了纯电动汽车动力性能的试验方法 。
+      本文件适用于 M类和N类纯电动汽车 。
+      2 规范性引用文件
+      下列文件中的内容通过文中的规范性引用而构成本文件必不可少的条款 。其中,注日期的引用文
+      件,仅该日期对应的版本适用于本文件 ;不注日期的引用文件 ,其最新版本 (包括所有的修改单 )适用于
+      本文件。
+      G B/T3 7 3 0. 1 汽车、挂车及汽车列车的术语和定义  第1部分:类型
+      G B/T3 7 3 0. 2 道路车辆  质量 词汇和代码
+      G B/T8 1 7 0 数值修约规则与极限数值的表示和判定
+      G B/T1 2 4 2 8 客车装载质量计算方法
+      G B/T1 2 5 3 4 汽车道路试验方法通则
+      G B/T1 2 5 4 5. 1 汽车燃料消耗量试验方法  第1部分:乘用车燃料消耗量试验方法
+      G B1 8 3 5 2. 6 2 0 1 6 轻型汽车污染物排放限值及测量方法 (中国第六阶段 )
+      G B/T1 9 5 9 6 2 0 1 7 电动汽车术语
+      G B/T2 7 8 4 0 2 0 2 1 重型商用车辆燃料消耗量测量方法
+      3 术语和定义
+      G B/T1 9 5 9 6 2 0 1 7 、G B/T3 7 3 0. 1 和G B/T3 7 3 0. 2 界定的以及下列术语和定义适用于本文件 。
+      3.1
+      可充电储能系统  r e c h a rge a b l ee l e c t r i c a l e n e r g ys t o r agesys t e m;R E E S S
+      可充电的且可提供电能的能量储存系统 。
+      [来源:G B1 8 3 8 4 2 0 2 0 ,3. 1]
+      3.2
+      荷电状态  s t age - o f - c h a r ge;S O C
+      当前蓄电池中按照规定放电条件可以释放的容量占可用容量的百分比 。
+      [来源:G B/T1 9 5 9 6 2 0 1 7 ,3. 3. 3. 2. 5 ]
+      3.3
+      3 0m i n最高车速  m a x i m u mt h i r t y- m i n u t e ss pe e d
+      纯电动汽车能持续行驶 3 0m i n以上的最高平均车速 。
+      [来源:G B/T1 9 5 9 6 2 0 1 7 ,3. 1. 3. 1. 7 ,有修改]
+      3.4
+      最高车速  m a x i m u ms pe e d
+      按规定的试验方法 ,纯电动汽车能保持的最高稳定平均速度 。G B/T1 8 3 8 5—2 0 2 4
+      
+      [相关度:0.71] 来源:基于中国工况的纯电动乘用车续驶里程评价方法研究.pdf 第8页
+      汽 车 工 程 2021年（第43卷）第5期［4］王吉猛.纯电动汽车驱动系统参数设计及优化 ［D］.长春：吉林大学，2019.WANGJM.Designandoptimizationofdrivingsystemforbatteryelectricvehicle ［D］.Changchun ：JilinUniversity ，2019.［5］邱先文.纯电动汽车技术状况及发展趋势研究 ［J］.小型内燃机与车辆技术 ，2019，48（6） ：74-79.QIUXW.Studyontechnicalstatusanddevelopmenttrendofbat ⁃tery electric vehicle ［J］.Small Internal Combustion Engine andVehicleTechnique ，2019，48（6） ：74-79.［6］WAGERG，MCHENRYM ，WHALEJ ，etal.Testingenergyef ⁃ficiency and driving range of electric vehicles in relation to gearselection［J］.RenewableEnergy ，2014，62：303-312.［7］WAGERG，WHALEJ ，BRÄUNLT.Drivingelectricvehiclesathighwayspeeds ：theeffectofhigherdrivingspeedsonenergycon ⁃sumptionanddrivingrangeforelectricvehiclesinAustralia ［J］.RenewableandSustainableEnergyReviews ，2016，63：158-165.［8］BIJ，WANGYX ，SAIQY，etal.Estimatingremainingdrivingrangeofbatteryelectricvehiclesbasedonreal⁃worlddata ：acasestudyofBeijing ，China［J］.Energy，2019，169：833-843.［9］陈燎，杨帆，盘朝奉.基于电池能量状态和车辆能耗的电动汽车续驶里程估算 ［J］.汽车工程学报 ，2017，7（2） ：113-122.CHENL，YANGF，PANCF.Adrivingrangeestimationmodelforelectricvehiclesbasedonbatteryenergystateandvehicleen ⁃ergy consumption ［J］.Chinese Journal of Automotive Engineer ⁃ing，2017，7（2） ：113-122.［10］DAZIANOR.Conditional⁃logitBayesestimatorsforconsumerval ⁃uationofelectricvehicledrivingrange ［J］.ResourceandEnergyEconomics ，2013，35（3）：429-450.［11］孙志诚，周博雅，戴天禄，等.电动汽车续航里程估计准确度评价［J］.科学技术与工程 ，2019，19（32） ：344-350.SUNZC，ZHOUBY ，DAITL，etal.Evaluationmethodforesti ⁃mationaccuracyofbetteryetectricvehiclecruisingrange ［J］.Sci⁃enceTechnologyandEngineering ，2019，19（32） ：344-350.［12］中华人民共和国国家质量监督检验检疫总局 ，中国国家标准化管理委员会 .电动汽车能量消耗率和续驶里程试验方法 ：GB/T18386—2017［S］.北京：中国标准出版社 ，2017.General Administration of Quality Supervision ，Inspection andQuarantine of the People 􀆳s Republic of China ，StandardizationAdministrationofthePeople 􀆳sRepublicofChina .Electricvehicleenergy consumption and range test procedure ：GB/T18386—2017［S］.Beijing：ChinaStandardPress ，2017.［13］中华人民共和国国家质量监督检验检疫总局 ，中国国家标准
+      
+      [相关度:0.71] 来源:基于中国工况的纯电动乘用车续驶里程评价方法研究.pdf 第8页
+      化管理委员会 .电动汽车动力性能 试验方法 ：GB/T18385—2005［S］.北京：中国标准出版社 ，2005.General Administration of Quality Supervision ，Inspection andQuarantine of the People 􀆳s Republic of China ，StandardizationAdministrationofthePeople 􀆳sRepublicofChina .Electricvehiclepower performance test method ：GB/T18385—2005［S］.Bei⁃jing：ChinaStandardPress ，2005.［14］Electric road vehicles⁃reference energy consumption and range⁃testproceduresforpassengercarsandlightcommercialvehicles ：ISO8714：2002［S/OL］.［2002-11］.https：//www.iso.org/stan⁃dard/34087.html？browse=tc.［15］Uniformprovisionsconcerningtheapprovalofpassengercarspow ⁃eredbyaninternalcombustionengineonly ，orpoweredbyahy ⁃brid electric power train with regard to the measurement of theemissionofcarbondioxideandfuelconsumptionand/orthemea ⁃surementofelectricenergyconsumptionandelectricrange ，andof categories M1and N1vehicles powered by an electric powertrainonlywithregardtothemeasurementofelectricenergycon ⁃sumption and electric range :UN ECE R101：2013［S/OL］.［2013-4］.https：//unece.org/transport/vehicle⁃regulations⁃wp 29/standards/addenda⁃ 1958⁃agreement⁃regulations- 101-120.［16］中华人民共和国国家市场监督管理总局 ，中华人民共和国国家标准化管理委员会 .中国汽车行驶工况第 1部分：轻型汽车：GB/T38146.1—2019［S］.北京：中国标准出版社 ，2019.StateAdministrationforMarketRegulationofthePeople 􀆳sRepub⁃licofChina ，StandardizationAdministrationofthePeople 􀆳sRe⁃publicofChina .Chinaautomotivetestcycle⁃part 1：light⁃dutyve⁃hicles：GB/T38146.1—2019［S］.Beijing：ChinaStandardPress ，2019.［17］Global technical regulation on worldwide harmonized light vehi ⁃cles test procedures （WLTP）:UN GTR15［S/OL］.［2019-12］.https：//wiki.unece.org/display/trans/Latest+GTR+ 15.［18］李礼夫，韦毅，龚定旺，等.纯电动汽车动力电池续驶里程与行驶工况分析 ［J］.机械设计与制造 ，2018（11） ：139-142.LI L F，WEI Y，GONG D W ，et al.Research on the effects ofdrivingcycleondrivingrangeofpowerbatteryofpureelectricve ⁃hicle［J］.MachineryDesign&Manufacture ，2018（11） ：139-142.［19］解难，胡月昆，杨帆，等.环境温度对电动汽车续驶里程影响的试验研究 ［J］.重庆理工大学学报 （自然科学版 ） ，2018，32（6） ：21-25.XIEN，HUYK，YANGF，etal.Researchontheinfluenceof
+      
+      [相关度:0.69] 来源:GBT18385-2024 纯电动汽车动力性能试验方法.pdf 第1页
+      ICS43.120
+      CCST47
+      中华人民共和国国家标准
+      GB/T18385—2024
+      代替GB/T18385—2005
+      纯电动汽车 动力性能 试验方法
+      Batteryelectricvehicles—Powerperformance—Testmethod
+      2024-08-23发布 2025-03-01实施
+      国家市场监督管理总局
+      国家标准化管理委员会发布
+      
+      [相关度:0.68] 来源:(EU) No 134 2014 欧盟L类车型排放及能耗标准（WMTC）.pdf 第41页
+      02014R0134 — EN — 26.12.2023 — 003.001 — 41  5.2.2.2.4. Calculation of power-absorption unit force  The force F  pau (v 0 ) to be absorbed by the chassis dynamometer at the reference speed v  0 is calculated by subtracting F  f(v0) from the target running resistance force F  * (v 0 ) as shown in the following equation:  Equation 2-19:  F pau ðv 0 Þ ¼ F ä ðv 0 Þ Ä F f ðv 0 Þ 5.2.2.2.5. Chassis dynamometer setting  Depending on its type, the chassis dynamometer shall be set by one of the methods described in points 5.2.2.2.5.1. to 5.2.2.2.5.4. The chosen setting shall be applied to the pollutant and CO  2 emission measurements as well as for the energy efficiency measurements (fuel /energy consumption and electric range) laid down in Annex VII.  5.2.2.2.5.1. Chassis dynamometer with polygonal function  In the case of a chassis dynamometer with polygonal function, in which the absorption characteristics are determined by load values at several speed points, at least three specified speeds , including the reference speed, shall be chosen as the setting points. At each setting point, the chassis dynamometer shall be set to the value Fpau (vj) obtained in point 5.2.2.2.4.  5.2.2.2.5.2. Chassis dynamometer with coefficient control  In the case of a chassis dynamometer with coefficient control, in which the absorption characteristics are determined by given  coefficients of a polynomial function, the value of Fpau (vj) a t each specified speed shall be calculated by the procedure in point 5.2.2.2.  Assuming the load characteristics to be:  Equation 2-20:  F pau ðvÞ ¼ a Ü v 2 þ b Ü v þ c where:  the coefficients a, b and c shall be determined by the poly­nomial regression method.  The chassis dynamometer shall be set to the coefficients a, b and c obtained by the polynomial regression method.  5.2.2.2.5.3. Chassis dynamometer with F  * polygonal digital setter  In the case of a chassis dynamometer with a polygonal digital
+      
+      [相关度:0.68] 来源:GBT 27840-2021 重型商用车辆燃料消耗量测量方法.pdf 第21页
+      Δ
+      狏
+      ———
+      与车速
+      狏
+      的速度偏差
+      ，
+      单位为千米每小时
+      （
+      ｋｍ
+      ／
+      ｈ
+      ）；
+      犜
+      ———
+      狀
+      次试验汽车从
+      狏
+      ＋
+      Δ
+      狏
+      减速到
+      狏
+      －
+      Δ
+      狏
+      的平均耗用时间
+      ，
+      单位为秒
+      （
+      ｓ
+      ）。
+      犆
+      ．
+      ２
+      ．
+      １
+      ．
+      ２
+      ．
+      ３
+      　
+      按公式
+      （
+      Ｃ．３
+      ）
+      计算道路等速功率
+      犘
+      ：
+      犘
+      ＝
+      犕
+      ×
+      狏
+      ×
+      Δ
+      狏
+      ３
+      ．
+      ６
+      ×
+      ３
+      ．
+      ６
+      ×
+      ５００
+      犜
+      …………………………（
+      Ｃ．３
+      ）
+      　　
+      式中
+      ：
+      犘
+      ———
+      道路等速功率
+      ，
+      单位为千瓦
+      （
+      ｋＷ
+      ）；
+      犕
+      ———
+      最大设计总质量
+      ，
+      单位为千克
+      （
+      ｋｇ
+      ）；
+      狏
+      ———
+      车速
+      ，
+      单位为千米每小时
+      （
+      ｋｍ
+      ／
+      ｈ
+      ）；
+      Δ
+      狏
+      ———
+      与车速
+      狏
+      的速度偏差
+      ，
+      单位为千米每小时
+      （
+      ｋｍ
+      ／
+      ｈ
+      ）；
+      犜
+      ———
+      狀
+      次试验汽车从
+      狏
+      ＋
+      Δ
+      狏
+      减速到
+      狏
+      －
+      Δ
+      狏
+      的平均耗用时间
+      ，
+      单位为秒
+      （
+      ｓ
+      ）。
+      犆
+      ．
+      ２
+      ．
+      １
+      ．
+      ２
+      ．
+      ４
+      　
+      道路上测定的阻力
+      犉
+      ｔ
+      和功率
+      犘
+      ｔ
+      应按公式
+      （
+      Ｃ．４
+      ）
+      和公式
+      （
+      Ｃ．５
+      ）
+      校正至基准状态下的阻力
+      犉
+      ｃ
+      和
+      功率
+      犘
+      ｃ
+      ：
+      犉
+      ｃ
+      ＝
+      犓
+      ×
+      犉
+      ｔ
+      …………………………（
+      Ｃ．４
+      ）
+      犘
+      ｃ
+      ＝
+      犓
+      ×
+      犘
+      ｔ
+      …………………………（
+      Ｃ．５
+      ）
+      　　
+      式中
+      ：
+      犉
+      ｃ
+      ———
+      基准状态下的阻力
+      ，
+      单位为牛顿
+      （
+      Ｎ
+      ）；
+      犓
+      ———
+      道路上测定参数的校正系数
+      ，
+      按照公式
+      （
+      Ｃ．６
+      ）
+      计算
+      ；
+      犉
+      ｔ
+      ———
+      道路上测定的阻力
+      ，
+      单位为牛顿
+      （
+      Ｎ
+      ）；
+      犘
+      ｃ
+      ———
+      基准状态下的功率
+      ，
+      单位为千瓦
+      （
+      ｋＷ
+      ）；
+      犘
+      ｔ
+      ———
+      道路上测定的功率
+      ，
+      单位为千瓦
+      （
+      ｋＷ
+      ）。
+      犓
+      ＝
+      犚
+      Ｒ
+      犚
+      Ｔ
+      ×
+      ［
+      １
+      ＋
+      犓
+      Ｒ
+      ×
+      （
+      狋
+      －
+      狋
+      ０
+      ）］
+      ＋
+      犚
+      Ｗ
+      犚
+      Ｔ
+      ×
+      犱
+      ０
+      犱
+      …………………………（
+      Ｃ．６
+      ）
+      　　
+      式中
+      ：
+      犚
+      Ｒ
+      ———
+      速度
+      狏
+      时的滚动阻力
+      ，
+      按公式
+      （
+      Ｃ．７
+      ）
+      计算
+      ；
+      如车辆生产企业提供了该类数据
+      ，
+      则采用车辆生
+      产企业的数据
+      ，
+      单位为牛顿
+      （
+      Ｎ
+      ）；
+      犚
+      Ｔ
+      ———
+      总运行阻力
+      ，
+      速度
+      狏
+      时的滚动阻力
+      犚
+      Ｒ
+      与空气阻力
+      犚
+      Ｗ
+      之和
+      ，
+      单位为牛顿
+      （
+      Ｎ
+      ）；
+      犓
+      Ｒ
+      ———
+      滚动阻力的温度校正系数
+      ，
+      取
+      ６×１０
+      －３
+      ／
+      ℃
+      ，
+      或由车辆生产企业提供并经检测机构认可给定
+      的校正系数
+      ；
+      狋
+      ———
+      道路试验时大气温度
+      ，
+      单位为摄氏度
+      （
+      ℃
+      ）；
+      狋
+      ０
+      ———
+      基准大气温度
+      ，
+      ２０℃
+      ；
+      犚
+      Ｗ
+      ———
+      速度
+      狏
+      时的空气阻力
+      ，
+      按公式
+      （
+      Ｃ．８
+      ）
+      确定
+      ，
+      单位为牛顿
+      （
+      Ｎ
+      ）；
+      犱
+      ０
+      ———
+      基准状态
+      （
+      ２０℃
+      ，
+      １００ｋＰａ
+      ）
+      下空气密度
+      ，
+      犱
+      ０
+      ＝１．１８９ｋｇ
+      ／
+      ｍ
+      ３
+      ；
+      犱
+      ———
+      试验条件下空气密度
+      ，
+      按公式
+      （
+      Ｃ．９
+      ）
+      确定
+      ，
+      单位为千克每立方米
+      （
+      ｋｇ
+      ／
+      ｍ
+      ３
+      ）。
+      犚
+      Ｒ
+      ＝
+      犕
+      ×
+      犵
+      ×
+      犳
+      …………………………（
+      Ｃ．７
+      ）
+      　　
+      式中
+      ：
+      犕
+      ———
+      最大设计总质量
+      ，
+      单位为千克
+      （
+      ｋｇ
+      ）；
+      犵
+      ———
+      重力加速度
+      ，
+      犵
+      ＝９．８ｍ
+      ／
+      ｓ
+      ２
+      ；
+      犳
+      ———
+      滚动阻力系数
+      ，
+      按表
+      Ｃ．３
+      确定
+      。
+      ７１
+      犌犅
+      ／
+      犜
+      ２７８４０
+      —
+      ２０２１
+      
+      [相关度:0.68] 来源:GB 18352.6-2016 轻型汽车污染物排放限值及测量方法（中国第六阶段).pdf 第81页
+      77 
+       式中：  
+       Prequi red,j —j秒处的需求功率， kW； 
+       aj —j秒处的加速度， m/s²，aj=(vj+1−vj)
+      3.6×(tj+1−tj)； 
+       TM — 车辆的测试质量， kg； 
+       Kr —动力传动系统在加速过程中克服惯性阻力的因子，为 1.03。 
+      CB.3.2  确定发动机转速  
+      当车速  vj< 1km/h时，车辆处于静止状态，发动机转速为 nidle，应选择空档，离合器接
+      合。但车辆在从静止到加速前 1秒的时间内，应选择 1档，离合器分离。   
+      对循环曲线轨迹上 vj≥1km/h的速度点，档位为 i，i=1~ng max，发动机转速按下式计算：  
+                    
+      ... (内容已截断)",
+    "tool_call_id": "call_24141c17edfd4390998c8a1a"
+  },
+  {
+    "role": "assistant",
+    "content": "根据检索结果，我为您整理了纯电动汽车动力性相关的法规标准和核心概念公式：
+      
+      ## 一、主要法规标准
+      
+      ### 中国国家标准
+      - **GB/T 18385—2024**《纯电动汽车 动力性能 试验方法》（2025年3月1日实施，替代2005版）
+      - **GB/T 28382—2012**《纯电动乘用车 技术条件》
+      - **GB/T 18386.1—2021**《电动汽车能量消耗量和续驶里程试验方法 第1部分：轻型汽车》
+      
+      ### 国际标准
+      - **ISO 8714:2002**《电动道路车辆—参考能耗和续驶里程—乘用车和轻型商用车的试验程序》
+      - **UN ECE R101:2013**《关于就二氧化碳排放量和燃料消耗量的测量等事项批准仅由内燃机驱动或由混合电力传动系统驱动的乘用车的统一规定》
+      - **UN GTR 15**《全球统一的轻型车辆测试程序（WLTP）》
+      
+      ## 二、动力性核心指标定义
+      
+      根据GB/T 18385—2024，纯电动汽车动力性包含以下关键指标：
+      
+      | 指标 | 定义 |
+      |------|------|
+      | **最高车速** | 按规定试验方法，纯电动汽车能保持的最高稳定平均速度 |
+      | **30min最高车速** | 纯电动汽车能持续行驶30min以上的最高平均车速 |
+      | **加速能力** | 包括原地起步加速能力和超越加速能力 |
+      | **最大爬坡度** | 车辆能够克服的最大坡度 |
+      | **坡道起步能力** | 满载车辆在规定坡度上能够起步行驶的能力 |
+      
+      ## 三、核心概念公式
+      
+      ### 1. 车辆动力平衡方程
+      根据GB 18352.6-2016，车辆运动的基本方程为：
+      
+      $$m_e \\frac{dv}{dt} = F_{mech} + F_{aero} + F_{grav}$$
+      
+      其中：
+      - $m_e$：试验车等效质量（kg）
+      - $\\frac{dv}{dt}$：加速度（m/s²）
+      
+      ### 2. 各项阻力计算
+      
+      **机械阻力：**
+      $$F_{mech} = F_{tyre} + F_f + F_r = A_m + B_m v + C_m v^2$$
+      
+      **空气阻力：**
+      $$F_{aero} = \\frac{1}{2} \\rho C_D A_f v_r^2$$
+      
+      **重力阻力（坡道阻力）：**
+      $$F_{grav} = m g \\frac{dh}{ds}$$
+      
+      ### 3. 关键参数说明
+      
+      | 符号 | 单位 | 物理意义 |
+      |------|------|----------|
+      | $\\rho$ | kg/m³ | 空气密度 |
+      | $C_D$ | - | 风阻系数 |
+      | $A_f$ | m² | 迎风面积 |
+      | $v_r$ | km/h | 相对风速 |
+      | $g$ | m/s² | 重力加速度（9.8） |
+      | $\\frac{dh}{ds}$ | - | 道路坡度正弦值 |
+      
+      ### 4. 技术要求（GB/T 28382—2012）
+      
+      - **30min最高车速**：≥80km/h
+      - **加速性能**：0-50km/h ≤10s，50-80km/h ≤15s  
+      - **爬坡性能**：
+        - 4%坡度爬坡车速 ≥60km/h
+        - 12%坡度爬坡车速 ≥30km/h
+        - 最大爬坡度 ≥20%
+      
+      这些法规和公式构成了纯电动汽车动力性开发和验证的基础框架，为车辆性能设计、仿真分析和试验验证提供了标准化依据。"
+  }
+]

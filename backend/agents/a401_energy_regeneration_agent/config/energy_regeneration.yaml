@@ -1,0 +1,100 @@
+# =============================================================================
+# 能量回收分析 Agent 配置文件（Phase 1：基础框架）
+# =============================================================================
+
+agent_id: "energy_regeneration"
+agent_name: "能量回收分析工程师"
+agent_description: "专注于新能源汽车能量回收（制动能量回收策略、电机回收效率、制动分配、SOC策略）的计算与参数影响分析。"
+
+# Python 模块路径（GenericSSTSWorkflowAgent 是 SSTS 专用配置驱动实现）
+module_path: "snail_avatar.backend.agents.core.agent_base.generic_ssts_workflow_agent"
+
+# =============================================================================
+# SSTS 计算注册配置（与 VTS 的 vts_category/vts_priority 对称）
+# =============================================================================
+ssts_category: "能量回收"
+panel_id: "energy_regen"
+
+# 可选：同时参与 VTS 统一计算（Phase 1 暂不开启）
+# vts_category: ""
+# vts_priority: 50
+
+# =============================================================================
+# SSTS 专属配置
+# =============================================================================
+sandbox_config:
+  # 自动检测项目文件夹（基于 memory_db.file_path 识别同名目录）
+  auto_detect: true
+  # 文件夹加载路径过滤（glob 模式，空列表表示加载全部）
+  load_paths:
+    - "Motor/**"
+    - "Brake/**"
+    - "Battery/**"
+  # 轴识别规则（沙箱自动从实例文件夹名识别前轴/后轴）
+  axle_rules:
+    front_keywords: ["_F", "Emotor_F", "Motor_F", "Fmotor", "前轴"]
+    rear_keywords:  ["_R", "Emotor_R", "Motor_R", "Rmotor", "后轴"]
+
+# =============================================================================
+# 路由关键词
+# =============================================================================
+routing_keywords:
+  - "能量回收"
+  - "回收"
+  - "制动能量"
+  - "回收策略"
+  - "电机回收"
+  - "制动力分配"
+  - "制动回收"
+  - "regen"
+  - "recover"
+
+# Agent 昵称：用于路由器识别用户对 Agent 的显式指定（如"能量回收专家来"）
+agent_nicknames:
+  - "能量回收专家"
+  - "回收专家"
+  - "regen专家"
+  - "制动回收专家"
+
+# =============================================================================
+# Agent 运行时配置
+# =============================================================================
+agent_runtime_config:
+  max_tool_rounds: 12
+  needs_memory_db: true
+
+# =============================================================================
+# UI 面板配置
+# =============================================================================
+ui_config:
+  panel_name: "能量回收"
+  panel_icon: "icons/energy_regeneration.png"
+  calculation_type: "energy_regeneration"
+  config_selector: "能源形式"
+  config_key: "calculation_type"
+  selector_key_in_config: "energy_type"
+
+# =============================================================================
+# 工作流构建配置（GenericSSTSWorkflowAgent 会传给 build_workflow_from_yaml）
+# =============================================================================
+workflow_config:
+  nodes_pkg_path: "snail_avatar.backend.agents.a401_energy_regeneration_agent.nodes"
+  vehicle_info_field: "能源形式"
+  vehicle_info_default: "ev"
+  yaml_pattern: "workflow_*.yaml"
+  yaml_match_fn: null                  # 稍后添加 workflow YAML 时再实现
+  default_yaml_filename: "workflow_energy_regen.yaml"
+  node_id_from_yaml_fn: null           # 默认函数
+  node_id_from_topology_fn: null       # 默认函数
+  use_yaml_position: true
+
+# =============================================================================
+# 工具函数配置（Phase 1 占位，实际工具定义待后续业务逻辑编写时补充）
+# =============================================================================
+tools:
+  - type: "run_full_calculation"
+    name: "run_full_energy_regen_calculation"
+    description: "执行完整的能量回收计算流程（所有节点）"
+  - type: "semantic_overview"
+    name: "semantic_energy_regen_overview"
+    description: "获取能量回收计算结果的文字概览"

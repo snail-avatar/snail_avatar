@@ -1,0 +1,151 @@
+# =============================================================================
+# EVEnergyConsumptionHtem 节点说明文件
+# =============================================================================
+node_type_id: "EVEnergyConsumptionHtem"
+node_display_name: "30℃工况能耗计算"
+node_category: "能量综合【高温修正】"
+node_description: "最小物理过程5A：高温工况整车能耗综合计算。在标准工况基础上增加热管理系统能耗，计算高温工况下的能耗和里程衰减率。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  # 从 node_5 获取标准工况结果（VTS读取）
+  e_dc:
+    name: "标准工况车端能耗"
+    unit: "kWh/100km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "标准工况下的电池端能耗"
+
+  e_ac:
+    name: "标准工况网端能耗"
+    unit: "kWh/100km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "标准工况下的充电网端能耗"
+
+  mile_ev:
+    name: "标准工况纯电续驶里程"
+    unit: "km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "标准工况下的纯电续驶里程"
+
+  # 从 node_1 获取循环参数
+  cycle_distance:
+    name: "循环总里程"
+    unit: "km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "驾驶循环的总行驶距离（单位：公里）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "cycle_distance"
+
+  cycle_time:
+    name: "循环总时长"
+    unit: "s"
+    type: "float"
+    schema_type: "intermediate"
+    description: "驾驶循环的总时间（单位：秒）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "cycle_time"
+
+  # SSTS参数
+  thermal_power_30:
+    name: "高温@30℃平均功率"
+    unit: "W"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "高温环境下热管理系统平均功率消耗"
+    default: 1000.0
+
+  bat_eff:
+    name: "电池效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "电池充放电效率"
+    default: 0.98
+
+  obc_eff:
+    name: "OBC效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "车载充电机效率"
+    default: 0.95
+
+  charge_lp:
+    name: "充电低压功率"
+    unit: "W"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "充电低压系统功率消耗"
+    default: 100.0
+
+  charge_dcdc_eff:
+    name: "充电DC/DC效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "充电DC/DC转换器效率"
+    default: 0.9
+
+  charge_time:
+    name: "充电时间"
+    unit: "h"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "充电时间"
+    default: 8
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+  # VTS结果输出（直接输出到 MemoryCore）
+  mile_decay_30:
+    name: "高温工况@30℃里程衰减率"
+    unit: "%"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "高温工况相对于标准工况的里程衰减百分比"
+ 
+  # 结果输出（intermediate）
+  e_dc_htem:
+    name: "高温工况车端能耗"
+    unit: "kWh/100km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "高温工况下的电池端能耗"
+
+  e_ac_htem:
+    name: "高温工况网端能耗"
+    unit: "kWh/100km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "高温工况下的充电网端能耗"
+
+  mile_ev_htem:
+    name: "高温工况续驶里程"
+    unit: "km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "高温工况下的纯电续驶里程"
+ 
+  # 能耗统计特征
+  thermal_energy_stats:
+    name: "高温能耗统计特征"
+    unit: ""
+    type: "dict"
+    schema_type: "intermediate"
+    description: "包含热管理能耗、高温工况与标准工况对比等统计信息"
+
+  # 语义求解器输出
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "高温工况能耗分析的自然语言摘要"

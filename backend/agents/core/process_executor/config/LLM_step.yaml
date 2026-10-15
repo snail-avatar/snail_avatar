@@ -1,0 +1,55 @@
+﻿# =============================================================================
+# LLM Step 全局默认配置
+# =============================================================================
+# 为所有 ProcessLLMStep 类型的步骤提供统一的 LLM 参数默认值
+# 各 step 的 YAML 配置文件中的 llm_config 可覆盖此处的默认值
+# =============================================================================
+
+# 全局默认 LLM 配置（适用于所有 LLM 步骤）
+defaults:
+  # LLM 基本参数
+  llm_config:
+    model_name: "qwen3.5-plus"
+    max_new_tokens: 6000
+    temperature: 0.3
+    top_p: 0.9
+    presence_penalty: 1.0
+    context_window: 256000
+    # 输出格式由步骤类型自动决定
+    # 阶段1 (函数调用): text
+    # 阶段2 (JSON格式化): json
+
+  # 阶段1 默认配置（函数调用阶段）
+  stage1_enabled: true
+  stage1_llm_config:
+    output_format: "text"
+
+  # 阶段2 默认配置（JSON格式化阶段）
+  stage2_llm_config:
+    output_format: "json"
+
+  # 默认内置函数（public function 名称列表）
+  builtin_functions:
+    - "calculator"
+
+# =============================================================================
+# Step 类型默认行为定义
+# =============================================================================
+# llm:       两阶段 LLM 调用（函数调用 + JSON格式化）
+# agent:     子 Agent 调用 + result_formatter 格式化
+# process:   直接执行型（不经过 LLM 或 Agent，直接操作数据）
+# =============================================================================
+
+step_types:
+  llm:
+    description: "LLM推理型步骤，支持两阶段调用模式"
+    default_stage1: true
+    output_format: "json"
+    
+  agent:
+    description: "子Agent调用型步骤，调用专家或工作流Agent"
+    formatter_enabled: true
+    
+  process:
+    description: "直接执行型步骤，用于数据操作等不需要LLM推理的场景"
+    requires_llm: false

@@ -1,0 +1,4092 @@
+{
+    "增程车型_reevlto": {
+        "base_产品定义_memorycore": [
+            {
+                "名称": "车身形式",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "body_reevlto",
+                "值": "Sedan"
+            },
+            {
+                "名称": "动力形式",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "powertrain_type_reevlto",
+                "值": "增程"
+            },
+            {
+                "名称": "驱动形式",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "drive_type_reevlto",
+                "值": "RWD"
+            },
+            {
+                "名称": "级别",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "class_reevlto",
+                "值": "B"
+            },
+            {
+                "名称": "售价",
+                "单位": "万元",
+                "备注": NaN,
+                "db_key": "price_reevlto",
+                "值": "10~15"
+            },
+            {
+                "名称": "长",
+                "单位": "mm",
+                "备注": NaN,
+                "db_key": "length_reevlto",
+                "值": 4840
+            },
+            {
+                "名称": "宽",
+                "单位": "mm",
+                "备注": NaN,
+                "db_key": "wide_reevlto",
+                "值": 1950
+            },
+            {
+                "名称": "高",
+                "单位": "mm",
+                "备注": NaN,
+                "db_key": "high_reevlto",
+                "值": 1560
+            },
+            {
+                "名称": "轴距",
+                "单位": "mm",
+                "备注": NaN,
+                "db_key": "wheel_base_reevlto",
+                "值": 2930
+            },
+            {
+                "名称": "乘员人数",
+                "单位": "人",
+                "备注": NaN,
+                "db_key": "p_num_reevlto",
+                "值": 5
+            },
+            {
+                "名称": "智能驾驶",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "autonomous_reevlto",
+                "值": "mid"
+            },
+            {
+                "名称": "目标销售区域",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "sale_area_reevlto",
+                "值": "China"
+            },
+            {
+                "名称": "纯电里程",
+                "单位": "km",
+                "备注": NaN,
+                "db_key": "ev_mileage_reevlto",
+                "值": "300~400"
+            },
+            {
+                "名称": "造型风格",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "mould_style_reevlto",
+                "值": "运动"
+            },
+            {
+                "名称": "轮胎规格",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "tyre_size_reevlto",
+                "值": "235/50 R19"
+            },
+            {
+                "名称": "动力性竞争力",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "comp_power_reevlto",
+                "值": "A"
+            },
+            {
+                "名称": "经济性竞争力",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "comp_eco_reevlto",
+                "值": "A"
+            }
+        ],
+        "target_ssts及计算条件_memorycore": {
+            "SSTS": {
+                "整车参数": [
+                    {
+                        "名称": "整备质量",
+                        "单位": "kg",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "mass_curb_result_reevlto",
+                                "值": 1850
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "mass_curb_target_reevlto",
+                                "值": 1850
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "mass_curb_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "造型及外饰（风阻）": [
+                    {
+                        "名称": "造型风阻系数",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "cd_style_result_reevlto",
+                                "值": 0.23
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "cd_style_target_reevlto",
+                                "值": 0.23
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "cd_style_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "冷却风阻系数",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "cd_cool_air_result_reevlto",
+                                "值": 0.015
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "cd_cool_air_target_reevlto",
+                                "值": 0.015
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "cd_cool_air_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "下车体及车轮附件风阻系数",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "cd_under_body_result_reevlto",
+                                "值": 0.035
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "cd_under_body_target_reevlto",
+                                "值": 0.035
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "cd_under_body_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "机械内阻参数": [
+                    {
+                        "名称": "前制动钳总成内阻",
+                        "单位": "Nm",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "f_brake_res_result_reevlto",
+                                "值": 1.5
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "f_brake_res_target_reevlto",
+                                "值": 1.5
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "f_brake_res_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "后制动钳总成内阻",
+                        "单位": "Nm",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "r_brake_res_result_reevlto",
+                                "值": 1.5
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "r_brake_res_target_reevlto",
+                                "值": 1.5
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "r_brake_res_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "前轮毂轴承内阻",
+                        "单位": "Nm",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "f_bearing_res_result_reevlto",
+                                "值": 0.75
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "f_bearing_res_target_reevlto",
+                                "值": 0.75
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "f_bearing_res_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "后轮毂轴承内阻",
+                        "单位": "Nm",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "r_bearing_res_result_reevlto",
+                                "值": 0.75
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "r_bearing_res_target_reevlto",
+                                "值": 0.75
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "r_bearing_res_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "半轴效率",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "axle_eff_result_reevlto",
+                                "值": 0.96
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "axle_eff_target_reevlto",
+                                "值": 0.96
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "axle_eff_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "轮胎参数": [
+                    {
+                        "名称": "轮胎台架滚动阻力系数",
+                        "单位": "‰",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "rr_part_result_reevlto",
+                                "值": 5.5
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "rr_part_target_reevlto",
+                                "值": 5.5
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "rr_part_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "低温环境滚阻增长率@-7℃",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "rr_gain_m7_result_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "rr_gain_m7_target_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "rr_gain_m7_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "低温环境滚阻增长率@-20℃",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "rr_gain_m20_result_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "rr_gain_m20_target_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "rr_gain_m20_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "滚动半径",
+                        "单位": "m",
+                        "达标判据": "=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "rad_result_reevlto",
+                                "值": 0.32
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "rad_target_reevlto",
+                                "值": 0.32
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "rad_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "路面附着系数",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "road_adh_result_reevlto",
+                                "值": 0.85
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "road_adh_target_reevlto",
+                                "值": 0.85
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "road_adh_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "电驱参数": [
+                    {
+                        "名称": "前电驱轮端峰值扭矩",
+                        "单位": "Nm",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_tmax_f_result_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_tmax_f_target_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_tmax_f_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "前电驱峰值功率",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_pmax_f_result_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_pmax_f_target_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_pmax_f_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "前电驱最大持续功率@30min",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_30m_pmax_f_result_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_30m_pmax_f_target_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_30m_pmax_f_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "前电驱轮端峰值转速",
+                        "单位": "rpm",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_spd_max_f_result_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_spd_max_f_target_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_spd_max_f_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "后电驱轮端峰值扭矩",
+                        "单位": "Nm",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_tmax_r_result_reevlto",
+                                "值": 4800
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_tmax_r_target_reevlto",
+                                "值": 4800
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_tmax_r_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "后电驱峰值功率",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_pmax_r_result_reevlto",
+                                "值": 180
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_pmax_r_target_reevlto",
+                                "值": 180
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_pmax_r_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "后电驱最大持续功率@30min",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_30m_pmax_r_result_reevlto",
+                                "值": 90
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_30m_pmax_r_target_reevlto",
+                                "值": 90
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_30m_pmax_r_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "后电驱轮端峰值转速",
+                        "单位": "rpm",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_spd_max_r_result_reevlto",
+                                "值": 1500
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_spd_max_r_target_reevlto",
+                                "值": 1500
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_spd_max_r_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电驱驱动平均效率（经济性）",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "mot_div_eff_result_reevlto",
+                                "值": 0.9
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "mot_div_eff_target_reevlto",
+                                "值": 0.9
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "mot_div_eff_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电驱回收平均效率（经济性）",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "mot_reg_eff_result_reevlto",
+                                "值": 0.88
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "mot_reg_eff_target_reevlto",
+                                "值": 0.88
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "mot_reg_eff_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "从动电驱内阻系数_a（经济性）",
+                        "单位": "N",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "drivenmot_drag_a_result_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "drivenmot_drag_a_target_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "drivenmot_drag_a_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "从动电驱内阻系数_b（经济性）",
+                        "单位": "N/(km/h)",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "drivenmot_drag_b_result_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "drivenmot_drag_b_target_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "drivenmot_drag_b_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "从动电驱内阻系数_c（经济性）",
+                        "单位": "N/(km/h)^2",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "drivenmot_drag_c_result_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "drivenmot_drag_c_target_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "drivenmot_drag_c_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    }
+                ],
+                "电池参数": [
+                    {
+                        "名称": "电池峰值放电功率@10s",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_pmax_result_reevlto",
+                                "值": 200
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_pmax_target_reevlto",
+                                "值": 200
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_pmax_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电池峰值持续放电功率 @300s",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_300s_pmax_result_reevlto",
+                                "值": 150
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_300s_pmax_target_reevlto",
+                                "值": 150
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_300s_pmax_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电池峰值持续放电功率@30min",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_30m_pmax_result_reevlto",
+                                "值": 100
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_30m_pmax_target_reevlto",
+                                "值": 100
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_30m_pmax_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电池标称能量",
+                        "单位": "kWh",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_eng_result_reevlto",
+                                "值": 55
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_eng_target_reevlto",
+                                "值": 55
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_eng_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电池放电深度",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_deepth_result_reevlto",
+                                "值": 0.92
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_deepth_target_reevlto",
+                                "值": 0.92
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_deepth_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电池充放电效率",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_eff_result_reevlto",
+                                "值": 0.95
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_eff_target_reevlto",
+                                "值": 0.95
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_eff_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "增程器参数": [
+                    {
+                        "名称": "增程器发电效率",
+                        "单位": "kwh/L",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "re_eff_result_reevlto",
+                                "值": 2.85
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "re_eff_target_reevlto",
+                                "值": 2.85
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "re_eff_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "增程器峰值发电功率",
+                        "单位": "kw",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "re_pow_result_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "re_pow_target_reevlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "re_pow_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    }
+                ],
+                "油箱参数": [
+                    {
+                        "名称": "油箱容积",
+                        "单位": "L",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "fuel_tank_result_reevlto",
+                                "值": 45
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "fuel_tank_target_reevlto",
+                                "值": 45
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "fuel_tank_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "低压系统参数": [
+                    {
+                        "名称": "纯电模式低压功耗",
+                        "单位": "W",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "ev_lp_result_reevlto",
+                                "值": 160
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "ev_lp_target_reevlto",
+                                "值": 160
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "ev_lp_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "增程模式低压功耗",
+                        "单位": "W",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "reev_lp_result_reevlto",
+                                "值": 230
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "reev_lp_target_reevlto",
+                                "值": 230
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "reev_lp_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "充电工况低压功耗",
+                        "单位": "W",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "charge_lp_result_reevlto",
+                                "值": 160
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "charge_lp_target_reevlto",
+                                "值": 160
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "charge_lp_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "DCDC效率",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "dcdc_eff_result_reevlto",
+                                "值": 0.94
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "dcdc_eff_target_reevlto",
+                                "值": 0.94
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "dcdc_eff_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "充电工况DCDC效率",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "charge_dcdc_eff_result_reevlto",
+                                "值": 0.94
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "charge_dcdc_eff_target_reevlto",
+                                "值": 0.94
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "charge_dcdc_eff_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "能量回收参数": [
+                    {
+                        "名称": "机械制动能耗比例",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "m_b_energy_result_reevlto",
+                                "值": 0.045
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "m_b_energy_target_reevlto",
+                                "值": 0.045
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "m_b_energy_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "充电机参数": [
+                    {
+                        "名称": "充电机效率",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "obc_eff_result_reevlto",
+                                "值": 0.93
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "obc_eff_target_reevlto",
+                                "值": 0.93
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "obc_eff_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ]
+            },
+            "计算条件": {
+                "整车参数": [
+                    {
+                        "名称": "最大载荷质量",
+                        "单位": "kg",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "mass_maxload_result_reevlto",
+                        "值": 425
+                    },
+                    {
+                        "名称": "转动惯量",
+                        "单位": "kgm^2",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "r_in_result_reevlto",
+                        "值": 9.005
+                    },
+                    {
+                        "名称": "轴距",
+                        "单位": "m",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "wheel_base_result_reevlto",
+                        "值": 2.97
+                    },
+                    {
+                        "名称": "质心x坐标",
+                        "单位": "m",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "mass_centroid_x_result_reevlto",
+                        "值": 1.3
+                    },
+                    {
+                        "名称": "质心Z坐标",
+                        "单位": "m",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "mass_centroid_z_result_reevlto",
+                        "值": 0.21
+                    }
+                ],
+                "物理属性": [
+                    {
+                        "名称": "空气密度",
+                        "单位": "kg/m^3",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "dst_result_reevlto",
+                        "值": 1.185
+                    }
+                ],
+                "低压功耗": [
+                    {
+                        "名称": "动力性校核基准低压功率",
+                        "单位": "W",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "power_lp_result_reevlto",
+                        "值": 500
+                    }
+                ],
+                "工况定义": [
+                    {
+                        "名称": "高速爬坡度1",
+                        "单位": "%",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "grade_s1_result_reevlto",
+                        "值": 4
+                    },
+                    {
+                        "名称": "高速爬坡度2",
+                        "单位": "%",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "grade_s2_result_reevlto",
+                        "值": 12
+                    },
+                    {
+                        "名称": "驾驶循环",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": "S",
+                        "db_key": "drive_cycle_result_reevlto",
+                        "值": "WLTC_cycle"
+                    }
+                ],
+                "阻力修正": [
+                    {
+                        "名称": "风阻修正系数",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "cd_gain_result_reevlto",
+                        "值": 1.08
+                    },
+                    {
+                        "名称": "滚阻修正系数",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "rr_gain_result_reevlto",
+                        "值": 1
+                    }
+                ],
+                "电驱": [
+                    {
+                        "名称": "前电驱功率衰减系数",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "edu_pow_gain_f_result_reevlto",
+                        "值": 0.82
+                    },
+                    {
+                        "名称": "后电驱功率衰减系数",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "edu_pow_gain_r_result_reevlto",
+                        "值": 0.82
+                    },
+                    {
+                        "名称": "电驱驱动平均效率（动力性）",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "mot_pow_eff_result_reevlto",
+                        "值": 0.88
+                    }
+                ],
+                "纯电能耗修正": [
+                    {
+                        "名称": "车端能耗修正系数",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "e_gain_result_reevlto",
+                        "值": 1.05
+                    },
+                    {
+                        "名称": "充电时间",
+                        "单位": "h",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "charge_time_result_reevlto",
+                        "值": 8
+                    }
+                ],
+                "加速时间修正": [
+                    {
+                        "名称": "0_50km/h加速时间修正",
+                        "单位": "s",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "acc_0_50_delta_result_reevlto",
+                        "值": 0.4
+                    },
+                    {
+                        "名称": "0_100km/h加速时间修正",
+                        "单位": "s",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "acc_0_100_delta_result_reevlto",
+                        "值": 0.4
+                    },
+                    {
+                        "名称": "50_80km/h加速时间修正",
+                        "单位": "s",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "acc_50_80_delta_result_reevlto",
+                        "值": 0.1
+                    },
+                    {
+                        "名称": "80_120km/h加速时间修正",
+                        "单位": "s",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "acc_80_120_delta_result_reevlto",
+                        "值": 0.1
+                    }
+                ],
+                "最高车速修正": [
+                    {
+                        "名称": "1km最高车速修正",
+                        "单位": "km/h",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "v_max_1km_delta_result_reevlto",
+                        "值": -2
+                    },
+                    {
+                        "名称": "30min最高车速修正",
+                        "单位": "km/h",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "v_max_30min_delta_result_reevlto",
+                        "值": -2
+                    }
+                ],
+                "爬坡能力修正": [
+                    {
+                        "名称": "坡道起步能力修正",
+                        "单位": "%",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "slop_start_delta_result_reevlto",
+                        "值": -2
+                    },
+                    {
+                        "名称": "最大爬坡度计算delta值",
+                        "单位": "%",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "slop_max_delta_result_reevlto",
+                        "值": 5
+                    },
+                    {
+                        "名称": "s_1坡道爬坡车速修正",
+                        "单位": "km/h",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "v_max_s1_delta_result_reevlto",
+                        "值": -2
+                    },
+                    {
+                        "名称": "s_2坡道爬坡车速修正",
+                        "单位": "km/h",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "v_max_s2_delta_result_reevlto",
+                        "值": -2
+                    }
+                ]
+            }
+        },
+        "target_vts_memorycore": {
+            "空气动力学": {
+                "正投影": [
+                    {
+                        "名称": "正投影面积",
+                        "单位": "m2",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "aero_result_reevlto",
+                                "值": 2.56
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "aero_target_reevlto",
+                                "值": 2.56
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "aero_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "气动阻力": [
+                    {
+                        "名称": "风洞风阻系数",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "cd_wt_result_reevlto",
+                                "值": 0.28
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "cd_wt_target_reevlto",
+                                "值": 0.245
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "cd_wt_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    }
+                ],
+                "气动升力": [
+                    {
+                        "名称": "升力系数",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "cl_wt_result_reevlto",
+                                "值": 0.12
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "cl_wt_target_reevlto",
+                                "值": 0.12
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "cl_wt_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ]
+            },
+            "动力性": {
+                "加速时间": [
+                    {
+                        "名称": "0-50km/h",
+                        "单位": "s",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "t_0_50_result_reevlto",
+                                "值": 4.5
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "t_0_50_target_reevlto",
+                                "值": 3.2
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "t_0_50_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "0-100km/h",
+                        "单位": "s",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "t_0_100_result_reevlto",
+                                "值": 8.9
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "t_0_100_target_reevlto",
+                                "值": 7.5
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "t_0_100_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "50-80km/h",
+                        "单位": "s",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "t_50_80_result_reevlto",
+                                "值": 2.6
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "t_50_80_target_reevlto",
+                                "值": 3
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "t_50_80_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "80-120km/h",
+                        "单位": "s",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "t_80_120_result_reevlto",
+                                "值": 4.6
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "t_80_120_target_reevlto",
+                                "值": 5
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "t_80_120_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "最高车速": [
+                    {
+                        "名称": "1km最高车速",
+                        "单位": "km/h",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "v_max_1km_result_reevlto",
+                                "值": 178.95575680000002
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "v_max_1km_target_reevlto",
+                                "值": 165
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "v_max_1km_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "30min最高车速",
+                        "单位": "km/h",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "v_max_30min_result_reevlto",
+                                "值": 178.95575680000002
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "v_max_30min_target_reevlto",
+                                "值": 140
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "v_max_30min_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "爬坡能力": [
+                    {
+                        "名称": "最大爬坡度",
+                        "单位": "%",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "grade_max_result_reevlto",
+                                "值": 45.990491195377885
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "grade_max_target_reevlto",
+                                "值": 30
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "grade_max_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "坡道起步能力",
+                        "单位": "%",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "grade_start_result_reevlto",
+                                "值": 40.990491195377885
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "grade_start_target_reevlto",
+                                "值": 25
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "grade_start_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "爬坡最高车速": [
+                    {
+                        "名称": "4%坡道爬坡车速",
+                        "单位": "km/h",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "v_max_s1_result_reevlto",
+                                "值": 176.0
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "v_max_s1_target_reevlto",
+                                "值": 110
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "v_max_s1_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "12%坡道爬坡车速",
+                        "单位": "km/h",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "v_max_s2_result_reevlto",
+                                "值": 130.5058195441665
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "v_max_s2_target_reevlto",
+                                "值": 60
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "v_max_s2_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ]
+            },
+            "经济性": {
+                "纯电模式常温工况": [
+                    {
+                        "名称": "车端能耗@WLTC",
+                        "单位": "kwh/100km",
+                        "达标判据": "<=",
+                        "标杆数据": 15.21,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "e_dc_result_reevlto",
+                                "值": 15.08956820795096
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "e_dc_target_reevlto",
+                                "值": 14.2
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "e_dc_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "网端能耗@WLTC",
+                        "单位": "kwh/100km",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": "整体充放电效率0.872",
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "e_ac_result_reevlto",
+                                "值": 17.48538455434418
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "e_ac_target_reevlto",
+                                "值": 16.8
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "e_ac_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "纯电续驶里程@WLTC",
+                        "单位": "km",
+                        "达标判据": ">=",
+                        "标杆数据": 201.8,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "mile_ev_result_reevlto",
+                                "值": 335.3310002160164
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "mile_ev_target_reevlto",
+                                "值": 350
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "mile_ev_pass_reevlto",
+                                "值": 0
+                            }
+                        ]
+                    }
+                ],
+                "馈电模式": [
+                    {
+                        "名称": "馈电油耗@WLTC",
+                        "单位": "L/100km",
+                        "达标判据": "<=",
+                        "标杆数据": 5.04,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "cs_fuel_result_reevlto",
+                                "值": 5.350736247221858
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "cs_fuel_target_reevlto",
+                                "值": 5.8
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "cs_fuel_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "综合续驶里程@WLTC",
+                        "单位": "km",
+                        "达标判据": ">=",
+                        "标杆数据": "1550 网络数据",
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "mile_reev_result_reevlto",
+                                "值": 1176.336759439606
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "mile_reev_target_reevlto",
+                                "值": 1100
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "mile_reev_pass_reevlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "纯电车型_evlto": {
+        "base_产品定义_memorycore": [
+            {
+                "名称": "车身形式",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "body_evlto",
+                "值": "Sedan"
+            },
+            {
+                "名称": "动力形式",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "powertrain_type_evlto",
+                "值": "纯电动"
+            },
+            {
+                "名称": "驱动形式",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "drive_type_evlto",
+                "值": "RWD"
+            },
+            {
+                "名称": "级别",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "class_evlto",
+                "值": "B"
+            },
+            {
+                "名称": "售价",
+                "单位": "万元",
+                "备注": NaN,
+                "db_key": "price_evlto",
+                "值": "10~15"
+            },
+            {
+                "名称": "长",
+                "单位": "mm",
+                "备注": NaN,
+                "db_key": "length_evlto",
+                "值": 4840
+            },
+            {
+                "名称": "宽",
+                "单位": "mm",
+                "备注": NaN,
+                "db_key": "wide_evlto",
+                "值": 1950
+            },
+            {
+                "名称": "高",
+                "单位": "mm",
+                "备注": NaN,
+                "db_key": "high_evlto",
+                "值": 1560
+            },
+            {
+                "名称": "轴距",
+                "单位": "mm",
+                "备注": NaN,
+                "db_key": "wheel_base_evlto",
+                "值": 2930
+            },
+            {
+                "名称": "乘员人数",
+                "单位": "人",
+                "备注": NaN,
+                "db_key": "p_num_evlto",
+                "值": 5
+            },
+            {
+                "名称": "智能驾驶",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "autonomous_evlto",
+                "值": "mid"
+            },
+            {
+                "名称": "目标销售区域",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "sale_area_evlto",
+                "值": "China"
+            },
+            {
+                "名称": "纯电里程",
+                "单位": "km",
+                "备注": NaN,
+                "db_key": "ev_mileage_evlto",
+                "值": "500~600"
+            },
+            {
+                "名称": "造型风格",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "mould_style_evlto",
+                "值": "运动"
+            },
+            {
+                "名称": "轮胎规格",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "tyre_wide_evlto",
+                "值": "235/50 R19"
+            },
+            {
+                "名称": "动力性竞争力",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "comp_power_evlto",
+                "值": "A"
+            },
+            {
+                "名称": "经济性竞争力",
+                "单位": "Null",
+                "备注": NaN,
+                "db_key": "comp_eco_evlto",
+                "值": "A"
+            }
+        ],
+        "target_ssts及计算条件_memorycore": {
+            "SSTS": {
+                "整车参数": [
+                    {
+                        "名称": "整备质量",
+                        "单位": "kg",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "mass_curb_result_evlto",
+                                "值": 1750
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "mass_curb_target_evlto",
+                                "值": 1750
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "mass_curb_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "造型及外饰（风阻）": [
+                    {
+                        "名称": "造型风阻系数",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "cd_style_result_evlto",
+                                "值": 0.17
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "cd_style_target_evlto",
+                                "值": 0.17
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "cd_style_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "冷却风阻系数",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "cd_cool_air_result_evlto",
+                                "值": 0.015
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "cd_cool_air_target_evlto",
+                                "值": 0.015
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "cd_cool_air_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "下车体及车轮附件风阻系数",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "cd_under_body_result_evlto",
+                                "值": 0.025
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "cd_under_body_target_evlto",
+                                "值": 0.025
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "cd_under_body_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "机械内阻参数": [
+                    {
+                        "名称": "前制动钳总成内阻",
+                        "单位": "Nm",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "f_brake_res_result_evlto",
+                                "值": 1.5
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "f_brake_res_target_evlto",
+                                "值": 1.5
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "f_brake_res_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "后制动钳总成内阻",
+                        "单位": "Nm",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "r_brake_res_result_evlto",
+                                "值": 1.5
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "r_brake_res_target_evlto",
+                                "值": 1.5
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "r_brake_res_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "前轮毂轴承内阻",
+                        "单位": "Nm",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "f_bearing_res_result_evlto",
+                                "值": 0.75
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "f_bearing_res_target_evlto",
+                                "值": 0.75
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "f_bearing_res_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "后轮毂轴承内阻",
+                        "单位": "Nm",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "r_bearing_res_result_evlto",
+                                "值": 0.75
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "r_bearing_res_target_evlto",
+                                "值": 0.75
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "r_bearing_res_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "低温环境拖滞力矩增长率@-7℃",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "res_gain_m7_result_evlto",
+                                "值": 1.1
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "res_gain_m7_target_evlto",
+                                "值": 1.1
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "res_gain_m7_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "低温环境拖滞力矩增长率@-20℃",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "res_gain_m20_result_evlto",
+                                "值": 1.2
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "res_gain_m20_target_evlto",
+                                "值": 1.2
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "rr_gain_m20_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "半轴效率",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "axle_eff_result_evlto",
+                                "值": 0.96
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "axle_eff_target_evlto",
+                                "值": 0.96
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "axle_eff_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "轮胎参数": [
+                    {
+                        "名称": "轮胎台架滚动阻力系数",
+                        "单位": "‰",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "rr_part_result_evlto",
+                                "值": 6.5
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "rr_part_target_evlto",
+                                "值": 6.5
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "rr_part_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "低温环境滚阻增长率@-7℃",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "rr_gain_m7_result_evlto",
+                                "值": 1.15
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "rr_gain_m7_target_evlto",
+                                "值": 1.15
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "rr_gain_m7_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "低温环境滚阻增长率@-20℃",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "rr_gain_m20_result_evlto",
+                                "值": 1.3
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "rr_gain_m20_target_evlto",
+                                "值": 1.3
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "rr_gain_m20_pass_evlto",
+                                "值": NaN
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "滚动半径",
+                        "单位": "m",
+                        "达标判据": "=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "rad_result_evlto",
+                                "值": 0.328
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "rad_target_evlto",
+                                "值": 0.328
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "rad_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "路面附着系数",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "road_adh_result_evlto",
+                                "值": 0.85
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "road_adh_target_evlto",
+                                "值": 0.85
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "road_adh_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "电驱参数": [
+                    {
+                        "名称": "前电驱轮端峰值扭矩",
+                        "单位": "Nm",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_tmax_f_result_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_tmax_f_target_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_tmax_f_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "前电驱峰值功率",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_pmax_f_result_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_pmax_f_target_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_pmax_f_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "前电驱最大持续功率@30min",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_30m_pmax_f_result_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_30m_pmax_f_target_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_30m_pmax_f_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "前电驱轮端峰值转速",
+                        "单位": "rpm",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_spd_max_f_result_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_spd_max_f_target_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_spd_max_f_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "后电驱轮端峰值扭矩",
+                        "单位": "Nm",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_tmax_r_result_evlto",
+                                "值": 5600
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_tmax_r_target_evlto",
+                                "值": 5600
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_tmax_r_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "后电驱峰值功率",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_pmax_r_result_evlto",
+                                "值": 220
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_pmax_r_target_evlto",
+                                "值": 220
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_pmax_r_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "后电驱最大持续功率@30min",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_30m_pmax_r_result_evlto",
+                                "值": 120
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_30m_pmax_r_target_evlto",
+                                "值": 120
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_30m_pmax_r_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "后电驱轮端峰值转速",
+                        "单位": "rpm",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "edu_spd_max_r_result_evlto",
+                                "值": 1500
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "edu_spd_max_r_target_evlto",
+                                "值": 1500
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "edu_spd_max_r_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电驱驱动平均效率（经济性）",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "mot_div_eff_result_evlto",
+                                "值": 0.9
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "mot_div_eff_target_evlto",
+                                "值": 0.9
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "mot_div_eff_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电驱回收平均效率（经济性）",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "mot_reg_eff_result_evlto",
+                                "值": 0.88
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "mot_reg_eff_target_evlto",
+                                "值": 0.88
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "mot_reg_eff_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "从动电驱内阻系数_a（经济性）",
+                        "单位": "N",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "drivenmot_drag_a_result_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "drivenmot_drag_a_target_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "drivenmot_drag_a_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "从动电驱内阻系数_b（经济性）",
+                        "单位": "N/(km/h)",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "drivenmot_drag_b_result_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "drivenmot_drag_b_target_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "drivenmot_drag_b_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "从动电驱内阻系数_c（经济性）",
+                        "单位": "N/(km/h)^2",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "drivenmot_drag_c_result_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "drivenmot_drag_c_target_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "drivenmot_drag_c_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    }
+                ],
+                "电池参数": [
+                    {
+                        "名称": "电池峰值放电功率@10s",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_pmax_result_evlto",
+                                "值": 220
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_pmax_target_evlto",
+                                "值": 220
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_pmax_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电池峰值持续放电功率 @300s",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_300s_pmax_result_evlto",
+                                "值": 180
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_300s_pmax_target_evlto",
+                                "值": 180
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_300s_pmax_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电池峰值持续放电功率@30min",
+                        "单位": "kW",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_30m_pmax_result_evlto",
+                                "值": 130
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_30m_pmax_target_evlto",
+                                "值": 130
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_30m_pmax_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电池标称能量",
+                        "单位": "kWh",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_eng_result_evlto",
+                                "值": 79.8
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_eng_target_evlto",
+                                "值": 79.8
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_eng_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电池放电深度",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_deepth_result_evlto",
+                                "值": 0.92
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_deepth_target_evlto",
+                                "值": 0.92
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_deepth_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "电池充放电效率",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_eff_result_evlto",
+                                "值": 0.95
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_eff_target_evlto",
+                                "值": 0.95
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_eff_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "低温@-7℃能量衰减率",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_loss_m7_result_evlto",
+                                "值": 0.05
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_loss_m7_target_evlto",
+                                "值": 0.1
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_loss_m7_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "低温@-20℃能量衰减率",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "bat_loss_m20_result_evlto",
+                                "值": 0.2
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "bat_loss_m20_target_evlto",
+                                "值": 0.25
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "bat_loss_m20_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    }
+                ],
+                "低压系统参数": [
+                    {
+                        "名称": "纯电模式低压功耗",
+                        "单位": "W",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "ev_lp_result_evlto",
+                                "值": 150
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "ev_lp_target_evlto",
+                                "值": 150
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "ev_lp_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "增程模式低压功耗",
+                        "单位": "W",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "reev_lp_result_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "reev_lp_target_evlto",
+                                "值": NaN
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "reev_lp_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "充电工况低压功耗",
+                        "单位": "W",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "charge_lp_result_evlto",
+                                "值": 150
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "charge_lp_target_evlto",
+                                "值": 150
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "charge_lp_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "DCDC效率",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "dcdc_eff_result_evlto",
+                                "值": 0.94
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "dcdc_eff_target_evlto",
+                                "值": 0.94
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "dcdc_eff_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "充电工况DCDC效率",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "charge_dcdc_eff_result_evlto",
+                                "值": 0.94
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "charge_dcdc_eff_target_evlto",
+                                "值": 0.94
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "charge_dcdc_eff_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "能量回收参数": [
+                    {
+                        "名称": "机械制动能耗比例",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "m_b_energy_result_evlto",
+                                "值": 0.03
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "m_b_energy_target_evlto",
+                                "值": 0.03
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "m_b_energy_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "充电机参数": [
+                    {
+                        "名称": "充电机效率",
+                        "单位": 1,
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "obc_eff_result_evlto",
+                                "值": 0.93
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "obc_eff_target_evlto",
+                                "值": 0.93
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "obc_eff_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "热管理系统参数": [
+                    {
+                        "名称": "高温@30℃平均功率",
+                        "单位": "W",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "thermal_power_30_result_evlto",
+                                "值": 800
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "thermal_power_30_target_evlto",
+                                "值": 800
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "thermal_power_30_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "低温@-7℃平均功率",
+                        "单位": "W",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "thermal_power_m7_result_evlto",
+                                "值": 800
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "thermal_power_m7_target_evlto",
+                                "值": 1200
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "thermal_power_m7_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "低温@-20℃平均功率",
+                        "单位": "W",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "thermal_power_m20_result_evlto",
+                                "值": 1500
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "thermal_power_m20_target_evlto",
+                                "值": 2000
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "thermal_power_m20_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ]
+            },
+            "计算条件": {
+                "整车参数": [
+                    {
+                        "名称": "最大载荷质量",
+                        "单位": "kg",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "mass_maxload_result_evlto",
+                        "值": 425
+                    },
+                    {
+                        "名称": "转动惯量",
+                        "单位": "kgm^2",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "r_in_result_evlto",
+                        "值": 9.005
+                    },
+                    {
+                        "名称": "轴距",
+                        "单位": "m",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "wheel_base_result_evlto",
+                        "值": 2.97
+                    },
+                    {
+                        "名称": "质心x坐标",
+                        "单位": "m",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "mass_centroid_x_result_evlto",
+                        "值": 1.3
+                    },
+                    {
+                        "名称": "质心Z坐标",
+                        "单位": "m",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "mass_centroid_z_result_evlto",
+                        "值": 0.21
+                    }
+                ],
+                "物理属性": [
+                    {
+                        "名称": "空气密度",
+                        "单位": "kg/m^3",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "dst_result_evlto",
+                        "值": 1.185
+                    },
+                    {
+                        "名称": "低温@-7℃空气密度",
+                        "单位": "kg/m^3",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "dst_m7_result_evlto",
+                        "值": 1.327
+                    },
+                    {
+                        "名称": "低温@-20℃空气密度",
+                        "单位": "kg/m^3",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "dst_m20_result_evlto",
+                        "值": 1.396
+                    }
+                ],
+                "低压功耗": [
+                    {
+                        "名称": "动力性校核基准低压功率",
+                        "单位": "W",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "power_lp_result_evlto",
+                        "值": 500
+                    }
+                ],
+                "工况定义": [
+                    {
+                        "名称": "高速爬坡度1",
+                        "单位": "%",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "grade_s1_result_evlto",
+                        "值": 4
+                    },
+                    {
+                        "名称": "高速爬坡度2",
+                        "单位": "%",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "grade_s2_result_evlto",
+                        "值": 12
+                    },
+                    {
+                        "名称": "驾驶循环",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": "S",
+                        "db_key": "drive_cycle_result_evlto",
+                        "值": "CLTC_cycle"
+                    }
+                ],
+                "阻力修正": [
+                    {
+                        "名称": "风阻修正系数",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "cd_gain_result_evlto",
+                        "值": 1.08
+                    },
+                    {
+                        "名称": "滚阻修正系数",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "rr_gain_result_evlto",
+                        "值": 1
+                    }
+                ],
+                "电驱": [
+                    {
+                        "名称": "前电驱功率衰减系数",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "edu_pow_gain_f_result_evlto",
+                        "值": 0.85
+                    },
+                    {
+                        "名称": "后电驱功率衰减系数",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "edu_pow_gain_r_result_evlto",
+                        "值": 0.85
+                    },
+                    {
+                        "名称": "电驱驱动平均效率（动力性）",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "mot_pow_eff_result_evlto",
+                        "值": 0.88
+                    }
+                ],
+                "纯电能耗修正": [
+                    {
+                        "名称": "车端能耗修正系数",
+                        "单位": 1,
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "e_gain_result_evlto",
+                        "值": 1.03
+                    },
+                    {
+                        "名称": "充电时间",
+                        "单位": "h",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "charge_time_result_evlto",
+                        "值": 8
+                    }
+                ],
+                "加速时间修正": [
+                    {
+                        "名称": "0_50km/h加速时间修正",
+                        "单位": "s",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "acc_0_50_delta_result_evlto",
+                        "值": 0.3
+                    },
+                    {
+                        "名称": "0_100km/h加速时间修正",
+                        "单位": "s",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "acc_0_100_delta_result_evlto",
+                        "值": 0.3
+                    },
+                    {
+                        "名称": "50_80km/h加速时间修正",
+                        "单位": "s",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "acc_50_80_delta_result_evlto",
+                        "值": 0.1
+                    },
+                    {
+                        "名称": "80_120km/h加速时间修正",
+                        "单位": "s",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "acc_80_120_delta_result_evlto",
+                        "值": 0.1
+                    }
+                ],
+                "最高车速修正": [
+                    {
+                        "名称": "1km最高车速修正",
+                        "单位": "km/h",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "v_max_1km_delta_result_evlto",
+                        "值": -2
+                    },
+                    {
+                        "名称": "30min最高车速修正",
+                        "单位": "km/h",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "v_max_30min_delta_result_evlto",
+                        "值": -2
+                    }
+                ],
+                "爬坡能力修正": [
+                    {
+                        "名称": "坡道起步能力修正",
+                        "单位": "%",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "slop_start_delta_result_evlto",
+                        "值": -2
+                    },
+                    {
+                        "名称": "最大爬坡度计算delta值",
+                        "单位": "%",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "slop_max_delta_result_evlto",
+                        "值": 5
+                    },
+                    {
+                        "名称": "s_1坡道爬坡车速修正",
+                        "单位": "km/h",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "v_max_s1_delta_result_evlto",
+                        "值": -2
+                    },
+                    {
+                        "名称": "s_2坡道爬坡车速修正",
+                        "单位": "km/h",
+                        "达标判据": NaN,
+                        "标杆数据": NaN,
+                        "相关性标签": NaN,
+                        "备注": NaN,
+                        "db_key": "v_max_s2_delta_result_evlto",
+                        "值": -2
+                    }
+                ]
+            }
+        },
+        "target_vts_memorycore": {
+            "空气动力学": {
+                "正投影": [
+                    {
+                        "名称": "正投影面积",
+                        "单位": "m2",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "aero_result_evlto",
+                                "值": 2.586
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "aero_target_evlto",
+                                "值": 2.586
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "aero_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "气动阻力": [
+                    {
+                        "名称": "风洞风阻系数",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "cd_wt_result_evlto",
+                                "值": 0.21
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "cd_wt_target_evlto",
+                                "值": 0.21
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "cd_wt_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "气动升力": [
+                    {
+                        "名称": "升力系数",
+                        "单位": 1,
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "cl_wt_result_evlto",
+                                "值": 0.12
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "cl_wt_target_evlto",
+                                "值": 0.12
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "cl_wt_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ]
+            },
+            "动力性": {
+                "加速时间": [
+                    {
+                        "名称": "0-50km/h",
+                        "单位": "s",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "t_0_50_result_evlto",
+                                "值": 4.399999999999999
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "t_0_50_target_evlto",
+                                "值": 3.2
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "t_0_50_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "0-100km/h",
+                        "单位": "s",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "t_0_100_result_evlto",
+                                "值": 8.600000000000001
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "t_0_100_target_evlto",
+                                "值": 7.5
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "t_0_100_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "50-80km/h",
+                        "单位": "s",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "t_50_80_result_evlto",
+                                "值": 2.6
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "t_50_80_target_evlto",
+                                "值": 3
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "t_50_80_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "80-120km/h",
+                        "单位": "s",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "t_80_120_result_evlto",
+                                "值": 3.800000000000001
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "t_80_120_target_evlto",
+                                "值": 5.5
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "t_80_120_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "最高车速": [
+                    {
+                        "名称": "1km最高车速",
+                        "单位": "km/h",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "v_max_1km_result_evlto",
+                                "值": 183.47965072
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "v_max_1km_target_evlto",
+                                "值": 170
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "v_max_1km_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "30min最高车速",
+                        "单位": "km/h",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "v_max_30min_result_evlto",
+                                "值": 183.47965072
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "v_max_30min_target_evlto",
+                                "值": 150
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "v_max_30min_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "爬坡能力": [
+                    {
+                        "名称": "最大爬坡度",
+                        "单位": "%",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "grade_max_result_evlto",
+                                "值": 45.97491326922601
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "grade_max_target_evlto",
+                                "值": 30
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "grade_max_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "坡道起步能力",
+                        "单位": "%",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "grade_start_result_evlto",
+                                "值": 40.97491326922601
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "grade_start_target_evlto",
+                                "值": 25
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "grade_start_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "爬坡最高车速": [
+                    {
+                        "名称": "4%坡道爬坡车速",
+                        "单位": "km/h",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "v_max_s1_result_evlto",
+                                "值": 181
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "v_max_s1_target_evlto",
+                                "值": 120
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "v_max_s1_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "12%坡道爬坡车速",
+                        "单位": "km/h",
+                        "达标判据": ">=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "v_max_s2_result_evlto",
+                                "值": 144
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "v_max_s2_target_evlto",
+                                "值": 65
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "v_max_s2_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ]
+            },
+            "经济性": {
+                "纯电模式常温工况": [
+                    {
+                        "名称": "车端能耗@WLTC",
+                        "单位": "kwh/100km",
+                        "达标判据": "<=",
+                        "标杆数据": 15.21,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "e_dc_result_evlto",
+                                "值": 11.03120722230743
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "e_dc_target_evlto",
+                                "值": 14.5
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "e_dc_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "网端能耗@WLTC",
+                        "单位": "kwh/100km",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": "整体充放电效率0.872",
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "e_ac_result_evlto",
+                                "值": 12.67761969915293
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "e_ac_target_evlto",
+                                "值": 16.8
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "e_ac_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "纯电续驶里程@WLTC",
+                        "单位": "km",
+                        "达标判据": ">=",
+                        "标杆数据": 201.8,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "mile_ev_result_evlto",
+                                "值": 665.5300595889208
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "mile_ev_target_evlto",
+                                "值": 550
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "mile_ev_pass_evlto",
+                                "值": 1
+                            }
+                        ]
+                    }
+                ],
+                "纯电模式高低温工况": [
+                    {
+                        "名称": "里程衰减率@-7℃@CLTC",
+                        "单位": "%",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "mile_decay_m7_result_evlto",
+                                "值": 96.28415622918735
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "mile_decay_m7_target_evlto",
+                                "值": 25
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "mile_decay_m7_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "里程衰减率@-20℃@CLTC",
+                        "单位": "%",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "mile_decay_m20_result_evlto",
+                                "值": 87.82823598146553
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "mile_decay_m20_target_evlto",
+                                "值": 45
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "mile_decay_m20_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    },
+                    {
+                        "名称": "里程衰减率@30℃@CLTC",
+                        "单位": "%",
+                        "达标判据": "<=",
+                        "标杆数据": NaN,
+                        "备注": NaN,
+                        "参数值": [
+                            {
+                                "名称": "当前值",
+                                "db_key": "mile_decay_30_result_evlto",
+                                "值": 20.02712445931131
+                            },
+                            {
+                                "名称": "目标值",
+                                "db_key": "mile_decay_30_target_evlto",
+                                "值": 8
+                            },
+                            {
+                                "名称": "达标标识",
+                                "db_key": "mile_decay_30_pass_evlto",
+                                "值": 0
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

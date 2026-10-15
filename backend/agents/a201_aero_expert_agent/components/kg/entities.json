@@ -1,0 +1,214 @@
+{
+  "nodes": [
+    {
+      "name": "空气动力学",
+      "type": "学科",
+      "desc": "研究空气与物体相对运动时产生的力与现象的学科",
+      "properties": {},
+      "id": "aerodynamics"
+    },
+    {
+      "name": "气动阻力",
+      "type": "力",
+      "desc": "车辆行驶时空气对车身的阻力，方向与行驶方向相反",
+      "properties": {},
+      "id": "drag"
+    },
+    {
+      "name": "气动升力",
+      "type": "力",
+      "desc": "车辆行驶时空气对车身产生的垂直向上的力",
+      "properties": {},
+      "id": "lift"
+    },
+    {
+      "name": "风洞风阻系数",
+      "type": "参数",
+      "desc": "从风洞测试中测量得到的风洞风阻系数",
+      "properties": {},
+      "id": "cdwt"
+    },
+    {
+      "name": "风阻系数",
+      "type": "参数",
+      "desc": "衡量车辆空气阻力大小的无量纲系数",
+      "properties": {},
+      "id": "cd"
+    },
+    {
+      "name": "造型风阻系数",
+      "type": "参数",
+      "desc": "车辆风阻中主要由造型确定的部分；也就是，在下车体完全平整、车轮轮辐完全密封、冷却气流进风口完全关闭情况下的风阻系数",
+      "properties": {},
+      "id": "Cd_style"
+    },
+    {
+      "name": "冷却风阻系数",
+      "type": "参数",
+      "desc": "为了满足车辆散热，在基础造型上开通风口所产生的额外风阻",
+      "properties": {},
+      "id": "Cd_cool_air"
+    },
+    {
+      "name": "下车体及车轮附件风阻系数",
+      "type": "参数",
+      "desc": "下车体零部件安装导致的不平整，和车轮轮辐的特殊形状、开口导致的额外风阻",
+      "properties": {},
+      "id": "Cd_under_body"
+    },
+    {
+      "name": "升力系数",
+      "type": "参数",
+      "desc": "衡量车辆气动升力大小的无量纲系数",
+      "properties": {},
+      "id": "cl"
+    },
+    {
+      "name": "迎风面积A",
+      "type": "参数",
+      "desc": "车辆在行驶方向上的投影面积",
+      "properties": {},
+      "id": "frontal_area"
+    },
+    {
+      "name": "空气阻力公式",
+      "type": "公式",
+      "desc": "F_d = 0.5 * ρ * v² * Cd * A",
+      "properties": {},
+      "id": "drag_formula"
+    },
+    {
+      "name": "升力公式",
+      "type": "公式",
+      "desc": "F_l = 0.5 * ρ * v² * Cl * A",
+      "properties": {},
+      "id": "lift_formula"
+    },
+    {
+      "name": "前脸",
+      "type": "部件",
+      "desc": "车辆前部造型，影响进气量和气流引导",
+      "properties": {},
+      "id": "front_face"
+    },
+    {
+      "name": "A柱",
+      "type": "部件",
+      "desc": "前挡风玻璃两侧立柱，影响气流分离",
+      "properties": {},
+      "id": "a_pillar"
+    },
+    {
+      "name": "发动机盖",
+      "type": "部件",
+      "desc": "前部上表面，影响气流附着",
+      "properties": {},
+      "id": "hood"
+    },
+    {
+      "name": "车顶",
+      "type": "部件",
+      "desc": "车辆顶部，影响气流走向",
+      "properties": {},
+      "id": "roof"
+    },
+    {
+      "name": "车尾",
+      "type": "部件",
+      "desc": "车辆后部，影响尾流区大小",
+      "properties": {},
+      "id": "rear"
+    },
+    {
+      "name": "底盘",
+      "type": "部件",
+      "desc": "车辆底部，影响底部气流",
+      "properties": {},
+      "id": "underbody"
+    },
+    {
+      "name": "后视镜",
+      "type": "部件",
+      "desc": "侧面后视镜，产生局部湍流",
+      "properties": {},
+      "id": "mirror"
+    },
+    {
+      "name": "车轮",
+      "type": "部件",
+      "desc": "车轮及轮拱，产生湍流和阻力",
+      "properties": {},
+      "id": "wheel"
+    },
+    {
+      "name": "气流分离",
+      "type": "现象",
+      "desc": "气流从车身表面脱离，形成湍流区，增加阻力",
+      "properties": {},
+      "id": "flow_separation"
+    },
+    {
+      "name": "尾流",
+      "type": "现象",
+      "desc": "车辆后方的低压湍流区，是气动阻力的主要来源",
+      "properties": {},
+      "id": "wake"
+    },
+    {
+      "name": "边界层",
+      "type": "现象",
+      "desc": "贴近车身表面的薄层气流，层流/湍流转换影响阻力",
+      "properties": {},
+      "id": "boundary_layer"
+    },
+    {
+      "name": "涡流",
+      "type": "现象",
+      "desc": "旋转气流，A柱、后视镜、车尾等位置产生",
+      "properties": {},
+      "id": "vortex"
+    },
+    {
+      "name": "外形优化",
+      "type": "方法",
+      "desc": "通过优化车身外形曲线减小气动阻力",
+      "properties": {},
+      "id": "shape_opt"
+    },
+    {
+      "name": "主动进气格栅",
+      "type": "方法",
+      "desc": "根据需要开闭进气格栅，平衡散热与气动性能",
+      "properties": {},
+      "id": "active_grille"
+    },
+    {
+      "name": "前扰流板",
+      "type": "方法",
+      "desc": "减少进入车底的气流，降低底部阻力和升力",
+      "properties": {},
+      "id": "air_dam"
+    },
+    {
+      "name": "后扰流板",
+      "type": "方法",
+      "desc": "改变尾部气流，减少升力并优化尾流",
+      "properties": {},
+      "id": "rear_spoiler"
+    },
+    {
+      "name": "底盘平整化",
+      "type": "方法",
+      "desc": "平整底盘，减少底部气流紊乱",
+      "properties": {},
+      "id": "underbody_cover"
+    },
+    {
+      "name": "轴距",
+      "type": "参数",
+      "desc": "车辆前后轴之间的距离",
+      "properties": {},
+      "id": "wheel_base"
+    }
+  ]
+}

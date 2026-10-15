@@ -1,0 +1,72 @@
+# =============================================================================
+# BatteryLimit 节点说明文件
+# =============================================================================
+node_type_id: "BatteryLimit"
+node_display_name: "电池充电功率限值"
+node_category: "系统限值"
+node_description: |
+  根据电池最大充电功率 Pmax(SOC,T) 和电机效率 η(n) 计算电池侧回收制动力限值
+  F_bat_max = 9554·Pmax/(η·n·R)。对应计算方法文档 §8。
+  - eta_map（电机效率）从上游 node_ssts_MotorAnalysis 的 motor_variants 读取。
+  - P_charge_map（电池充电功率）从沙箱 Battery component 独立读取（整车一份）。
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  # --- 从 node_0_VehicleParam ---
+  R:
+    name: "轮胎滚动半径"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "R"
+
+  # --- 从 node_ssts_MotorAnalysis ---
+  motor_variants:
+    name: "电驱方案集合"
+    unit: ""
+    type: "object"
+    schema_type: "intermediate"
+    source_node: "node_ssts_MotorAnalysis"
+    source_var: "motor_variants"
+
+  # --- SSTS 参数 ---
+  SOC_max_regen:
+    name: "关闭回收 SOC 阈值"
+    unit: "-"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "SOC≥SOC_max 时关闭回收，典型 0.95~0.98"
+    default: 0.95
+
+  V_min_regen:
+    name: "退出回收车速"
+    unit: "km/h"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "与 node_4 相同，本节点独立读取避免依赖"
+    default: 5.0
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+  F_bat_max:
+    name: "电池充电功率限值（总量）"
+    unit: "N"
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "与驱动形式无关的总量，分轴分配留给 node_6"
+
+  # =============================================================================
+  # 语义求解器输出变量定义
+  # =============================================================================
+
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "电池充电功率限值计算节点的自然语言分析报告（Markdown 格式）"

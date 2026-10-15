@@ -1,0 +1,61 @@
+cases:
+- id: tesla_model3_pe
+  title: 特斯拉Model 3动力经济性优化
+  category: 纯电动车动力经济性
+  description: Model 3通过高效电驱系统、低风阻车身设计、先进能量管理策略实现优异的动力经济性表现。
+  vehicle_type: 纯电动轿车
+  key_params: 电机峰值功率=258kW, 电机峰值扭矩=440Nm, 电池容量=75kWh, Cd=0.23, 整备质量=1610kg
+  results: 0-100km/h加速时间=3.3s, 最高车速=261km/h, WLTP续航=567km, 百公里电耗=14.9kWh/100km
+  source: 特斯拉官方技术报告
+  created_at: '2026-07-06 08:00:00'
+  updated_at: '2026-07-06 08:00:00'
+- id: nissan_leaf_pe
+  title: 日产Leaf e+动力经济性设计
+  category: 纯电动车动力经济性
+  description: Leaf e+采用e-Pedal单踏板技术、高能量密度电池、高效电机系统，在城市工况下实现优秀的能量回收效率。
+  vehicle_type: 纯电动轿车
+  key_params: 电机功率=110kW, 电机扭矩=320Nm, 电池容量=62kWh, e-Pedal技术, 整备质量=1813kg
+  results: 0-100km/h加速时间=7.9s, 最高车速=157km/h, WLTP续航=385km, 城市工况能量回收效率=30%
+  source: 日产官方技术文档
+  created_at: '2026-07-06 08:00:00'
+  updated_at: '2026-07-06 08:00:00'
+- id: toyota_prius_pe
+  title: 丰田普锐斯混合动力动力经济性
+  category: 混合动力车动力经济性
+  description: 普锐斯采用THS-II混合动力系统、Atkinson循环发动机、E-Four电子四驱，实现极高的燃油经济性和良好的动力性能。
+  vehicle_type: 混合动力轿车
+  key_params: 1.8L发动机+电机, 系统综合功率=107kW, 电池容量=8.8kWh, Atkinson循环, THS-II系统
+  results: 0-100km/h加速时间=10.8s, 最高车速=180km/h, 纯电续航=63km, 综合油耗=3.4L/100km
+  source: 丰田官方技术报告
+  created_at: '2026-07-06 08:00:00'
+  updated_at: '2026-07-06 08:00:00'
+- id: bmw_i3_pe
+  title: 宝马i3增程式动力经济性
+  category: 增程式电动车动力经济性
+  description: i3采用纯电驱动+增程器设计，0.65L双缸发动机作为增程器，不直接驱动车轮，仅为电池充电。
+  vehicle_type: 增程式电动车
+  key_params: 电机功率=125kW, 电机扭矩=250Nm, 电池容量=33kWh, 0.65L增程发动机, 整备质量=1315kg
+  results: 0-100km/h加速时间=7.2s, 最高车速=150km/h, 纯电续航=183km, 综合续航=330km
+  source: 宝马官方技术文档
+  created_at: '2026-07-06 08:00:00'
+  updated_at: '2026-07-06 08:00:00'
+- id: byd_han_pe
+  title: 比亚迪汉EV动力经济性优化
+  category: 纯电动车动力经济性
+  description: 汉EV采用刀片电池、碳化硅MOSFET电机控制器、DiSus-C车身控制系统，实现高性能与高效率的平衡。
+  vehicle_type: 纯电动轿车
+  key_params: 双电机总功率=380kW, 双电机总扭矩=700Nm, 电池容量=76.9kWh, 碳化硅控制器, Cd=0.233
+  results: 0-100km/h加速时间=3.9s, 最高车速=200km/h, CLTC续航=605km, 百公里电耗=15.4kWh/100km
+  source: 比亚迪官方技术报告
+  created_at: '2026-07-06 08:00:00'
+  updated_at: '2026-07-06 08:00:00'
+- id: volkswagen_golfgte_pe
+  title: 大众高尔夫GTE插电式混合动力
+  category: 混合动力车动力经济性
+  description: Golf GTE采用1.4T发动机+电机的插混系统，支持纯电行驶和混动模式，兼顾性能与经济性。
+  vehicle_type: 插电式混合动力轿车
+  key_params: 1.4T发动机+85kW电机, 系统综合功率=150kW, 电池容量=13kWh, 6速DSG变速箱
+  results: 0-100km/h加速时间=7.6s, 最高车速=220km/h, 纯电续航=60km, 综合油耗=1.6L/100km
+  source: 大众官方技术文档
+  created_at: '2026-07-06 08:00:00'
+  updated_at: '2026-07-06 08:00:00'

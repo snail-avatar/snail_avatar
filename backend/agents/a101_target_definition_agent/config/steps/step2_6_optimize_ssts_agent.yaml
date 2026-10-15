@@ -1,0 +1,214 @@
+# =============================================================================
+# 步骤2.6：优化SSTS - Agent配置
+# =============================================================================
+# 当VTS校核不达标时，调用工作流Agent（economy_agent、power_agent）执行优化计算
+
+step_type: "agent"
+
+# Agent 类型：calculator（计算型）/ expert（专家型）/ fix（固定型）
+# calculator: 从 sandbox 的 calculator_mapping 动态获取 agent_id
+# expert: 从 sandbox 的 expert_mapping 动态获取 agent_id
+# fix: 直接使用本文件配置的 agent_id
+agent_type: "calculator"
+
+step_id: "OPTIMIZE_SSTS"
+step_name: "优化 SSTS"
+name: "optimize_ssts"
+
+# =============================================================================
+# 数据源声明（data_sources）
+# =============================================================================
+# 在调用子Agent之前执行，准备查询所需的数据上下文
+
+data_sources:
+  # ① 格式化当前专业的 VTS+SSTS 参数清单
+  # 对应私有函数：step2_6_extract_data（文件：a101_step2_6_extract_data.py）
+  # 功能：从 sandbox.process_data.vts_category_data 读取指定专业的 VTS 列表，
+  #       每项包含 VTS 基本信息、param_values、SSTS_parameter 和计算公式
+  #
+  # 参数说明：
+  #   sandbox: 沙箱实例（框架自动注入）
+  #   professional_category: 当前专业名（从 args 中获取，由框架循环注入）
+  #
+  # 输出：vts_ssts_str = 格式化后的 VTS+SSTS 参数清单文本
+  - function: "step2_6_extract_data"
+    args_mapping:
+      operation: "format_vts_ssts_list"
+      sandbox: "$sandbox"
+      professional_category: "$args.professional_category"
+    output: "vts_ssts_str"
+
+  # ② 提取上一步 VALIDATE_TARGETS 的校核结果
+  # 对应私有函数：step2_6_extract_data（文件：a101_step2_6_extract_data.py）
+  # 功能：从 sandbox.step_results 读取 {专业名}_VALIDATE_TARGETS 的结果，
+  #       包含 structured_data（status、failed_VTS_items 等）和 reasoning_logic
+  #
+  # 参数说明：
+  #   sandbox: 沙箱实例（框架自动注入）
+  #   professional_category: 当前专业名（用于构建 step_results 的 key）
+  #
+  # 输出：VALIDATE_TARGETS_result = 格式化后的校核结果文本
+  - function: "step2_6_extract_data"
+    args_mapping:
+      operation: "extract_validate_result"
+      sandbox: "$sandbox"
+      professional_category: "$args.professional_category"
+    output: "VALIDATE_TARGETS_result"
+
+query_mode: "auto"
+
+# Query模板
+query_template: |
+  请对数据库车型后缀为「{vehicle_suffix}」的「{vehicle_display_name}」车型的「{professional_category}」专业，以能满足VTS指标达标为标准，进行 SSTS 参数优化。
+
+  【参考信息】
+
+  「{professional_category}」专业的VTS、SSTS参数清单（JSON格式）：
+  ```json
+  {vts_ssts_str}
+  ```
+
+  「{professional_category}」专业的VTS校核结果（JSON格式）：
+  ```json
+  {VALIDATE_TARGETS_result}
+  ```
+  
+  {task_prompt}
+
+# =============================================================================
+# task_prompt（任务说明 + 工具规则 + 输出约束）
+# =============================================================================
+
+task_prompt: |
+  
+  【任务说明】
+  请执行以下SSTS参数优化：
+  1. 分析未达标的 VTS 参数及其差距
+  2. 识别影响这些参数的关键 SSTS 设计变量
+  3. 调用 economy_agent / power_agent 工具进行优化计算
+  4. 给出优化后的 SSTS 参数值和调整说明
+
+  【工具调用参数规则（必看）】
+  参考信息中的 db_key 带 _target_ 后缀（表示目标值），调用工具时需转换：
+  - db_key: 将 _target_ 改为 _result_（例：cd_style_target_reevlto → cd_style_result_reevlto）
+  - var_name: 取基础名（例：cd_style_result_reevlto → cd_style）
+  - vehicle_suffix: 使用 query 中的车型后缀值（如 reevlto）
+
+  【输出格式 — 强制约束，违反将导致流程失败】
+  
+  ⚠️ 你的最终回复必须且只能是一个合法的 JSON 对象，严禁在 JSON 之前或之后输出任何文字、分析、解释或 Markdown 标记。
+  ⚠️ 最终回复的第一个字符必须是左花括号 {，最后一个字符必须是右花括号 }。
+  ⚠️ 即使你在工具调用中已经修改了数据库中的 SSTS 参数值，也必须在 JSON 的 optimized_SSTS_items 数组中完整列出所有修改过的参数。
+  
+  请严格按照以下 JSON schema 输出：
+
+  {
+    "structured_data": {
+      "optimized_SSTS_items": [
+        {"name": "SSTS参数名", "unit": "单位", "db_key": "xxx_result_reevlto", "base_value": 初始当前值, "optimized_value": 优化后当前值}
+      ],
+      "VTS_items": [
+        {"name": "VTS参数名", "unit": "单位", "db_key": "xxx", "base_current": 初始当前值, "optimized_current": 优化后当前值, "target": 目标值}
+      ]
+    },
+    "reasoning_logic": "选定优化的SSTS参数的原因，优化前后的对比，优化后的预期VTS达标情况，优化方案的说明和建议"
+  }
+
+  【字段说明】
+  - optimized_SSTS_items: 本次优化修改过的 SSTS 参数列表，必须包含所有通过工具调用修改过的参数（即使已写入数据库）
+  - VTS_items: 该专业所有 VTS 参数清单，包含初始当前值、优化后当前值和目标值
+  - reasoning_logic: 分析过程的简要说明，控制在 200 字以内
+
+  【示例 - 正确输出】
+  {
+    "structured_data": {
+      "optimized_SSTS_items": [
+        {"name": "后驱电机峰值功率", "unit": "kW", "db_key": "edu_pmax_r_result_reevlto", "base_value": 150, "optimized_value": 180}
+      ],
+      "VTS_items": [
+        {"name": "0-100km/h加速时间", "unit": "s", "db_key": "t_0_100_target_reevlto", "base_current": 8.2, "optimized_current": 7.5, "target": 7.5}
+      ]
+    },
+    "reasoning_logic": "将后驱电机功率从150kW提升至180kW，预计0-100km/h加速时间从8.2s降至7.5s，满足目标要求"
+  }
+
+# =============================================================================
+# 后处理（post_process）
+# =============================================================================
+# Agent返回后执行：读取优化结果并更新 memory core 和 沙箱 process_data
+# 执行顺序：解析结果 → 后缀转换 → 写入 memory_db → 写回 process_data
+
+post_process:
+  # 读取Agent格式化后的结果中的 "optimized_SSTS_items" 字段
+  # 按照 db_key 匹配，改写 memory core 和沙箱 process_data 中对应 SSTS 参数的目标值
+  # 对应公共函数：step2_6_update_targets（文件：a101_step2_6_update_targets.py）
+  # 功能：
+  #   1. 解析 $result.structured_data.optimized_SSTS_items
+  #   2. 将 db_key 后缀从 _result_ 转换为 _target_
+  #   3. 调用 memory_db.set_ssts_vts_param() 写入持久化数据库
+  #   4. 同步更新 sandbox.process_data.vts_category_data 中的 SSTS 值
+  #
+  # 参数说明：
+  #   memory_db: 内存数据库实例（框架自动注入）
+  #   sandbox: 沙箱实例（框架自动注入）
+  #   result: Agent结果JSON字符串（框架自动注入 $result）
+  #   instance_key: 车型键名（框架自动注入 $args.instance_key）
+  #   professional_category: 当前专业名（框架自动注入 $args.professional_category）
+  #
+  # 输出：更新结果摘要（成功数、失败数、详情列表）
+  - function: "step2_6_update_targets"
+    args_mapping:
+      operation: "update_optimized_targets"
+      memory_db: "$memory_db"
+      sandbox: "$sandbox"
+      result: "$result"
+      instance_key: "$args.instance_key"
+      professional_category: "$args.professional_category"
+
+
+# =============================================================================
+# formatter_config（格式整理器配置）
+# =============================================================================
+# agent 类型步骤的 Stage 2（格式整理器）配置
+# 用于将SSTS优化计算结果整理为结构化JSON格式
+# 关键：即使主agent输出自由文本，formatter也要主动从中提取并重建 schema
+# 加强点：角色从"格式保留"改为"格式重建"，temperature 降到 0.0
+# =============================================================================
+
+formatter_config:
+  system_prompt: |
+    你是一个严格的格式重建专家。你的任务是从输入文本中提取所有有效信息，重建为指定的 JSON schema。
+    
+    【核心职责 - 从自由文本中重建 schema】
+    即使输入是分析性文字、总结段落或工具调用结果，你也必须：
+    1. 从中提取所有 SSTS 参数修改记录（参数名、db_key、修改前后的值），放入 optimized_SSTS_items 数组
+    2. 从中提取所有 VTS 参数及其目标值、当前值，放入 VTS_items 数组
+    3. 将分析总结放入 reasoning_logic 字段
+    
+    【强制约束 - 必须遵守，不得违反】
+    1. 输出必须且只能是合法 JSON，第一个字符是 {，最后一个字符是 }
+    2. structured_data 中必须包含 optimized_SSTS_items 和 VTS_items 两个数组（即使为空也要保留 []）
+    3. 禁止修改字段名，以下字段必须严格保留：
+       - "optimized_SSTS_items"、"VTS_items"、"reasoning_logic"
+       - "name"、"unit"、"db_key"、"base_value"、"optimized_value"
+       - "base_current"、"optimized_current"、"target"
+    4. ⚠️ db_key 的后缀（_target_、_result_）必须精确保留，下游写入依赖此字段
+    5. ⚠️ 所有数值必须保留为数字类型，不要转为字符串
+    6. 如果输入中没有提到某个字段的数据，该字段保留空数组 [] 或空字符串 ""
+    
+    【输出格式】
+    {
+      "structured_data": {
+        "optimized_SSTS_items": [
+          {"name": "参数名", "unit": "单位", "db_key": "xxx_result_xxx", "base_value": 原值, "optimized_value": 新值}
+        ],
+        "VTS_items": [
+          {"name": "参数名", "unit": "单位", "db_key": "xxx", "base_current": 当前值, "optimized_current": 优化后值, "target": 目标值}
+        ]
+      },
+      "reasoning_logic": "分析说明"
+    }
+  llm_config:
+    temperature: 0.0
+    presence_penalty: 0.0
+    top_p: 0.9

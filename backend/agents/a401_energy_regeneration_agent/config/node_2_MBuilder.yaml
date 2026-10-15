@@ -1,0 +1,100 @@
+# =============================================================================
+# MBuilder 节点说明文件
+# =============================================================================
+node_type_id: "MBuilder"
+node_display_name: "M 曲线构建"
+node_category: "制动力分配基础"
+node_description: "构建 ECE R13 法规下限 M 曲线，含 C(φ)=0 二次方程求解（Z_B1）。对应计算方法文档 §4。"
+
+# =============================================================================
+# 输入变量定义（全部从 node_0_VehicleParam 读取）
+# =============================================================================
+inputs:
+  G:
+    name: "整车重力"
+    unit: "N"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "G"
+
+  L_m:
+    name: "轴距"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "L_m"
+
+  b:
+    name: "质心到后轴距离"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "b"
+
+  hg:
+    name: "质心高度"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "hg"
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+  phi_array:
+    name: "路面附着系数数组"
+    unit: "-"
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "φ ∈ [0.2, 0.8] 均匀采样点数组（法规区间）"
+
+  F_mu1_M:
+    name: "M 曲线前轴制动力"
+    unit: "N"
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "Fμ1^M(φ)，C(φ)<0 区间有效"
+
+  F_mu2_M:
+    name: "M 曲线后轴补足力"
+    unit: "N"
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "C(φ)≥0 时为 0；C(φ)<0 时为法规要求后轴补足力"
+
+  C_array:
+    name: "C(φ) 判断函数数组"
+    unit: "-"
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "C(φ) = hg/L·φ² + (b/L-0.85)·φ + 0.07"
+
+  Z_B1:
+    name: "前驱段①段②分界制动强度"
+    unit: "-"
+    type: "float"
+    schema_type: "intermediate"
+    description: "C(φ)=0 的根对应的 Z（文档 §5 段①上限）"
+
+  phi_B1:
+    name: "C(φ)=0 的根 φ 值"
+    unit: "-"
+    type: "float"
+    schema_type: "intermediate"
+    description: "落在 [0.2, 0.8] 内的有效根"
+
+  # =============================================================================
+  # 语义求解器输出变量定义
+  # =============================================================================
+
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "M 曲线构建计算节点的自然语言分析报告（Markdown 格式）"

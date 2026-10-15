@@ -1,0 +1,229 @@
+# =============================================================================
+# ResistanceCalculatorLtem_m7 节点说明文件
+# =============================================================================
+node_type_id: "ResistanceCalculatorLtem_m7"
+node_display_name: "-7℃行驶阻力计算"
+node_category: "力学分析【低温修正】"
+node_description: "最小物理过程2B：低温-7℃行驶阻力计算。计算低温-7℃环境下的滚阻、风阻、拖滞阻力，应用低温修正因子。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  # 从 node_1 获取（与 node_2 相同）
+  vel:
+    name: "原始的速度时间序列"
+    unit: "m/s"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "原始速度数据的时间序列数据（长度N）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "vel"
+
+  vel_ave:
+    name: "平均速度时间序列"
+    unit: "m/s"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "驾驶循环平均速度的时间序列数据（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "vel_ave"
+
+  a:
+    name: "加速度时间序列"
+    unit: "m/s²"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "驾驶循环加速度的时间序列数据（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "a"
+
+  # SSTS参数 - 标准工况参数（复用）
+  mass_curb:
+    name: "整备质量"
+    unit: "kg"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "整备质量"
+    default: 2200
+
+  mass_maxload:
+    name: "最大载荷质量"
+    unit: "kg"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "最大载荷质量"
+    default: 400
+
+  r_in:
+    name: "转动惯量"
+    unit: "kg·m²"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "整车等效转动惯量（等效到轮端）"
+    default: 9
+
+  rad:
+    name: "车轮半径"
+    unit: "m"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "轮胎滚动半径"
+    default: 0.34
+
+  rr_part:
+    name: "轮胎台架滚阻系数"
+    unit: "‰"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "轮胎台架测试滚动阻力系数"
+    default: 6.5
+
+  rr_gain:
+    name: "滚动阻力增益"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "滚动阻力修正系数"
+    default: 1.0
+
+  cd_wt:
+    name: "风阻系数"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "整车风阻系数"
+    default: 0.22
+
+  cd_gain:
+    name: "风阻系数增益"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "风阻修正系数"
+    default: 1.08
+
+  aero:
+    name: "迎风面积"
+    unit: "m²"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "整车迎风面积"
+    default: 2.6
+
+  f_brake_res:
+    name: "前轮制动卡钳拖滞力矩"
+    unit: "Nm"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "前轮制动卡钳拖滞力矩"
+    default: 1.5
+
+  r_brake_res:
+    name: "后轮制动卡钳拖滞力矩"
+    unit: "Nm"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "后轮制动卡钳拖滞力矩"
+    default: 1.5
+  
+  f_bearing_res:
+    name: "前轮轴承拖滞力矩"
+    unit: "Nm"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "前轮轴承拖滞力矩"
+    default: 0.8
+
+  r_bearing_res:
+    name: "后轮轮轴承拖滞力矩"
+    unit: "Nm"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "后轮轴承拖滞力矩"
+    default: 0.8
+
+  # SSTS参数 - 低温-7℃修正因子（新增）
+  dst_m7:
+    name: "低温-7℃空气密度"
+    unit: "kg/m³"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "低温-7℃环境下的空气密度"
+    default: 1.327
+
+  rr_gain_m7:
+    name: "低温-7℃滚阻增益"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "低温-7℃环境滚阻增长率"
+    default: 1.36
+
+  res_gain_m7:
+    name: "低温-7℃拖滞力矩增益"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "低温-7℃环境拖滞力矩增长率"
+    default: 1.4
+
+# =============================================================================
+# 数值求解器输出变量定义
+# =============================================================================
+outputs:
+  mass:
+    name: "经济性测试质量"
+    unit: "kg"
+    type: "float"
+    schema_type: "intermediate"
+    description: "修正后的经济性测试质量（与标准工况相同）"
+
+  f_roll_m7:
+    name: "低温-7℃滚动阻力"
+    unit: "N"
+    type: "float"
+    schema_type: "intermediate"
+    description: "低温-7℃环境下的滚动阻力"
+
+  f_drg_m7:
+    name: "低温-7℃拖滞阻力"
+    unit: "N"
+    type: "float"
+    schema_type: "intermediate"
+    description: "低温-7℃环境下的拖滞阻力（与标准工况相同）"
+
+  f_aer_m7:
+    name: "低温-7℃空气阻力时间序列"
+    unit: "N"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-7℃环境下的空气阻力数组（长度N-1）"
+
+  f_road_load_m7:
+    name: "低温-7℃道路阻力时间序列"
+    unit: "N"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-7℃环境下的道路阻力数组（风阻+滚阻+拖滞）（长度N-1）"
+
+  f_inert_m7:
+    name: "低温-7℃惯性力时间序列"
+    unit: "N"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "低温-7℃环境下的惯性力数组（长度N-1）"
+
+  drag_force_stats_m7:
+    name: "低温-7℃行驶阻力统计特征参数"
+    unit: "dict"
+    type: "dict"
+    schema_type: "intermediate"
+    description: "低温-7℃环境下的阻力统计信息"
+
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "低温-7℃行驶阻力分析的自然语言摘要"

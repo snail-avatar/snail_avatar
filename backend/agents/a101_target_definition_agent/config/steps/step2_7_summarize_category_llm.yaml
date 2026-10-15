@@ -1,0 +1,75 @@
+﻿# =============================================================================
+# 步骤2.7：专业总结 - LLM配置
+# =============================================================================
+# 此步骤对当前专业的 step2_1 到 step2_6 的推理输出结果进行总结
+# 重点总结 reasoning_logic 字段中的决策逻辑和基本结论
+# 采用两阶段调用：阶段1 分析总结 (text)，阶段2 不启用
+
+step_type: "llm"
+step_id: "SUMMARIZE_CATEGORY"
+step_name: "专业总结"
+
+# 启用阶段1进行总结分析，关闭阶段2的JSON格式化
+stage1_enabled: true
+stage2_enabled: false
+
+# =============================================================================
+# 数据源声明（data_sources）
+# =============================================================================
+# 读取当前专业的 step2_1 ~ step2_6 的 reasoning_logic 字段
+
+data_sources:
+  # 读取当前专业的指定步骤的 reasoning_logic
+  # 对应私有函数：get_step_reasoning_logics（文件：a101_step2_7_get_reasoning_logics.py）
+  # 功能：从沙箱中读取指定步骤的 reasoning_logic 字段并格式化输出
+  - function: "get_step_reasoning_logics"
+    args_mapping:
+      sandbox: "$sandbox"
+      professional_category: "$args.professional_category"
+      step_ids: ["ANALYZE_PRODUCT", "DETERMINE_MAPPING", "CHECK_REGULATIONS_AND_REFERENCES", 
+                 "DEFINE_INITIAL", "VALIDATE_TARGETS", "OPTIMIZE_SSTS"]
+    output: "step_reasoning_logics"
+
+# =============================================================================
+# Prompt 模板
+# =============================================================================
+
+prompt_template: |
+  【车型信息】
+  车型后缀：{vehicle_suffix}
+  车型名称：{vehicle_display_name}
+
+  【专业分类】
+  {professional_category}
+
+  【推理过程汇总】
+  {step_reasoning_logics}
+
+# =============================================================================
+# 阶段 1: 分析总结 (text模式)
+# =============================================================================
+
+stage1_system_prompt: |
+  你是目标值定义总结专家，负责总结当前专业的指标定义过程。
+
+  【工作模式】
+  根据各步骤的推理逻辑，总结：
+  1. 产品定义关键信息
+  2. VTS/SSTS 目标值设定依据
+  3. 校核结果分析
+  4. 优化建议（如有）
+  5. 参数置信度评估
+
+  【输出要求】
+  用结构化文本清晰描述，不需要输出 JSON 格式。
+  重点说明决策逻辑和基本结论。
+
+# stage1_llm_config: 阶段1配置，这里采用默认配置
+#stage1_llm_config:
+#  model_name: "qwen3.5-plus"
+#  max_new_tokens: 4000
+#  temperature: 0.3
+#  top_p: 0.9
+#  presence_penalty: 1.0
+#  context_window: 256000
+#  output_format: "text"

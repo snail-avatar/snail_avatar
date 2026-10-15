@@ -1,0 +1,386 @@
+node_type_id: GradePerformanceCalculator_RWD
+node_display_name: 爬坡性能
+node_category: 动力性计算
+node_description: 计算后驱配置下的坡道起步能力、最大爬坡度和指定坡度最高车速
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+
+inputs:
+  # 从 node_1B_GradeAdhesionLimit 读取的中间变量
+  mass_full_load:
+    name: 满载质量
+    unit: kg
+    type: float
+    schema_type: intermediate
+    description: 满载质量
+    source_node: "node_1B_GradeAdhesionLimit"
+
+  grade_max_rwd:
+    name: RWD附着力限制最大爬坡度
+    unit: '%'
+    type: float
+    schema_type: intermediate
+    description: RWD模式附着力限制的最大爬坡度
+    source_node: "node_1B_GradeAdhesionLimit"
+
+  N_r_at_max_rwd:
+    name: RWD最大爬坡角时后轴法向力
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: RWD模式达到最大爬坡角时后轴的地面法向反力
+    source_node: "node_1B_GradeAdhesionLimit"
+
+  # 从 node_2_PowerLimitCalculator_RWD 读取的中间变量
+  edu_tmax_r:
+    name: 后电驱最大扭矩
+    unit: Nm
+    type: float
+    schema_type: intermediate
+    description: 后电驱最大轮端扭矩
+    source_node: "node_2_PowerLimitCalculator_RWD"
+    source_var: edu_tmax_r_raw
+
+  edu_pmax_r:
+    name: 后电驱峰值功率
+    unit: kW
+    type: float
+    schema_type: intermediate
+    description: 后电驱峰值功率
+    source_node: "node_2_PowerLimitCalculator_RWD"
+    source_var: edu_pmax_r_raw
+
+  edu_spd_max_r:
+    name: 后电驱最高转速
+    unit: rpm
+    type: float
+    schema_type: intermediate
+    description: 后电驱最高轮端转速
+    source_node: "node_2_PowerLimitCalculator_RWD"
+    source_var: edu_spd_max_r_raw
+
+  edu_pow_gain_r:
+    name: 后电驱功率衰减系数
+    unit: ''
+    type: float
+    schema_type: intermediate
+    description: 后电驱功率衰减系数
+    source_node: "node_2_PowerLimitCalculator_RWD"
+    source_var: edu_pow_gain_r_raw
+
+  edu_spd_max:
+    name: 电驱综合最高转速
+    unit: rpm
+    type: float
+    schema_type: intermediate
+    description: 电驱综合最高转速
+    source_node: "node_2_PowerLimitCalculator_RWD"
+    source_var: edu_spd_max_final
+
+  edp_300s_pmax:
+    name: 三电系统轮端300s持续功率
+    unit: kW
+    type: float
+    schema_type: intermediate
+    description: 三电系统轮端最大持续功率@300s
+    source_node: "node_2_PowerLimitCalculator_RWD"
+    source_var: edp_300s_pmax_wheel
+
+  axle_eff:
+    name: 综合半轴效率
+    unit: ''
+    type: float
+    schema_type: intermediate
+    description: 综合半轴效率
+    source_node: "node_2_PowerLimitCalculator_RWD"
+    source_var: axle_eff_final
+
+  # 从 node_3_AccelTopSpeedCalculator_RWD 读取的中间变量
+  v_max_1km:
+    name: 1km最高车速
+    unit: km/h
+    type: float
+    schema_type: intermediate
+    description: 1km区间最高车速（作为坡道最高车速迭代上限）
+    source_node: "node_3_AccelTopSpeedCalculator_RWD"
+
+  # SSTS/VTS 输入变量
+  wheel_base:
+    name: 轴距
+    unit: m
+    type: float
+    schema_type: ssts_vts
+    description: 轴距
+    default: 2.85
+
+  mass_centroid_x:
+    name: 质心x坐标
+    unit: m
+    type: float
+    schema_type: ssts_vts
+    description: 质心到前轴距离
+    default: 1.246
+
+  mass_centroid_z:
+    name: 质心Z坐标
+    unit: m
+    type: float
+    schema_type: ssts_vts
+    description: 质心高度
+    default: 0.21
+
+  rad:
+    name: 轮胎滚动半径
+    unit: m
+    type: float
+    schema_type: ssts_vts
+    description: 轮胎滚动半径
+    default: 0.359
+
+  road_adh:
+    name: 路面附着系数
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 路面附着系数
+    default: 0.9
+
+  rr_part:
+    name: 滚阻系数
+    unit: ‰
+    type: float
+    schema_type: ssts_vts
+    description: 滚阻系数（千分比）
+    default: 6.5
+
+  rr_gain:
+    name: 滚阻修正系数
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 滚阻修正系数
+    default: 1.2
+
+  f_brake_res:
+    name: 前轮制动卡钳拖滞力矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 前轮制动卡钳拖滞力矩
+    default: 1.5
+
+  r_brake_res:
+    name: 后轮制动卡钳拖滞力矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 后轮制动卡钳拖滞力矩
+    default: 1.5
+
+  f_bearing_res:
+    name: 前轮轴承拖滞力矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 前轮轴承拖滞力矩
+    default: 0.8
+
+  r_bearing_res:
+    name: 后轮轴承拖滞力矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 后轮轴承拖滞力矩
+    default: 0.8
+
+  dst:
+    name: 空气密度
+    unit: kg/m^3
+    type: float
+    schema_type: ssts_vts
+    description: 空气密度
+    default: 1.225
+
+  cd_wt:
+    name: 风洞风阻系数
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 风洞风阻系数
+    default: 0.28
+
+  cd_gain:
+    name: 风阻修正系数
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 风阻修正系数
+    default: 1.15
+
+  aero:
+    name: 正投影面积
+    unit: m^2
+    type: float
+    schema_type: ssts_vts
+    description: 正投影面积
+    default: 2.45
+
+  grade_s1:
+    name: 高速爬坡坡度1
+    unit: '%'
+    type: float
+    schema_type: ssts_vts
+    description: 高速爬坡坡度1
+    default: 4.0
+
+  grade_s2:
+    name: 高速爬坡坡度2
+    unit: '%'
+    type: float
+    schema_type: ssts_vts
+    description: 高速爬坡坡度2
+    default: 12.0
+
+  slop_start_delta:
+    name: 坡道起步能力修正
+    unit: '%'
+    type: float
+    schema_type: ssts_vts
+    description: 坡道起步能力修正值
+    default: -2.0
+
+  slop_max_delta:
+    name: 最大爬坡度修正
+    unit: '%'
+    type: float
+    schema_type: ssts_vts
+    description: 最大爬坡度修正值
+    default: 5.0
+
+  v_max_s1_delta:
+    name: s1坡道车速修正
+    unit: km/h
+    type: float
+    schema_type: ssts_vts
+    description: s1坡道最高车速修正值
+    default: -2.0
+
+  v_max_s2_delta:
+    name: s2坡道车速修正
+    unit: km/h
+    type: float
+    schema_type: ssts_vts
+    description: s2坡道最高车速修正值
+    default: -2.0
+
+# =============================================================================
+# 数值求解器输出变量定义
+# =============================================================================
+
+outputs:
+  # 中间变量
+  grade_motor:
+    name: 电机扭矩约束最大爬坡度
+    unit: '%'
+    type: float
+    schema_type: intermediate
+    description: 电机扭矩约束的最大爬坡度（arcsin解析求解）
+
+  grade_adhesion:
+    name: 附着力约束最大爬坡度
+    unit: '%'
+    type: float
+    schema_type: intermediate
+    description: 附着力约束的最大爬坡度（来自node_1B含阻力结果）
+
+  grade_start:
+    name: 坡道起步能力
+    unit: '%'
+    type: float
+    schema_type: intermediate
+    description: 坡道起步能力（未修正，取电机和附着力约束的较小值）
+
+  v_max_s1_power:
+    name: s1坡度功率限制最高车速
+    unit: km/h
+    type: float
+    schema_type: intermediate
+    description: s1坡度功率限制最高车速
+
+  v_max_s1_force:
+    name: s1坡度驱动力限制最高车速
+    unit: km/h
+    type: float
+    schema_type: intermediate
+    description: s1坡度驱动力限制最高车速
+
+  v_max_s1:
+    name: s1坡度综合最高车速
+    unit: km/h
+    type: float
+    schema_type: intermediate
+    description: s1坡度综合最高车速（未修正）
+
+  v_max_s2_power:
+    name: s2坡度功率限制最高车速
+    unit: km/h
+    type: float
+    schema_type: intermediate
+    description: s2坡度功率限制最高车速
+
+  v_max_s2_force:
+    name: s2坡度驱动力限制最高车速
+    unit: km/h
+    type: float
+    schema_type: intermediate
+    description: s2坡度驱动力限制最高车速
+
+  v_max_s2:
+    name: s2坡度综合最高车速
+    unit: km/h
+    type: float
+    schema_type: intermediate
+    description: s2坡度综合最高车速（未修正）
+ 
+  # ssts_vts 输出变量
+  grade_start:
+    name: "修正后坡道起步能力"
+    unit: "%"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "修正后坡道起步能力（修正后）"
+
+  grade_max:
+    name: "修正后最大爬坡度"
+    unit: "%"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "修正后最大爬坡度（修正后）"
+
+  v_max_s1:
+    name: "s1坡度修正后最高车速"
+    unit: "km/h"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "s1坡度修正后最高车速（修正后）"
+
+  v_max_s2:
+    name: "s2坡度修正后最高车速"
+    unit: "km/h"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "s2坡度修正后最高车速（修正后）"
+
+
+# =============================================================================
+# 语义求解器输出变量定义
+# =============================================================================
+
+  semantic_summary:
+    name: 语义分析摘要
+    unit: ''
+    type: str
+    schema_type: intermediate
+    description: 爬坡性能计算的自然语言摘要

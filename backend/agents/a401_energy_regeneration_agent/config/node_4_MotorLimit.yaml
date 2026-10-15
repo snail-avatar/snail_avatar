@@ -1,0 +1,84 @@
+# =============================================================================
+# MotorLimit 节点说明文件
+# =============================================================================
+node_type_id: "MotorLimit"
+node_display_name: "电驱外特性限值"
+node_category: "系统限值"
+node_description: "根据电驱外特性 Tmax(n) 计算最大回收制动力 F_edrv_max = Tmax(n)/R。对应计算方法文档 §7。外特性曲线从上游 node_ssts_MotorAnalysis 的 motor_variants 读取。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  # --- 从 node_0_VehicleParam ---
+  R:
+    name: "轮胎滚动半径"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "R"
+
+  # --- 从 node_ssts_MotorAnalysis ---
+  motor_variants:
+    name: "电驱方案集合"
+    unit: ""
+    type: "object"
+    schema_type: "intermediate"
+    source_node: "node_ssts_MotorAnalysis"
+    source_var: "motor_variants"
+
+  # --- SSTS 参数 ---
+  V_min_regen:
+    name: "退出回收车速"
+    unit: "km/h"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "V≤V_min 时关闭回收，典型 5~10 km/h"
+    default: 5.0
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+  per_variant_F_edrv:
+    name: "分方案电驱限值（dict）"
+    unit: ""
+    type: "object"
+    schema_type: "intermediate"
+    description: |
+      {"front/motor_parameter": F_edrv ndarray, "rear/motor_AAA": F_edrv ndarray, ...}
+      key 格式与 node_6 的 _group_by_axle 对齐。
+
+  F_edrv_max:
+    name: "电驱外特性限值（总量，第一个方案）"
+    unit: "N"
+    type: "ndarray"
+    schema_type: "intermediate"
+
+  per_axle_maps:
+    name: "分轴电驱限值"
+    unit: ""
+    type: "object"
+    schema_type: "intermediate"
+    description: |
+      {"front": ndarray_or_None, "rear": ndarray_or_None}
+      按轴汇总（取该轴第一个方案）。
+
+  T_max_at_regen:
+    name: "回收工况参考点扭矩"
+    unit: "Nm"
+    type: "float"
+    schema_type: "intermediate"
+    description: "50 km/h 参考点的 Tmax，用于语义分析"
+
+  # =============================================================================
+  # 语义求解器输出变量定义
+  # =============================================================================
+
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "电驱外特性限值计算节点的自然语言分析报告（Markdown 格式）"

@@ -1,0 +1,359 @@
+# =============================================================================
+# 步骤2.2：确定VTS与SSTS映射关系 - 配置文件
+# =============================================================================
+# 本步骤是 agent 类型步骤，通过 ProcessAgentStep 调用子 agent（workflow agent），
+# 由子 agent 的 LLM 分析计算节点，输出 VTS 指标对应的 SSTS 指标映射关系。
+#
+# 执行流程：
+#   1. data_sources：加载 VTS 数据并格式化为可读文本（vts_text）
+#   2. query_template + task_prompt：构建完整的查询内容
+#   3. 调用子 agent send_message(query)：LLM 分析输出 sub_category 分组结构
+#   4. post_process：验证 SSTS 参数 → 转换 db_key → 合并到 process_data
+#
+# 前置依赖：step1（DETECT_CATEGORIES）已完成，process_data 中有 vts_category_data
+# 后置影响：更新 process_data 中 vts_category_data 对应二级专业组的 SSTS_parameter 和 计算公式
+#
+# 支持的变量引用格式：
+#   $args.xxx              LLM 传入的参数（如 professional_category, vehicle_suffix, vehicle_key）
+#   $memory_db             memory_db 实例（框架自动注入）
+#   $context               Agent 实例（框架自动注入）
+#   $sandbox               沙箱实例（框架自动注入）
+#   $result                LLM 的输出结果（JSON 字符串）
+#   $result.structured_data   LLM 输出中的 structured_data 字段
+#   $result.reasoning_logic   LLM 输出中的 reasoning_logic 字段
+#   $data_sources.xxx      之前 data_sources 的输出
+#   $post.xxx              之前 post_process 的输出
+# =============================================================================
+
+
+# =============================================================================
+# 基本信息
+# =============================================================================
+
+# 步骤类型：agent（子Agent调用型）
+# 可选值：llm（LLM推理型）、agent（子Agent调用型）、process（直接执行型）
+step_type: "agent"
+
+# Agent 类型：calculator（计算型）/ expert（专家型）/ fix（固定型）
+# calculator: 从 sandbox 的 calculator_mapping 动态获取 agent_id
+# expert: 从 sandbox 的 expert_mapping 动态获取 agent_id
+# fix: 直接使用本文件配置的 agent_id
+agent_type: "calculator"
+
+# 步骤标识，对应循环配置中的 step_id
+step_id: "DETERMINE_MAPPING"
+
+# 步骤显示名称
+step_name: "确定SSTS/VTS映射关系"
+
+
+# =============================================================================
+# query_template（查询模板）
+# =============================================================================
+# 构建发送给子 agent 的查询内容。
+# {变量名} 会被 data_sources 的 output 和 args 中的值替换。
+#
+# 模板变量说明：
+#   {professional_category}  当前循环的专业名称（由 loop_config 注入）
+#   {vehicle_suffix}         车型后缀（如 reevlto）
+#   {vts_text}               格式化后的 VTS 指标列表文本（来自 data_sources）
+#   {task_prompt}            任务指令模板（本文件下方定义）
+# =============================================================================
+
+query_template: |
+  请确定专业「{professional_category}」的VTS指标与SSTS指标的映射关系。
+
+  【车型信息】
+  车型后缀：{vehicle_suffix}
+  车型名称：{vehicle_display_name}
+
+  【专业「{professional_category}」的VTS指标】
+  {vts_text}
+
+  {task_prompt}
+
+
+# =============================================================================
+# data_sources（数据源加载）
+# =============================================================================
+# 在调用子 agent 之前，由代码直接调用的函数，用于预先加载必需的数据。
+# 调用结果存入 output 指定的变量名，可在 query_template 中通过 {变量名} 引用。
+#
+# 与 post_process 的区别：
+#   - data_sources：agent 调用前执行，用于准备查询所需的数据
+#   - post_process：agent 调用后执行，用于处理和验证返回结果
+#
+# 支持的变量引用格式：
+#   $args.xxx        LLM 传入的参数
+#   $memory_db       memory_db 实例
+#   $context         Agent 实例
+# =============================================================================
+
+data_sources:
+  # 数据源：格式化 VTS 数据供 LLM 提示使用
+  # 对应公共函数：step2_2_format_vts_data（文件：a101_step2_2_format_vts_data.py）
+  # 功能：从 sandbox 的 process_data.vts_category_data 中获取当前专业的 VTS 数据，
+  #       格式化为带参数名和值的可读文本，供 LLM 构建查询上下文
+  #
+  # 参数说明：
+  #   professional_category: 当前专业名（从 args 中获取，由框架循环注入）
+  #   sandbox: 沙箱实例（框架自动注入）
+  #
+  # 输出：vts_text = 格式化后的 VTS 指标文本
+  - function: "step2_2_format_vts_data"
+    args_mapping:
+      professional_category: "$args.professional_category"
+      sandbox: "$sandbox"
+    output: "vts_text"
+
+
+# =============================================================================
+# post_process（后处理钩子）
+# =============================================================================
+# 在子 agent 返回结果之后，按顺序执行的后处理函数链。
+# 用于验证 LLM 输出、转换数据格式、合并到 process_data。
+#
+# 执行顺序和依赖关系：
+#   1. get_valid_ssts_db_keys  → 从 memory db 获取所有有效 SSTS db_key → valid_ssts_db_keys
+#   2. build_ssts_index        → 构建 {基础名: 完整名} 哈希索引 → ssts_index
+#   3. validate_and_convert_ssts → 验证 LLM 输出的 SSTS 参数 + 转换 db_key → validated_mapping
+#   4. apply_authoritative_names  ★新增★ 用 DB 权威中文名覆盖 SSTS_parameter.name → renamed_mapping
+#   5. save_to_process_data    → 将命名修正后的 mapping 合并回 vts_category_data
+#
+# 每一步的 output 可被后续步骤通过 $post.xxx 引用
+# =============================================================================
+
+
+# =============================================================================
+# task_prompt（任务指令模板）
+# =============================================================================
+# 作为 query_template 中 {task_prompt} 变量的值，与 VTS 数据一并发送给子 agent。
+# 定义了 LLM 的任务要求、约束条件、输出格式和示例。
+#
+# 注意：task_prompt 中可以使用 {变量名}，会被模板引擎自动替换。
+# =============================================================================
+
+task_prompt: |
+  【任务要求】
+  1. 根据提供的 VTS 指标列表，结合上下文信息中的计算节点，确定每个 VTS 指标对应的 SSTS 指标及计算公式
+  2. 针对每个 VTS 指标，识别其输入参数（SSTS指标）和计算公式
+  3. SSTS 指标的 db_key 应使用基础名（不含 _target_{vehicle_suffix} 后缀），格式参考示例
+
+  【SSTS 参数识别规则 - 必须严格遵守】
+  ⚠️ 除了从 VTS 公式中直接识别 SSTS 参数外，还必须递归展开所有中间变量的依赖链！
+  
+  必须执行以下步骤：
+  1. 分析 VTS 公式，识别直接引用的 SSTS 参数
+  2. 对于公式中出现的每个中间变量（如 e_elc_reg, e_elc_div 等），必须找到其计算公式
+  3. 展开中间变量的计算公式，识别其所有输入参数作为 SSTS 参数
+  4. 重复步骤 2-3，直到所有依赖链完全展开，不再有中间变量
+  
+
+
+  【重要约束 - SSTS 去重规则】
+  ⚠️ 当计算公式为直接对应形式（如 `vts_target = ssts`，无任何加减乘除运算）时：
+     - 这表示该 VTS 指标本身就是一个 SSTS 指标，不需要额外拆解
+     - 此时 SSTS_parameter 必须为空数组 []
+     - 禁止将 VTS 的 db_key 或其基础名同时出现在 SSTS_parameter 中
+  ⚠️ 禁止出现 SSTS_parameter 中的 db_key（含或不含后缀）与同组 VTS_items 的 param_values db_key 相同的情况
+     - 错误示例：VTS db_key = "aero_target_reevlto"，SSTS db_key = "aero"（会被补全为 aero_target_reevlto → 重复）
+     - 正确做法：此时 SSTS_parameter 应为 []
+
+  【重要约束 - 忽略无关信息】
+  ⚠️ 请忽略以下无关信息：
+  - 计算流程概览中的路径描述（如"计算路径：node_A → node_B"）
+  - 非目标专业的节点分析详情（如运动学分析、力学分析等与「{professional_category}」无关的内容）
+  - 参数的当前值（如"当前值: nan"），只需关注参数名称和关系
+  - 重复或冗余的描述性文字
+
+  ⚠️ 请重点关注以下信息：
+  - 每个节点的【计算逻辑说明】部分
+  - 输入参数列表（如"输入：cd_style、cd_cool_air、cd_under_body"）
+  - 计算公式（如"cd_wt = cd_style + cd_cool_air + cd_under_body"）
+  - 输出参数列表（如"输出：cd_wt"）
+  - 参数的schema_type标记（如"ssts_vts"表示该参数既是SSTS也是VTS）
+
+  【输出格式要求】
+  请严格按照以下JSON格式输出，不要包含任何额外文字：
+    
+  注意：
+  1. param_values 中的 db_key 必须使用上面 VTS 指标列表中的 db_key（含 _target_{vehicle_suffix} 后缀）
+  2. SSTS_parameter 中的 db_key 也必须带 `_target_{vehicle_suffix}` 后缀，与 VTS param_values 的 db_key 格式一致
+  3. 按二级专业分组，同一二级专业下的多个VTS共享同一组SSTS参数和计算公式，不要在每个VTS项中重复SSTS列表
+  4. ⚠️【重要】二级专业名必须与上面VTS指标列表中的分组名称**完全一致**，禁止更改！
+     - 例如列表中是"加速时间"，就必须使用"加速时间"
+     - 禁止改成"加速性能"、"加速能力"等名称
+     - 禁止对名称进行任何形式的缩写、简化或意译
+     - ⚠️ 禁止在名称前后添加任何装饰性符号：括号（中文【】()、英文[]()）、引号、星号、emoji、下划线、前后缀文字、多余空格等
+     - 错误示例："【纯电模式常温工况】" ❌ → 正确应为 "纯电模式常温工况" ✅
+     - 错误示例："⚡加速时间⚡" ❌ → 正确应为 "加速时间" ✅
+     - 如果不确定某个分组的准确名称，请重新仔细查看VTS指标列表
+
+  {
+    "structured_data": {
+      "category": "{professional_category}",
+      "sub_category": [
+        {
+          "二级专业名（必须与VTS列表中的分组名完全一致，禁止更改）": [
+            {
+              "VTS_items": [
+                {
+                  "name": "VTS参数名（必须与VTS指标列表中的名称完全一致）",
+                  "unit": 单位,
+                  "param_values": [{"db_key": "xxx_target_{vehicle_suffix}", "value": null}]
+                }
+              ],
+              "SSTS_parameter": [
+                {"name": "SSTS参数名", "unit": 单位, "db_key": "xxx", "value": null}
+              ],
+              "计算公式": "xxx = xxx + xxx"
+            }
+          ]
+        }
+      ],
+      "reasoning_logic": "推理逻辑说明、背景信息等，用于后续分析、决策和总结"
+    }
+  }
+
+  【示例】
+  {
+    "structured_data": {
+      "category": "空气动力学",
+      "sub_category": [
+        {
+          "气动阻力": [
+            {
+              "VTS_items": [
+                {
+                  "name": "风洞风阻系数",
+                  "unit": 1,
+                  "param_values": [{"db_key": "cd_wt_target_{vehicle_suffix}", "value": null}]
+                }
+              ],
+              "SSTS_parameter": [
+                {"name": "造型风阻系数", "unit": 1, "db_key": "cd_style", "value": null},
+                {"name": "冷却风阻系数", "unit": 1, "db_key": "cd_cool_air", "value": null},
+                {"name": "下车体风阻系数", "unit": 1, "db_key": "cd_under_body", "value": null}
+              ],
+              "计算公式": "cd_wt = cd_style + cd_cool_air + cd_under_body"
+            }
+          ]
+        },
+        {
+          "正投影": [
+            {
+              "VTS_items": [
+                {
+                  "name": "正投影面积",
+                  "unit": "m2",
+                  "param_values": [{"db_key": "aero_target_{vehicle_suffix}", "value": null}]
+                }
+              ],
+              "SSTS_parameter": [],
+              "计算公式": "aero_target = aero"
+            }
+          ]
+        }
+      ],
+      "reasoning_logic": "根据计算逻辑说明，风洞风阻系数由三个SSTS参数求和得到；正投影面积直接对应迎风面积参数。"
+    }
+  }
+
+  【术语说明】
+  - VTS: Vehicle Technical Specification，整车技术规格，用于定义车辆层面的技术特征和性能指标
+  - SSTS: Sub-System Technical Specification，子系统技术规格，用于定义各子系统的功能和性能指标，是VTS的向下拆解物
+
+# =============================================================================
+# stage 2 formatter_config（格式整理器配置）
+# =============================================================================
+# agent 类型步骤的 Stage 2（格式整理器）配置
+# 用于将子 agent 返回的原始文本整理为结构化数据+推理逻辑格式
+#
+# 覆盖全局 formatter.yaml 的默认配置：
+# - system_prompt: 定制化提示词，要求严格保留原始 JSON 结构
+# - llm_config: 格式稳定优先，低 temperature + 零 presence_penalty
+# =============================================================================
+
+formatter_config:
+  system_prompt: |
+    你是一个严格的格式保留专家。你的唯一任务是将输入文本整理为标准JSON格式。
+    
+    【核心约束 - 必须严格遵守，不得违反】
+    1. 严格保留原始数据的所有字段名、数据结构和嵌套层级
+    2. 禁止修改任何字段名（如 SSTS_parameter 不能改为 SSTS_parameters）
+    3. 禁止修改数据结构（如 [{key: value}] 不能改为 [key_str1, key_str2]）
+    4. 禁止移除 list 包装（如 {key: [{...}]} 不能改为 {key: {...}}）
+    5. 禁止将中文字段名改为英文（如 计算公式 不能改为 calculation_method）
+    6. 如果输入中已包含正确的JSON结构，直接提取，不要做任何格式变形
+    7. 保留所有数值、单位、db_key 等细节信息，不得省略
+    
+    【输出格式】
+    请严格按照以下JSON格式输出，不要包含任何额外文字：
+    {
+      "structured_data": {完整保留原始JSON结构},
+      "reasoning_logic": "从原始文本中提取的推理逻辑说明"
+    }
+  llm_config:
+    temperature: 0.1
+    presence_penalty: 0.0
+    top_p: 0.9
+
+
+post_process:
+  # 后处理 1：DB schema 校验 + 修正（★通用公共函数，自包含所有校验+修正逻辑）
+  # 对应公共函数：db_schema_sync（文件：pubfn_db_schema_sync.py）
+  # 功能（一个函数完成原来 4 步的工作）：
+  #   1) 从 DB 拍平 target_ssts + target_vts 两张表，构建 {db_key → {name, unit}} 字典
+  #   2) 递归遍历 LLM 输出的所有参数项（含 db_key 的 dict）：
+  #      - db_key 补全后缀（基础名 → 完整后缀，如 edu_tmax_r → edu_tmax_r_target_reevlto）
+  #      - name → DB 权威中文名（覆盖 LLM 自编的名称）
+  #      - unit → DB 权威单位（覆盖 LLM 编造的单位）
+  #      - remove_unknown=true → 删除 DB 中不存在的幻觉参数项
+  #   3) write_back=true → 同步覆盖 sandbox step_results，确保下游步骤（step2_3+）
+  #      从 step_results 读取时也能拿到正确的 name/unit
+  #
+  # 设计优势：
+  #   - 通用性：递归 + db_key 模式匹配，支持 SSTS_parameter[] / VTS_items[].param_values[]
+  #     / optimized_SSTS_items[] 等任意嵌套结构
+  #   - 自包含：不需要前置依赖（如 ssts_index），内部自己查 DB
+  #   - 同时覆盖 process_data（经 save_to_process_data）和 step_results（write_back 自动覆写）
+  #
+  # 参数说明：
+  #   mapping:        LLM 输出的 structured_data（直接吃原始输出）
+  #   memory_db:      MemoryDatabase 实例（框架自动注入）
+  #   instance_key:   memory db 中的车型键名
+  #   remove_unknown: true → 删除 DB 中不存在的幻觉 db_key 参数项
+  #   write_back:     true → 同步覆盖 sandbox step_results
+  #   step_id:        "DETERMINE_MAPPING"（固定）
+  #   professional_category: 当前专业名（用于构建 step_results key）
+  #   sandbox:        沙箱实例（框架自动注入，write_back 时用）
+  #
+  # 输出：synced_mapping = DB 权威信息修正后的完整 mapping
+  - function: "db_schema_sync"
+    args_mapping:
+      mapping: "$result.structured_data"
+      memory_db: "$memory_db"
+      instance_key: "$args.instance_key"
+      remove_unknown: true
+      write_back: true
+      step_id: "DETERMINE_MAPPING"
+      professional_category: "$args.professional_category"
+      sandbox: "$sandbox"
+    output: "synced_mapping"
+
+  # 后处理 2：将修正后的映射数据合并到 process_data
+  # 对应私有函数：save_to_process_data（文件：a101_step2_2_save_process_data.py）
+  # 功能：
+  #   从 synced_mapping 中提取 sub_category 分组结构，
+  #   使用 db_key 匹配 process_data 中对应的 VTS 项，
+  #   将 SSTS_parameter 和 计算公式 字段回填。
+  #
+  # 注意：此函数只负责写 sandbox.process_data，不做其他修正逻辑。
+  - function: "save_to_process_data"
+    args_mapping:
+      step_id: "DETERMINE_MAPPING"
+      sandbox: "$sandbox"
+      mapping: "$post.synced_mapping"
+
+
+

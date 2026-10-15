@@ -1,0 +1,221 @@
+# =============================================================================
+# WheelEnergy 节点说明文件
+# =============================================================================
+node_type_id: "WheelEnergy"
+node_display_name: "轮端能量计算"
+node_category: "能量积分"
+node_description: "最小物理过程3：轮端能量积分计算。力×距离 = 能量，计算各阻力能耗和动能变化，最终得到轮端驱动/制动能量。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  cycle_distance:
+    name: "循环总里程"
+    unit: "km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "驾驶循环的总行驶距离（单位：公里）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "cycle_distance"
+
+  acc_mask:
+    name: "加速段掩码"
+    unit: ""
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "加速段掩码数组（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "acc_mask"
+
+  dec_mask:
+    name: "减速段掩码"
+    unit: ""
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "减速段掩码数组（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "dec_mask"
+
+  const_mask:
+    name: "恒速段掩码"
+    unit: ""
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "恒速段掩码数组（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "const_mask"
+
+  vel_ave:
+    name: "区间平均速度"
+    unit: "m/s"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "区间平均速度的时间序列数据（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "vel_ave"
+
+  vel:
+    name: "原始速度时间序列"
+    unit: "m/s"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "原始速度数据的时间序列数据（长度N，用于计算时间间隔）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "vel"
+
+  lth:
+    name: "行驶距离时间序列"
+    unit: "m"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "行驶距离的时间序列数据（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "lth"
+  
+  a:
+    name: "加速度时间序列"
+    unit: "m/s²"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "行驶距离的时间序列数据（长度N-1）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "a"
+
+  f_road_load:
+    name: "道路阻力时间序列"
+    unit: "N"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "道路阻力数组（风阻+滚阻+拖滞）（长度N-1）"
+    source_node: "node_2_ResistanceCalculator"
+    source_var: "f_road_load"
+
+  f_aer:
+    name: "空气阻力时间序列"
+    unit: "N"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "空气阻力数组（长度N-1）"
+    source_node: "node_2_ResistanceCalculator"
+    source_var: "f_aer"
+
+  f_roll:
+    name: "滚动阻力"
+    unit: "N"
+    type: "float"
+    schema_type: "intermediate"
+    description: "恒定滚动阻力"
+    source_node: "node_2_ResistanceCalculator"
+    source_var: "f_roll"
+
+  f_drg:
+    name: "拖滞阻力"
+    unit: "N"
+    type: "float"
+    schema_type: "intermediate"
+    description: "恒定拖滞阻力"
+    source_node: "node_2_ResistanceCalculator"
+    source_var: "f_drg"
+
+  mass:
+    name: "测试质量"
+    unit: "kg"
+    type: "float"
+    schema_type: "intermediate"
+    description: "经济性测试质量（半载）"
+    source_node: "node_2_ResistanceCalculator"
+    source_var: "mass"
+
+  r_in:
+    name: "转动惯量"
+    unit: "kg·m²"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "整车等效转动惯量（等效到轮端）"
+    default: 9.0
+
+  rad:
+    name: "车轮半径"
+    unit: "m"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "轮胎滚动半径"
+    default: 0.341
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+  e_aer:
+    name: "风阻能耗时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "空气阻力消耗的能量数组（长度N-1）"
+
+  e_roll:
+    name: "滚阻能耗时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "滚动阻力消耗的能量数组（长度N-1）"
+
+  e_drg:
+    name: "拖滞能耗时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "拖滞阻力消耗的能量数组（长度N-1）"
+
+  e_road_load:
+    name: "道路阻力能耗时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "道路总阻力消耗的能量数组（长度N-1）"
+
+  e_kin:
+    name: "动能变化时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "每个时间间隔的动能变化（长度N-1）"
+
+  e_wheel:
+    name: "轮端总能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "轮端总能量（阻力能耗+动能变化）（长度N-1）"
+
+  e_wheel_div:
+    name: "驱动能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "驱动工况下的轮端能量（正值）（长度N-1）"
+
+  e_wheel_reg:
+    name: "回收能量时间序列"
+    unit: "J"
+    type: "TimeSeries"
+    schema_type: "intermediate"
+    description: "制动工况下的轮端能量（负值）（长度N-1）"
+
+  wheel_energy_stats:
+    name: "轮端能量统计特征"
+    unit: "dict"
+    type: "dict"
+    schema_type: "intermediate"
+    description: "驾驶循环行驶距离（km）,驱动能量总和（kWh）,制动能量总和（kWh）；驱动工况和制动工况下的风阻、滚阻、拖滞、加速能耗分量统计。"
+
+# =============================================================================
+# 语义求解器输出变量定义
+# =============================================================================
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "轮端能量分析的自然语言摘要"

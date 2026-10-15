@@ -1,0 +1,71 @@
+# =============================================================================
+# 对话摘要器配置文件
+# =============================================================================
+# 用于控制 ConversationSummarizer 的 LLM 参数和摘要提示词
+# 修改此文件后无需修改 Python 代码即可调整摘要行为
+# =============================================================================
+
+agent_id: "conversation_summarizer"
+agent_name: "对话摘要器"
+agent_description: "使用轻量 LLM 将对话历史压缩为语义摘要"
+
+# 摘要长度提示（默认值）：注入 system_prompt 模板中的 {summary_length_hint}
+# 【覆盖逻辑】每个 Agent 可在自己的 YAML 中通过
+# summary_config.summary_length_hint 覆盖（如 main_agent 配置为 "300字"）
+summary_length_hint: "200字"
+
+# 摘要专用系统提示词（模板）：{summary_length_hint} 会在运行时根据调用方 Agent 的
+# summary_config.summary_length_hint 替换为具体要求（如 "300字"、"500字"）。
+# 如果 Agent 未配置，则使用默认值 "200字"。
+system_prompt: |
+  你是一个对话摘要助手。你的任务是将对话历史压缩为简洁的摘要。
+
+  要求：
+  1. 保留用户的核心意图和关键信息（如车型、参数名、具体数值）
+  2. 保留助手的关键结论和操作（如调用了什么工具、计算了什么结果）
+  3. 工具调用的数值结果是重要信息，需要尽量的保留
+  4. 忽略寒暄、重复和无关细节
+  5. 用第三人称客观描述，不要添加主观判断
+  6. 摘要长度控制在{summary_length_hint}以内
+
+# LLM 参数：与各 Agent 的 llm_config 格式一致
+# 摘要任务使用轻量模型，控制成本和延迟
+# 【覆盖逻辑】本文件中的所有参数是全局默认值。每个 Agent 可以在自己的 YAML 中
+# 通过 summary_config.llm_config 节覆盖任意参数。例如 main_agent.yaml 中
+# summary_config.llm_config.max_new_tokens: 800 会覆盖此处的 500。
+# 优先级：Agent YAML 的 summary_config → 本文件默认值 → Python 代码兜底常量
+llm_config:
+  # 模型名称：使用轻量模型降低成本和延迟
+  # 【重要】必须使用阿里云百炼 API 支持的真实模型名
+  # 当前默认使用 qwen3.5-flash（百炼已验证可用）
+  # 可被 Agent 的 summary_config.llm_config.model_name 覆盖
+  model_name: "qwen3.5-flash"
+  # 单次摘要生成的最大 token 数（硬上限，保险冗余；实际输出通常由
+  # summary_length_hint 控制）。可被 Agent 的
+  # summary_config.llm_config.max_new_tokens 覆盖（当前 main/VTS/Economy
+  # 三个 Agent 均已覆盖为 800）
+  max_new_tokens: 500
+  # 温度：越低越稳定，摘要任务需要稳定输出
+  # 可被 Agent 的 summary_config.llm_config.temperature 覆盖
+  temperature: 0.3
+  # top_p：核采样
+  # 可被 Agent 的 summary_config.llm_config.top_p 覆盖
+  top_p: 0.8
+  # 存在惩罚：摘要任务不需要高惩罚
+  # 可被 Agent 的 summary_config.llm_config.presence_penalty 覆盖
+  presence_penalty: 1.0
+  # 上下文窗口：摘要任务输入较小，使用较小值
+  # 可被 Agent 的 summary_config.llm_config.context_window 覆盖
+  context_window: 64000
+
+# 纯规则摘要的截断参数（LLM 调用失败时的降级方案）
+# 【覆盖逻辑】本文件中的所有参数是全局默认值。每个 Agent 可以在自己的 YAML 中
+# 通过 summary_config.rule_summary_config 节覆盖。例如 main_agent.yaml 中
+# summary_config.rule_summary_config.user_truncate: 120 会覆盖此处的 100。
+rule_summary_config:
+  # 规则摘要中单条用户消息的最大字符数
+  # 可被 Agent 的 summary_config.rule_summary_config.user_truncate 覆盖
+  user_truncate: 100
+  # 规则摘要中单条助手消息的最大字符数
+  # 可被 Agent 的 summary_config.rule_summary_config.assistant_truncate 覆盖
+  assistant_truncate: 150

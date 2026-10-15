@@ -1,0 +1,255 @@
+node_type_id: GradeAdhesionLimit
+node_display_name: 坡道附着极限
+node_category: 数据预处理
+node_description: 计算满载状态坡道上轮胎最大附着系数能够支撑的最大爬坡角（FWD/RWD/4WD模式），含阻力影响
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+
+inputs:
+  mass_curb:
+    name: 整备质量
+    unit: kg
+    type: float
+    schema_type: ssts_vts
+    description: 整备质量
+    default: 1927.0
+
+  mass_maxload:
+    name: 最大载质量
+    unit: kg
+    type: float
+    schema_type: ssts_vts
+    description: 最大载质量
+    default: 2299.0
+
+  wheel_base:
+    name: 轴距
+    unit: m
+    type: float
+    schema_type: ssts_vts
+    description: 轴距
+    default: 2.85
+
+  mass_centroid_x:
+    name: 质心x坐标
+    unit: m
+    type: float
+    schema_type: ssts_vts
+    description: 质心到前轴距离
+    default: 1.246
+
+  mass_centroid_z:
+    name: 质心Z坐标
+    unit: m
+    type: float
+    schema_type: ssts_vts
+    description: 质心高度
+    default: 0.21
+
+  rad:
+    name: 轮胎滚动半径
+    unit: m
+    type: float
+    schema_type: ssts_vts
+    description: 轮胎滚动半径
+    default: 0.359
+
+  road_adh:
+    name: 路面附着系数
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 路面附着系数
+    default: 0.9
+
+  f_brake_res:
+    name: 前制动器拖滞力矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 前制动器单侧拖滞力矩
+    default: 1.5
+
+  r_brake_res:
+    name: 后制动器拖滞力矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 后制动器单侧拖滞力矩
+    default: 1.5
+
+  f_bearing_res:
+    name: 前轴承拖滞力矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 前轴承单侧拖滞力矩
+    default: 0.8
+
+  r_bearing_res:
+    name: 后轴承拖滞力矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 后轴承单侧拖滞力矩
+    default: 0.8
+
+  rr_part:
+    name: 滚阻系数
+    unit: ‰
+    type: float
+    schema_type: ssts_vts
+    description: 轮胎滚动阻力系数×1000
+    default: 6.5
+
+  rr_gain:
+    name: 滚阻增益
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 滚动阻力增益系数
+    default: 1.2
+
+# =============================================================================
+# 数值求解器输出变量定义
+# =============================================================================
+
+outputs:
+  mass_full_load:
+    name: 满载质量
+    unit: kg
+    type: float
+    schema_type: intermediate
+    description: 满载质量
+
+  theta_max_fwd:
+    name: 前驱最大爬坡角
+    unit: °
+    type: float
+    schema_type: intermediate
+    description: FWD模式含阻力的附着力限制最大爬坡角
+
+  grade_max_fwd:
+    name: 前驱最大爬坡度
+    unit: '%'
+    type: float
+    schema_type: intermediate
+    description: FWD模式含阻力的附着力限制最大爬坡度
+
+  theta_max_rwd:
+    name: 后驱最大爬坡角
+    unit: °
+    type: float
+    schema_type: intermediate
+    description: RWD模式含阻力的附着力限制最大爬坡角
+
+  grade_max_rwd:
+    name: 后驱最大爬坡度
+    unit: '%'
+    type: float
+    schema_type: intermediate
+    description: RWD模式含阻力的附着力限制最大爬坡度
+
+  theta_max_4wd:
+    name: 四驱最大爬坡角
+    unit: °
+    type: float
+    schema_type: intermediate
+    description: 4WD模式含阻力的附着力限制最大爬坡角
+
+  grade_max_4wd:
+    name: 四驱最大爬坡度
+    unit: '%'
+    type: float
+    schema_type: intermediate
+    description: 4WD模式含阻力的附着力限制最大爬坡度
+
+  grade_max_fwd_pure:
+    name: FWD纯附着力极限爬坡度
+    unit: '%'
+    type: float
+    schema_type: intermediate
+    description: FWD模式纯附着力极限爬坡度（不含阻力）
+
+  grade_max_rwd_pure:
+    name: RWD纯附着力极限爬坡度
+    unit: '%'
+    type: float
+    schema_type: intermediate
+    description: RWD模式纯附着力极限爬坡度（不含阻力）
+
+  grade_max_4wd_pure:
+    name: 4WD纯附着力极限爬坡度
+    unit: '%'
+    type: float
+    schema_type: intermediate
+    description: 4WD模式纯附着力极限爬坡度（不含阻力）
+
+  N_f_at_max_fwd:
+    name: FWD最大爬坡角时前轴法向力
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: FWD模式达到最大爬坡角时前轴的地面法向反力
+
+  N_r_at_max_fwd:
+    name: FWD最大爬坡角时后轴法向力
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: FWD模式达到最大爬坡角时后轴的地面法向反力
+
+  N_f_at_max_rwd:
+    name: RWD最大爬坡角时前轴法向力
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: RWD模式达到最大爬坡角时前轴的地面法向反力
+
+  N_r_at_max_rwd:
+    name: RWD最大爬坡角时后轴法向力
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: RWD模式达到最大爬坡角时后轴的地面法向反力
+
+  N_f_at_max_4wd:
+    name: 4WD最大爬坡角时前轴法向力
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: 4WD模式达到最大爬坡角时前轴的地面法向反力
+
+  N_r_at_max_4wd:
+    name: 4WD最大爬坡角时后轴法向力
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: 4WD模式达到最大爬坡角时后轴的地面法向反力
+
+  drag_f:
+    name: 拖滞阻力
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: 拖滞阻力
+
+  tire_f:
+    name: 滚动阻力
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: 平路滚动阻力
+
+# =============================================================================
+# 语义求解器输出变量定义
+# =============================================================================
+
+  semantic_summary:
+    name: 语义分析摘要
+    unit: ''
+    type: str
+    schema_type: intermediate
+    description: 坡道附着力极限计算的自然语言摘要

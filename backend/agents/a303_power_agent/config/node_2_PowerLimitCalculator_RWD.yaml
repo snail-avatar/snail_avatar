@@ -1,0 +1,208 @@
+node_type_id: PowerLimitCalculator_RWD
+node_display_name: 三电功率限制
+node_category: 动力性计算
+node_description: 计算折合到轮端（半轴输出端）的三电系统综合硬件最大功率限制（RWD模式）
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+
+inputs:
+  edu_spd_max_r:
+    name: 后电驱最高转速
+    unit: rpm
+    type: float
+    schema_type: ssts_vts
+    description: 后电驱最高轮端转速
+    default: 1358.0
+
+  axle_eff:
+    name: 半轴效率
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 半轴传动效率（RWD模式使用后轴效率）
+    default: 0.99
+
+  edu_tmax_r:
+    name: 后电驱最大扭矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 后电驱最大轮端扭矩
+    default: 2923.5
+
+  edu_pmax_r:
+    name: 后电驱峰值功率
+    unit: kW
+    type: float
+    schema_type: ssts_vts
+    description: 后电驱峰值功率
+    default: 151.2
+
+  edu_30m_pmax_r:
+    name: 后电驱持续功率
+    unit: kW
+    type: float
+    schema_type: ssts_vts
+    description: 后电驱最大持续功率@30min
+    default: 83.0
+
+  edu_pow_gain_r:
+    name: 后电驱功率衰减系数
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 后电驱功率衰减系数
+    default: 0.9
+
+  bat_pmax:
+    name: 电池峰值功率
+    unit: kW
+    type: float
+    schema_type: ssts_vts
+    description: 电池峰值放电功率@10s
+    default: 163.0
+
+  bat_30m_pmax:
+    name: 电池持续功率
+    unit: kW
+    type: float
+    schema_type: ssts_vts
+    description: 电池峰值持续放电功率@30min
+    default: 129.0
+
+  bat_300s_pmax:
+    name: 电池300s持续功率
+    unit: kW
+    type: float
+    schema_type: ssts_vts
+    description: 电池峰值持续放电功率@300s
+    default: 140.0
+
+  mot_pow_eff:
+    name: 电驱驱动平均效率
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 电驱系统驱动平均效率
+    default: 0.881
+
+  power_lp:
+    name: 低压功率
+    unit: W
+    type: float
+    schema_type: ssts_vts
+    description: 动力性校核低压功率
+    default: 0.0
+
+# =============================================================================
+# 数值求解器输出变量定义
+# =============================================================================
+
+outputs:
+  # ---- 综合值（_final 后缀，与 SSTS input 原始参数区分）----
+  edu_spd_max_final:
+    name: 电驱综合最高转速
+    unit: rpm
+    type: float
+    schema_type: intermediate
+    description: 电驱综合最高转速
+
+  axle_eff_final:
+    name: 综合半轴效率
+    unit: ''
+    type: float
+    schema_type: intermediate
+    description: 综合半轴效率（与 SSTS input 原始 axle_eff 撞名，加 _final 后缀）
+
+  # ---- 电池轮端功率（_wheel 后缀，与 SSTS input 撞名）----
+  bat_pmax_wheel:
+    name: 电池轮端峰值功率
+    unit: kW
+    type: float
+    schema_type: intermediate
+    description: 电池峰值功率轮端等效值（bat_pmax × mot_pow_eff × axle_eff）
+
+  bat_30m_pmax_wheel:
+    name: 电池轮端30min持续功率
+    unit: kW
+    type: float
+    schema_type: intermediate
+    description: 电池30min最大持续功率轮端等效值
+
+  bat_300s_pmax_wheel:
+    name: 电池轮端300s持续功率
+    unit: kW
+    type: float
+    schema_type: intermediate
+    description: 电池300s最大持续功率轮端等效值
+
+  # ---- 三电系统综合轮端功率（_wheel 后缀统一风格）----
+  edp_30m_pmax_wheel:
+    name: 三电系统轮端最大持续功率@30min
+    unit: kW
+    type: float
+    schema_type: intermediate
+    description: 三电系统轮端最大持续功率@30min
+
+  edp_300s_pmax_wheel:
+    name: 三电系统轮端300s持续功率
+    unit: kW
+    type: float
+    schema_type: intermediate
+    description: 三电系统轮端最大持续功率@300s
+
+  edp_pmax_wheel:
+    name: 三电系统轮端峰值功率
+    unit: kW
+    type: float
+    schema_type: intermediate
+    description: 三电系统轮端峰值功率（取电池和电驱的较小值）
+
+  # ---- 电驱原始参数透传（_raw 后缀，全部与 SSTS input 撞名）----
+  edu_tmax_r_raw:
+    name: 后电驱最大扭矩（原始值透传）
+    unit: Nm
+    type: float
+    schema_type: intermediate
+    description: 后电驱最大轮端扭矩原始值透传给下游
+
+  edu_pmax_r_raw:
+    name: 后电驱峰值功率（原始值透传）
+    unit: kW
+    type: float
+    schema_type: intermediate
+    description: 后电驱峰值功率原始值透传给下游
+
+  edu_30m_pmax_r_raw:
+    name: 后电驱持续功率（原始值透传）
+    unit: kW
+    type: float
+    schema_type: intermediate
+    description: 后电驱最大持续功率@30min 原始值透传给下游
+
+  edu_spd_max_r_raw:
+    name: 后电驱最高转速（原始值透传）
+    unit: rpm
+    type: float
+    schema_type: intermediate
+    description: 后电驱最高轮端转速原始值透传给下游
+
+  edu_pow_gain_r_raw:
+    name: 后电驱功率衰减系数（原始值透传）
+    unit: ''
+    type: float
+    schema_type: intermediate
+    description: 后电驱功率衰减系数原始值透传给下游
+
+# =============================================================================
+# 语义求解器输出变量定义
+# =============================================================================
+
+  semantic_summary:
+    name: 语义分析摘要
+    unit: ''
+    type: str
+    schema_type: intermediate
+    description: 轮端功率限制计算的自然语言摘要

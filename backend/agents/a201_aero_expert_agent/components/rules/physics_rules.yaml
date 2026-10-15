@@ -1,0 +1,162 @@
+rules:
+- id: A_target
+  name: 正投影面积（A）的目标值估算
+  category: 工程估算
+  description: '1.正投影面积A(m²),虽然也会被作为开发目标控制，但是由于同乘员空间和基本的车辆外轮廓合理性相关，缺少有效的优化路径，一般仅作为监控条目。
+
+    2.开发初期，工程上一般是将车高和车宽的乘积乘以某一个经验系数（＜1）的方式估算目标值。'
+  formula: 'A=high*wide*K
+
+    其中：
+
+    high 为车高，单位m；
+
+    wide 为车宽，单位m；
+
+    k 为经验系数，sedan车型=0.85、SUV车型=0.84、MPV车型=0.88~0.9'
+  source: 工程经验
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: Cl_target
+  name: 升力系数（Cl）的目标值估算
+  category: 工程估算
+  description: '1.在普通乘用车开发中，受行驶车速的影响，升力系数 Cl只需要控制在一定范围之内，它对操纵稳定性的影响就基本可控。
+
+    2.对于升力系数 Cl，对于普通乘用车，工程上会设定一个通用的上限值作为目标，一般不会对不同车型设定差异化的目标。'
+  formula: 一般要求 Cl<0.1~0.15
+  source: 工程经验
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: Cd_target
+  name: 风阻系数（Cd）的目标值估算
+  category: 工程估算
+  description: '1.不同车身形式车型Cd的基本规律，MPV>SUV>sedan，也就是三厢车一般风阻最低、MPV车型最高。
+
+    2.不同动力形式车型Cd的基本规律，燃油>混动/增程>纯电。原因有二（1）纯电和混动/增程车型受益于布置在下车体的电池包，可以更加方便的实现底盘平整化；（2）纯电车型对能耗的要求一般更高、对续驶里程变化更敏感，所以项目开发过程中风阻开发能获得更多的开发资源和成本倾斜。
+
+    3.某些特殊造型的车，虽然理论上处于SUV或者MPV车型，但不是典型的SUV/MPV造型风格，例如 理想MEGA MPV车Cd只有≈0.21~0.22；特斯拉Model
+    X SUV车Cd只有≈0.24~0.25。'
+  formula: '不同车型Cd合理取值如下：
+
+    1.sedan(三厢车)车型：纯电车 Cd∈（0.2,0.26）；混动/增程车 Cd∈（0.215,0.28）；燃油车 Cd∈（0.23,0.32）
+
+    2.SUV(包含两厢车)车型：纯电车 Cd∈（0.25,0.32）；混动/增程车 Cd∈（0.28,0.36）；燃油车 Cd∈（0.32,0.38）
+
+    3.MPV车型：纯电车 Cd∈（0.27,0.34）；混动/增程车 Cd∈（0.29,0.37）；燃油车 Cd∈（0.33,0.39）'
+  source: 工程经验
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: Cd_style
+  name: 造型风阻系数
+  category: 工程估算
+  description: 排除了下车体工程部件的不平整、轮辐的开孔、冷却气流的开口等因素，由基本造型决定的风阻部分，换算得到的风阻系数，是整车风阻的主要部分。
+  formula: ''
+  source: ''
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: Cd_cool_air
+  name: 冷却风阻系数
+  category: 工程估算
+  description: 为了满足动力系统散热、空调等子系统需求，在车身表面开启散热气流通道，所产生的风阻部分，换算得到的风阻系数。一般规律为，燃油>混动/增程>纯电。
+  formula: '不同车型冷却风阻系数合理取值如下：
+
+    1.纯电车型：Cd_cool_air≈0.015；混动/增程车、家用燃油乘用车：Cd_cool_air≈0.025；大排量燃油乘用车 Cd∈（0.03,0.04）
+
+    2.配备主动进气格栅（Active Grille Shutter - AGS）后，在AGS关闭状态下，冷却风阻可以基本排除，由于AGS关闭后气流泄露产生的风阻≈0.002~0.003
+    左右。'
+  source: ''
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: Cd_under_body
+  name: 下车体及车轮附件风阻系数
+  category: 工程估算
+  description: 出于节省成本或者避让排气系统、悬架系统等部件的原因，下车体外观型面的凹凸不平；以及由于车轮轮辐开口、或者为了美观增加凸起特征等因素，产生的额外风阻换算得到的风阻系数
+  formula: '下车体及车轮附件风阻系数：
+
+    1.对于下车体风阻，具有完整底护板的纯电车型≈0.015；混动/增程车≈0.03、燃油乘用车≈0.04~0.06
+
+    2.车轮轮辐开口风阻≈0.008~0.012 左右，对于经过仔细设计的低风阻轮辋，车轮轮辐开口风阻可以下降至0.002~0.003'
+  source: ''
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: drag_force_formula
+  name: 空气阻力公式
+  category: 基础物理
+  description: 空气阻力 F_d = 0.5 * ρ * v² * Cd * A。其中 ρ 为空气密度(1.225 kg/m³)，v 为车速(m/s)，Cd
+    为风阻系数，A 为迎风面积(m²)。
+  formula: F_d = 0.5 * ρ * v² * Cd * A
+  source: 汽车空气动力学基础
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: drag_power_formula
+  name: 空气阻力功率公式
+  category: 基础物理
+  description: 克服空气阻力所需功率 P_d = F_d * v = 0.5 * ρ * v³ * Cd * A。功率与车速的三次方成正比，高速时空气阻力是主要能耗来源。
+  formula: P_d = 0.5 * ρ * v³ * Cd * A
+  source: 汽车空气动力学基础
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: cd_reduction_benefit
+  name: Cd降低的节油/续航收益
+  category: 经验数据
+  description: Cd每降低0.01，高速工况(120km/h)下燃油车约节油2-3%，电动车约增加续航3-5%。城市工况收益较小，约1%。
+  formula: ''
+  source: SAE J1252
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: cd_front_angle
+  name: 前挡风倾角与Cd关系
+  category: 造型设计
+  description: 前挡风玻璃倾角从25°增加到35°，Cd约降低0.01-0.02。但倾角过大会影响驾驶员视野和车内空间。
+  formula: ''
+  source: SAE J1252
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: cd_rear_angle
+  name: 后挡风/尾部倾角与Cd关系
+  category: 造型设计
+  description: 尾部倾角（后窗与水平面夹角）对Cd影响显著。三厢车尾部倾角12-15°时Cd最低，过陡或过缓都会增加阻力。
+  formula: ''
+  source: Hucho - Aerodynamics of Road Vehicles
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: ground_clearance_effect
+  name: 离地间隙对气动阻力影响
+  category: 造型设计
+  description: 离地间隙降低10mm，Cd约降低0.005-0.010。降低底盘可减少进入车底的气流，但需权衡通过性。
+  formula: ''
+  source: Hucho - Aerodynamics of Road Vehicles
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: cooling_drag
+  name: 冷却系统气动阻力
+  category: 热管理
+  description: 冷却气流通过散热器、冷凝器等产生的阻力，约占整车气动阻力的5-10%。主动进气格栅可在不需要冷却时关闭格栅，减少冷却阻力。
+  formula: ''
+  source: SAE J2082
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: wheel_drag
+  name: 车轮与轮拱气动阻力
+  category: 造型设计
+  description: 车轮和轮拱区域产生的阻力约占整车气动阻力的20-25%。轮拱罩、轮毂造型优化可显著降低该部分阻力。
+  formula: ''
+  source: Hucho - Aerodynamics of Road Vehicles
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: reynolds_number
+  name: 雷诺数
+  category: 基础物理
+  description: Re = ρ * v * L / μ，其中L为特征长度（车身长度），μ为空气动力粘度(1.81×10⁻⁵ Pa·s)。汽车行驶雷诺数通常在10⁶-10⁷量级，流动为湍流。
+  formula: Re = ρ * v * L / μ
+  source: 流体力学基础
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'
+- id: wheel_base
+  name: 轴距与Cd关系
+  category: 造型设计
+  description: 轴距增大，趋势上风阻减小
+  formula: ''
+  source: 经验
+  created_at: '2026-08-07 13:36:29'
+  updated_at: '2026-08-07 13:36:29'

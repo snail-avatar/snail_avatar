@@ -1,0 +1,48 @@
+# =============================================================================
+# MotorAnalysis 节点说明文件
+# =============================================================================
+node_type_id: "MotorAnalysis"
+node_display_name: "电驱参数分析"
+node_category: "输入准备"
+node_description: |
+  从 SSTSSandbox 加载 Motor 零部件参数，统计分析电驱外特性（Tmax/Pmax/转速范围）和效率 MAP
+  （avg/max/std），输出结构化 motor_variants dict 供 node_4 MotorLimit 和 node_5 BatteryLimit
+  消费。与 node_0 VehicleParam 并列，属输入准备层。
+
+# 本节点在沙箱中只读哪些零部件（白名单）
+# sandbox.snapshot() 返回的是全部已加载零部件，需要按此字段过滤出与本节点相关的部分
+sandbox_components:
+  - "Motor"
+
+# =============================================================================
+# 输入变量
+# =============================================================================
+# 本节点无 SSTS 参数依赖、无 intermediate 依赖——完全从 self.sandbox 读取零部件文件
+inputs: {}
+
+# =============================================================================
+# 输出变量
+# =============================================================================
+outputs:
+  motor_variants:
+    name: "电驱方案集合（三层嵌套 dict）"
+    unit: ""
+    type: "object"
+    schema_type: "intermediate"
+    description: |
+      按 suffix → "axle/variant_name" 组织的三层嵌套 dict。
+      每个 variant 含 sheets（external_characteristin 原始 curve_1d + eff_map 原始 map_2d）
+      和 stats（max_torque_Nm / max_power_kw / speed_range_rpm / avg_efficiency /
+      max_efficiency / eff_std / grid_shape）。
+      key 格式 "front/motor_parameter" / "rear/motor_AAA" 天然对齐 node_6 的 _group_by_axle 拆分逻辑。
+
+  # =============================================================================
+  # 语义求解器输出变量定义
+  # =============================================================================
+
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "电驱参数分析计算节点的自然语言分析报告（Markdown 格式）"

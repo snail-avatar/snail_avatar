@@ -1,0 +1,36 @@
+# =============================================================================
+# 后驱动力性计算工作流配置
+# =============================================================================
+# 【此文件唯一职责】定义DAG拓扑连接关系
+# 原则：分离关注点
+#   - 本文件 = 节点依赖关系（upstream/downstream）
+#   - 节点元数据(inputs/outputs) = node_X_xxx.yaml（单一真相源）
+#   - UI布局 = 前端 autoLayout 自动拓扑分层（已从本文件移除 ui_config）
+# =============================================================================
+workflow_id: "power_rwd"
+workflow_name: "后驱动力性计算"
+workflow_category: "power"
+description: "后驱车型动力性指标计算（加速性能、爬坡性能、最高车速）"
+drive_type: "rwd"
+
+# =============================================================================
+# 拓扑节点列表（只存连接关系，元数据在对应node_X_xxx.yaml）
+# =============================================================================
+nodes:
+  node_0_Cd_wt_calculator:
+    upstream: []
+  
+  node_1A_TireAdhesionLimit:
+    upstream: []
+  
+  node_1B_GradeAdhesionLimit:
+    upstream: []
+
+  node_2_PowerLimitCalculator_RWD:
+    upstream: []
+
+  node_3_AccelTopSpeedCalculator_RWD:
+    upstream: ["node_0_Cd_wt_calculator", "node_1A_TireAdhesionLimit", "node_2_PowerLimitCalculator_RWD"]
+
+  node_4_GradePerformanceCalculator_RWD:
+    upstream: ["node_0_Cd_wt_calculator", "node_1B_GradeAdhesionLimit", "node_2_PowerLimitCalculator_RWD", "node_3_AccelTopSpeedCalculator_RWD"]

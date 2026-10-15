@@ -1,0 +1,128 @@
+# =============================================================================
+# REEVEnergyConsumption 节点说明文件
+# =============================================================================
+node_type_id: "REEVEnergyConsumption"
+node_display_name: "增程整车能耗计算"
+node_category: "能量综合"
+node_description: "最小物理过程6：增程式整车能耗综合计算。计算馈电油耗和综合续驶里程。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  # 从 node_1 获取循环总里程和总时长
+  cycle_distance:
+    name: "循环总里程"
+    unit: "km"
+    type: "float"
+    schema_type: "intermediate"
+    description: "驾驶循环的总行驶距离（单位：公里）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "cycle_distance"
+
+  cycle_time:
+    name: "循环总时长"
+    unit: "s"
+    type: "float"
+    schema_type: "intermediate"
+    description: "驾驶循环的总时间（单位：秒）"
+    source_node: "node_1_DriveCycleAnalyzer"
+    source_var: "cycle_time"
+
+  # 从 node_5 获取纯电能耗结果（从 VTS 读取）
+  e_dc:
+    name: "车端能耗"
+    unit: "kWh/100km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "电池端能耗（kWh/100km）"
+
+  e_ac:
+    name: "网端能耗"
+    unit: "kWh/100km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "充电网端能耗（kWh/100km）"
+
+  mile_ev:
+    name: "纯电续驶里程"
+    unit: "km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "纯电模式下的续驶里程（km）"
+
+  # SSTS参数
+  ev_lp:
+    name: "纯电模式低压功率"
+    unit: "W"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "纯电模式低压系统功率消耗"
+    default: 168.981
+
+  reev_lp:
+    name: "增程模式低压功率"
+    unit: "W"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "增程模式低压系统功率消耗"
+    default: 200.0
+
+  dcdc_eff:
+    name: "DC/DC效率"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "DC/DC转换器效率"
+    default: 0.93
+
+  re_eff:
+    name: "增程器发电效率"
+    unit: "kWh/L"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "增程器发电效率（kWh/L燃油）"
+    default: 3.5
+
+  fuel_tank:
+    name: "油箱容积"
+    unit: "L"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "油箱容积（升）"
+    default: 40.0
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+  # VTS结果输出（直接输出到 MemoryCore）
+  cs_fuel:
+    name: "馈电油耗"
+    unit: "L/100km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "增程模式馈电油耗（L/100km）"
+
+  mile_reev:
+    name: "综合续驶里程"
+    unit: "km"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "综合续驶里程（纯电+燃油）"
+
+  # 能耗统计特征
+  reev_energy_stats:
+    name: "增程能耗统计特征"
+    unit: ""
+    type: "dict"
+    schema_type: "intermediate"
+    description: "增程模式低压能耗增加量、馈电油耗、综合续驶里程等统计信息"
+
+  # 语义求解器输出
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "增程整车能耗分析的自然语言摘要"

@@ -1,0 +1,295 @@
+# =============================================================================
+# 动力性计算与分析 Agent 配置文件
+# =============================================================================
+# 用于存放 PowerAgent 的系统提示词、LLM参数、路由关键词、上下文压缩参数
+# =============================================================================
+
+agent_id: "power_agent"
+agent_name: "动力性计算工程师"
+agent_description: "专注于新能源汽车动力性（加速性能、最高车速、爬坡能力）的计算与参数影响分析"
+
+# Python 模块路径（用于 agent_router 懒加载 agent 实例）
+module_path: "snail_avatar.backend.agents.core.agent_base.generic_workflow_agent"
+
+# VTS 计算注册配置
+vts_category: "动力性"
+vts_priority: 10
+panel_id: "power"
+
+# 路由关键词：用户消息中出现任一关键词即转交给此 Agent
+routing_keywords:
+  - "动力性"
+  - "动力"
+  - "加速"
+  - "加速度"
+  - "加速时间"
+  - "百公里加速"
+  - "0-100"
+  - "0-100km/h"
+  - "最高车速"
+  - "最高速度"
+  - "最高时速"
+  - "爬坡"
+  - "爬坡性能"
+  - "爬坡度"
+  - "最大爬坡度"
+  - "驱动力"
+  - "动力性计算"
+  - "动力性分析"
+  - "Acceleration"
+  - "Top Speed"
+  - "Gradeability"
+
+# Agent 昵称：用于路由器识别用户对 Agent 的显式指定（如"动力性专家算一下"）
+agent_nicknames:
+  - "动力性专家"
+  - "动力性计算工程师"
+  - "power专家"
+  - "动力agent"
+
+# Agent 运行时配置：控制 function calling 循环轮数、memory_db 依赖
+# 说明：YAML 中的值优先级最高；若 YAML 未配置，则使用 .py 中类属性作为默认兜底
+agent_runtime_config:
+  # function calling 循环的最大轮数（动力性计算工具多，轮数要求更高）
+  max_tool_rounds: 25
+  # 是否需要 memory_db（动力性 Agent 需要读取整车参数并写入计算结果，为 true）
+  needs_memory_db: true
+
+# =============================================================================
+# 上下文与摘要参数分组（两套独立用途，共享 summary_config）
+# =============================================================================
+# 摘要系统有两个独立的触发场景：
+#   A. 本 Agent 内部裁剪：当对话超过 max_messages / max_tokens 时，
+#      从最旧消息开始裁剪为"长期记忆"摘要（由 ConversationManager 执行）
+#   B. 路由传递给其他 Agent：当主 Agent 切换到子 Agent 时，将源 Agent 的
+#      对话打包（最近对话原文 + 更早对话摘要）传递给目标 Agent
+#      （由 agent_router 执行）
+#
+# summary_config 是两个场景共享的：控制摘要器本身的行为（模型、长度、截断）
+# =============================================================================
+
+# 场景 A：本 Agent 内部对话历史规模（控制"保留多少"，决定何时触发裁剪/摘要）
+# 动力性分析可能涉及多轮工具调用和 DOE 分析，历史规模较大（允许15条）
+# 超过阈值后，旧消息会被 ConversationSummarizer 压缩为"长期记忆"摘要
+# 摘要长度和模型参数由下方 summary_config 节控制
+conversation_config:
+  # 最多保留的消息条数（超过则从最旧开始丢弃并摘要，1轮 = user+assistant 2条）
+  max_messages: 15
+  # 最多保留的 token 数（超过则从最旧开始成对移除并摘要）
+  max_tokens: 120000
+
+# 场景 B：路由传递时的上下文压缩（控制"传递给其他 Agent 时保留多少"）
+# 由 agent_router 在从源 Agent 路由到目标 Agent 时使用
+context_config:
+  # 源 Agent 的 system prompt 截断字符数：只给目标 Agent 看角色描述的开头
+  source_prompt_truncate: 200
+  # 最近对话完整保留的轮数（1轮 = user+assistant 2条）
+  # 最近的 recent_summary_max_rounds 轮对话完整传递给目标 Agent
+  # 更早的对话由 ConversationSummarizer 压缩为摘要（长度参数见下方 summary_config）
+  recent_summary_max_rounds: 3
+
+# 两个场景共享：摘要器参数（控制"摘要如何生成"）
+# 当本 Agent 的对话需要摘要时，使用以下配置覆盖 summarizer.yaml 默认值
+# 同时被场景 A（内部裁剪）和场景 B（路由传递）使用
+# 动力性领域技术性较强，摘要需保留参数名、具体数值等关键信息
+summary_config:
+  # 注入到摘要器 system_prompt 模板中的长度提示
+  summary_length_hint: "300字"
+  # LLM 参数
+  llm_config:
+    # 单次摘要生成的最大 token 数（硬上限，实际输出通常由 summary_length_hint 控制）
+    max_new_tokens: 800
+    # 摘要任务使用轻量模型降低成本和延迟
+    model_name: "qwen3.5-flash"
+    temperature: 0.3
+    top_p: 0.8
+    presence_penalty: 1.0
+    context_window: 64000
+  # 规则摘要（LLM 调用失败时的降级方案）参数
+  rule_summary_config:
+    # 规则摘要中单条用户消息的最大字符数
+    user_truncate: 120
+    # 规则摘要中单条助手消息的最大字符数
+    assistant_truncate: 200
+
+# 两轮式方案 3 —— Phase 1 工具目录选择专用 Prompt
+# 功能：让 LLM 从简短目录中先挑出可能用到的工具，Phase 2 再给它这些工具的完整 schema
+tool_catalog_prompt: |
+  你是一个工具选择器。你的任务是：根据用户的问题，从下面的工具目录中
+  选择最可能需要调用的工具。请只返回工具名称，多个工具用英文逗号分隔。
+  如果不需要任何工具，回答：NONE。不要输出任何其他文字，不要解释。
+  如果不确定，宁多勿漏，把可能相关的工具都列出来。
+
+  【工具目录】
+  {catalog}
+
+system_prompt: |
+  你是动力性计算与分析专家，专注于新能源汽车的动力性性能分析。
+  你具备 function calling 能力，可以调用工具与动力性工作流引擎交互，执行计算并分析结果。
+
+  ## 可用工具与使用场景
+
+  - 【概览分析】作为工作流分析的起点，了解整体动力性情况、核心指标、计算流程时，优先调用 semantic_power_overview
+    * 特点：返回计算流程概览（含节点ID）+ 核心指标摘要 + 各节点分析详情（不含计算逻辑）
+    * 使用方式：作为第一个调用函数，获取计算流整体情况
+  - 【完整计算】当用户需要从头开始完整计算时，调用 run_full_power_calculation
+    * 特点：强制从 MemoryCore 重新加载所有参数，**清除所有节点缓存**，从头开始完整计算
+    * 适用场景：首次计算、重置计算、数据同步、错误恢复、跨车型切换
+  - 【假设分析】当用户想探索参数变化的影响、进行"如果...会怎样"的敏感性分析时，调用 run_power_doe_analysis
+    * 特点：仅在内存中临时计算，**不会修改核心数据库**，不影响正式数据
+    * 适用场景：探索性分析、参数敏感性研究、多参数组合评估
+  - 【正式修改】当用户已经完成假设分析、确认优化方案后需要正式调整参数时，调用 modify_power_and_recalculate
+    * 特点：修改会**永久写入 MemoryCore**，影响后续所有计算
+    * 适用场景：确认参数调整、正式更新设计参数
+  - 【逻辑说明】当用户需要了解计算逻辑说明、修正方法、可调参数清单时，调用 semantic_power_logic
+    * 特点：支持分层输出：overview（概览）/ detail（完整详情）/ logic（仅计算逻辑）
+    * 使用方式：获取计算流详细信息的唯一入口
+  - 【车型与工作流】当用户问"有哪些车型"、"有哪些计算流程"时，调用 list_power_vehicles_and_workflows
+    * 特点：合并了车型列表和工作流列表，提供统一入口
+  - 【参数查询】当用户想查看所有可修改参数、获取正确 db_key 或查询单个参数值时，调用 list_power_ssts_params
+    * 特点：支持按节点筛选、按 db_key 查询单个参数值
+    * 使用方式：获取参数信息的唯一入口
+
+  ## 工具选择优先级规则
+
+  1. **读取优先**：先检查是否已有计算结果，优先使用 semantic_power_overview 读取
+  2. **场景匹配**：根据用户意图关键词匹配工具（见"可用工具与使用场景"）
+  3. **避免重复**：已有最新结果时，除非用户明确要求重新计算，否则不调用 run_full_power_calculation
+  4. **先假设后正式**：参数调整前建议先通过 DOE 分析验证效果
+  5. **先查后改**：使用 modify_power_and_recalculate 前，需要先调用 list_power_ssts_params 获取正确的 db_key
+  6. **DOE 前置**：调用 run_power_doe_analysis 前，必须先调用 semantic_power_overview 获取节点ID，再调用 list_power_ssts_params 获取参数名
+
+  ## semantic_power_overview / semantic_power_logic 工具使用指南
+
+  **semantic_power_overview（优先调用）**：
+  - 适用场景：大部分查询场景，作为第一个调用函数
+  - 输出内容：计算流程概览（含节点ID）+ 核心指标摘要 + 各节点分析详情（仅含【计算结果摘要】）
+  - 使用方式：直接调用工具
+
+  **semantic_power_logic（按需调用）**：
+  - 适用场景：深度分析、了解计算逻辑细节、修正方法、可调参数清单、DOE分析获取参数信息
+  - 输出内容：计算流程概览 + 核心指标 + 各节点分析详情（不含【计算结果摘要】，含计算逻辑说明、参数计算关系、可调参数清单、输出参数清单）
+  - 使用方式：获取计算流逻辑信息的入口
+
+  ## DOE 分析调用指南
+
+  **重要**：调用 run_power_doe_analysis 前，必须按照以下步骤获取必要信息：
+
+  Step 1: 调用 semantic_power_logic
+  - 获取目标节点的 node_id（如 node_2_ResistanceCalculator）
+  - 获取输出变量的节点ID（如 node_5_PowerLimitCalculator）
+  - 获取可调参数清单，确定需要分析的参数
+
+  Step 2: 调用 list_power_ssts_params
+  - 获取参数的 var_name（如 mass_curb, motor_power）
+  - 获取参数的 db_key（用于后续正式修改）
+
+  Step 3: 调用 run_power_doe_analysis
+  - target_params: [{"node_id": "xxx", "var_name": "xxx"}, ...]
+  - output_vars: ["node_id/var_name", ...]
+
+  **禁止**：在未获取正确参数名和节点ID的情况下直接调用 DOE 函数。
+  **禁止**：DOE分析应该主要针对可调参数，避免修改计算条件参数和固定的修正参数。
+
+  ## 响应要求
+
+  - 保持专业、准确的技术语言风格，分析结论应包含物理意义解释
+  - 涉及多参数或对比分析时用表格/列表展示，参数变化需标注绝对变化量和相对变化率
+  - 工具返回结果后，基于结果用自然语言回答，不要直接输出原始工具返回文本
+  - 缺少必要信息时主动询问，修改参数前先调用 list_power_ssts_params 获取正确 db_key
+  - 当工具返回结果已包含结构化数据（表格/列表）时，你的回复应聚焦于数据分析、规律总结和优化建议，不要在回复中用 markdown 表格重复展示相同数据
+
+  ## VTS/SSTS映射任务专用指导
+
+  当用户请求确定VTS指标与SSTS指标的映射关系时：
+
+  1. **工具调用策略**：
+     - 优先调用 semantic_economy_logic 获取计算逻辑说明
+     - 必要时调用 list_economy_ssts_params 获取详细参数信息
+
+  2. **信息提取规则**：
+     - 从每个计算节点的【计算逻辑说明】中提取输入参数（SSTS）和输出参数（VTS）
+     - 重点关注计算公式（如"cd_wt = cd_style + cd_cool_air + cd_under_body"）
+     - 忽略非目标专业的节点信息
+     - 忽略参数的当前值，只关注参数名称和关系
+
+  3. **输出格式要求**：
+     - 使用清晰的结构化格式（如表格或列表）展示映射关系
+     - 明确标注每个VTS指标对应的SSTS指标列表
+     - 说明SSTS指标对VTS指标的影响程度和方向
+     - 提供计算公式（如有）
+     - 避免输出冗长的原始数据，聚焦于关键映射关系
+
+  ## 术语说明
+  - VTS: Vehicle Technical Specification，整车技术规格，用于定义车辆层面的技术特征和性能指标
+  - SSTS: Sub-System Technical Specification，子系统技术规格，用于定义各子系统的功能和性能指标，是VTS的向下拆解物
+
+# LLM配置
+llm_config:
+  # 【重要】必须使用阿里云百炼 API 支持的真实模型名
+  model_name: "qwen3.5-plus"
+  max_new_tokens: 64000
+  temperature: 0.2
+  top_p: 0.95
+  presence_penalty: 1.5
+  context_window: 256000
+
+# 工作流配置（传递给 build_workflow_from_yaml）
+workflow_config:
+  nodes_pkg_path: "snail_avatar.backend.agents.a303_power_agent.nodes"
+  vehicle_info_field: "驱动形式"
+  vehicle_info_default: "fwd"
+  yaml_pattern: "workflow_*.yaml"
+  yaml_match_fn: |
+    lambda config, value: (
+        config.get("workflow_category") == "power"
+        and config.get("drive_type") == value
+    )
+  default_yaml_filename: "workflow_power_rwd.yaml"
+  use_yaml_position: true
+
+# UI 面板配置
+ui_config:
+  panel_name: "动力性计算"
+  panel_icon: "icons/power.png"
+  calculation_type: "power"
+  config_selector: "驱动形式"
+  config_key: "workflow_category"
+  selector_key_in_config: "drive_type"
+
+# 工具函数配置（由 WorkflowFunctionFactory 动态创建）
+tools:
+  - type: "run_full_calculation"
+    name: "run_full_power_calculation"
+    description: "【完整计算】为指定车型执行完整的动力性计算流程，包括驱动力计算、加速时间、最高车速、爬坡能力等所有相关节点。**特点**：强制从 MemoryCore 重新加载所有参数，清除所有节点缓存，从头开始完整计算。适用于以下场景：①首次计算车型动力性；②要求『重新计算动力性』；③参数错误后需要重置；④外部数据更新后同步；⑤跨车型切换后重新计算。例如：『计算车型X的动力性』、『重新计算动力性』等场景。"
+    tool_title: "动力性计算"
+
+  - type: "modify_and_recalculate"
+    name: "modify_power_and_recalculate"
+    description: "【正式修改】修改动力性相关的 SSTS 参数并重新计算。**特点**：修改会永久写入 MemoryCore，影响后续所有计算。适用于：确认参数调整、正式更新设计参数。使用前需要先调用 list_power_ssts_params 获取正确的 db_key。"
+    tool_title: "动力性参数修改"
+
+  - type: "run_doe_analysis"
+    name: "run_power_doe_analysis"
+    description: "【假设分析】执行动力性参数敏感性 DOE 分析。**特点**：仅在内存中临时计算，不会修改核心数据库，不影响正式数据。适用于：探索性分析、参数敏感性研究、多参数组合评估。调用前必须先获取节点ID和参数名。"
+    tool_title: "动力性DOE分析"
+
+  - type: "semantic_summary"
+    name: "semantic_power_overview"
+    description: "【概览分析】生成动力性计算的通用概览，包含计算流程概览（含节点ID）、核心指标摘要和各节点分析详情（仅计算结果摘要）。适用于用户询问『总结一下计算结果』、『用人类语言解释一下』等场景。建议作为大部分问题的第一个调用函数。"
+    tool_title: "动力性计算 - 结果概览"
+
+  - type: "semantic_logic"
+    name: "semantic_power_logic"
+    description: "【逻辑说明】生成动力性计算的逻辑说明，包含计算流程概览、核心指标、各节点分析详情（含计算逻辑说明、参数计算关系、可调参数清单、输出参数清单）。适用于深度分析、了解计算逻辑细节、修正方法、可调参数清单、DOE分析获取参数信息。"
+    tool_title: "动力性计算 - 逻辑说明"
+
+  - type: "list_ssts_params"
+    name: "list_power_ssts_params"
+    description: "【参数查询】列出动力性相关的所有 SSTS 参数。支持按节点筛选、按 db_key 查询单个参数值。使用方式：获取参数信息的唯一入口。"
+    tool_title: "动力性参数列表"
+
+  - type: "list_vehicles"
+    name: "list_power_vehicles_and_workflows"
+    description: "【车型与工作流】列出所有动力性相关的车型和工作流。合并了车型列表和工作流列表，提供统一入口。"
+    tool_title: "动力性车型与工作流"

@@ -1,0 +1,152 @@
+# =============================================================================
+# 主Agent配置文件
+# =============================================================================
+# 用于存放 MainAgent 的系统提示词、LLM参数、路由关键词、上下文压缩参数
+# 修改此文件后无需修改Python代码即可调整Agent行为
+# =============================================================================
+
+agent_id: "main_agent"
+agent_name: "Snail Avatar"
+agent_description: "新能源汽车性能开发助手"
+
+# Python 模块路径（用于 agent_router 懒加载 agent 实例）
+module_path: "snail_avatar.backend.agents.a000_main_agent.main_agent"
+
+# 路由关键词：主Agent作为默认响应入口，此处留空
+routing_keywords: []
+
+# Agent 运行时配置：控制 function calling 循环轮数、memory_db 依赖
+# 说明：YAML 中的值优先级最高；若 YAML 未配置，则使用 .py 中类属性作为默认兜底
+agent_runtime_config:
+  # function calling 循环的最大轮数（主 Agent 主要做路由，工具调用轮数较少）
+  max_tool_rounds: 5
+  # 是否需要 memory_db（主 Agent 为纯对话型，不需要）
+  needs_memory_db: false
+
+# Public Functions 配置：指定需要从 public_functions 模块注册的工具
+# 这些工具会在 Agent 初始化时自动加载到工具中心
+public_functions:
+  enabled: true
+  functions:
+    - "list_all_sub_agents"
+    - "calculator"
+    - "open_project_file"
+
+# Phase 1 工具目录选择 Prompt（可选，未配置时使用内置兜底文案）
+# 用于让 LLM 先从工具目录中挑出可能需要的工具，再在 Phase 2 只发送挑中工具的完整 schema
+tool_catalog_prompt: |
+  你是一个工具选择器。你的任务是：根据用户的问题，从下面的工具目录中
+  选择最可能需要调用的工具。请只返回工具名称，多个工具用英文逗号分隔。
+  如果不需要任何工具，回答：NONE。不要输出任何其他文字，不要解释。
+  如果不确定，宁多勿漏，把可能相关的工具都列出来。
+  【工具目录】
+  {catalog}
+
+# UI 欢迎消息：软件启动时在聊天面板显示的欢迎信息
+# 修改此内容无需修改Python代码，yaml使用 | 符号表示保留换行的多行文本
+welcome_message: |
+  你好！我是 Snail Avatar，新能源汽车性能开发助手。
+
+  当前可实现的功能：
+    • 回答关于新能源汽车性能开发的技术问题
+    • 解释性能参数和指标的计算方法
+    • 提供车辆参数优化建议
+    • 辅助工程师进行仿真分析
+
+  打开车型数据（导入 Excel 文件）后，我还可以：
+    • 查询特定车型的 VTS/SSTS 参数（当前值、目标值、达标状态）
+    • 分析整车达标率和不达标项
+    • 执行 VTS 计算（动力性、经济性等）
+    • 由各领域专家 Agent 提供针对性分析
+
+  请先导入车型数据文件以开始使用。
+
+# =============================================================================
+# 上下文与摘要参数分组（两套独立用途，共享 summary_config）
+# =============================================================================
+# 摘要系统有两个独立的触发场景：
+#   A. 本 Agent 内部裁剪：当对话超过 max_messages / max_tokens 时，
+#      从最旧消息开始裁剪为"长期记忆"摘要（由 ConversationManager 执行）
+#   B. 路由传递给其他 Agent：当主 Agent 切换到子 Agent 时，将源 Agent 的
+#      对话打包（最近对话原文 + 更早对话摘要）传递给目标 Agent
+#      （由 agent_router 执行）
+#
+# summary_config 是两个场景共享的：控制摘要器本身的行为（模型、长度、截断）
+# =============================================================================
+
+# 场景 A：本 Agent 内部对话历史规模（控制"保留多少"，决定何时触发裁剪/摘要）
+# 修改此配置即可调整主 Agent 保留对话历史的规模，无需修改 Python 代码
+# 超过阈值后，旧消息会被 ConversationSummarizer 压缩为"长期记忆"摘要
+# 摘要长度和模型参数由下方 summary_config 节控制
+conversation_config:
+  # 最多保留的消息条数（超过则从最旧开始丢弃并摘要，1轮 = user+assistant 2条）
+  max_messages: 10
+  # 最多保留的 token 数（超过则从最旧开始成对移除并摘要）
+  max_tokens: 150000
+
+# 场景 B：路由传递时的上下文压缩（控制"传递给其他 Agent 时保留多少"）
+# 由 agent_router 在从源 Agent 路由到目标 Agent 时使用
+context_config:
+  # 源 Agent 的 system prompt 截断字符数：只给目标 Agent 看角色描述的开头
+  source_prompt_truncate: 200
+  # 最近对话完整保留的轮数（1轮 = user+assistant 2条）
+  # 最近的 recent_summary_max_rounds 轮对话完整传递给目标 Agent
+  # 更早的对话由 ConversationSummarizer 压缩为摘要（长度参数见下方 summary_config）
+  recent_summary_max_rounds: 3
+
+# 两个场景共享：摘要器参数（控制"摘要如何生成"）
+# 当本 Agent 的对话需要摘要时，使用以下配置覆盖 summarizer.yaml 默认值
+# 同时被场景 A（内部裁剪）和场景 B（路由传递）使用
+# 主 Agent 作为总入口，摘要可适当宽松，保留更多关键信息
+summary_config:
+  # 注入到摘要器 system_prompt 模板中的长度提示
+  # 替换 {summary_length_hint}，在摘要任务中要求 LLM 按此长度控制输出
+  summary_length_hint: "300字"
+  # LLM 参数：主 Agent 对话较长，适当放宽生成 token 上限（硬上限，保险冗余）
+  llm_config:
+    # 单次摘要生成的最大 token 数（硬上限，实际输出通常由 summary_length_hint 控制）
+    max_new_tokens: 800
+    # 摘要任务使用轻量模型降低成本和延迟，保持与 summarizer.yaml 一致
+    # 【重要】必须使用阿里云百炼 API 支持的真实模型名
+    model_name: "qwen3.5-flash"
+    temperature: 0.3
+    top_p: 0.8
+    presence_penalty: 1.0
+    context_window: 64000
+  # 规则摘要（LLM 调用失败时的降级方案）参数
+  # 主 Agent 用户输入通常较长，适度放宽单条截断长度
+  rule_summary_config:
+    # 规则摘要中单条用户消息的最大字符数
+    user_truncate: 120
+    # 规则摘要中单条助手消息的最大字符数
+    assistant_truncate: 180
+
+system_prompt: |
+  你是Snail Avatar，一个新能源汽车性能开发agent。
+  你可以帮助用户进行以下工作：
+  - 回答关于新能源汽车性能开发的技术问题
+  - 解释性能参数和指标的计算结果
+  - 提供车辆参数优化建议
+  - 辅助工程师进行仿真分析
+
+  ## 响应要求
+  - 保持专业、准确的技术语言风格
+  - 用精炼的语言总结推理过程和分析结果
+  - 使用表格或列表格式展示多组数据
+  - 确保你的分析基于工程原理
+
+    ## 工具使用要求
+  - 当用户的输入中，包含了完整的计算方法说明时，并且上下文中有完备的计算参数数据时，优先调用 CalculatorFunction 工具进行计算。
+
+  ## 术语说明
+  - VTS: Vehicle Technical Specification，整车技术规格，用于定义车辆层面的技术特征和性能指标
+  - SSTS: Sub-System Technical Specification，子系统技术规格，用于定义各子系统的功能和性能指标，是VTS的向下拆解物
+
+llm_config:
+  model_name: "qwen3.5-plus"
+  max_new_tokens: 64000
+  temperature: 0.7
+  top_p: 0.95
+  presence_penalty: 1.5
+  context_window: 256000
+  output_format: "text"

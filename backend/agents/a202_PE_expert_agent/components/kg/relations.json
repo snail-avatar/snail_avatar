@@ -1,0 +1,166 @@
+{
+  "relations": [
+    {
+      "from": "PE",
+      "to": "power",
+      "relation": "包含",
+      "properties": {}
+    },
+    {
+      "from": "PE",
+      "to": "economy",
+      "relation": "包含",
+      "properties": {}
+    },
+    {
+      "from": "v_max",
+      "to": "power",
+      "relation": "组成",
+      "properties": {}
+    },
+    {
+      "from": "acceleration_time",
+      "to": "power",
+      "relation": "组成",
+      "properties": {}
+    },
+    {
+      "from": "gradeability",
+      "to": "power",
+      "relation": "组成",
+      "properties": {}
+    },
+    {
+      "from": "v_max_1km",
+      "to": "v_max",
+      "relation": "组成",
+      "properties": {}
+    },
+    {
+      "from": "v_max_30min",
+      "to": "v_max",
+      "relation": "组成",
+      "properties": {}
+    },
+    {
+      "from": "grade_max",
+      "to": "gradeability",
+      "relation": "组成",
+      "properties": {}
+    },
+    {
+      "from": "grade_start",
+      "to": "gradeability",
+      "relation": "组成",
+      "properties": {}
+    },
+    {
+      "from": "v_max_grade",
+      "to": "gradeability",
+      "relation": "组成",
+      "properties": {}
+    },
+    {
+      "from": "e_dc",
+      "to": "e_ev_normal_tem",
+      "relation": "组成",
+      "properties": {}
+    },
+    {
+      "from": "e_ac",
+      "to": "e_ev_normal_tem",
+      "relation": "组成",
+      "properties": {}
+    },
+    {
+      "from": "mile_ev",
+      "to": "e_ev_normal_tem",
+      "relation": "组成",
+      "properties": {}
+    },
+    {
+      "from": "cs_fuel",
+      "to": "e_reev",
+      "relation": "组成",
+      "properties": {}
+    },
+    {
+      "from": "mile_reev",
+      "to": "e_reev",
+      "relation": "组成",
+      "properties": {}
+    },
+    {
+      "from": "motor_pmax",
+      "to": "power",
+      "relation": "影响",
+      "properties": {}
+    },
+    {
+      "from": "motor_tmax",
+      "to": "power",
+      "relation": "影响",
+      "properties": {}
+    },
+    {
+      "from": "motor_spd_max",
+      "to": "power",
+      "relation": "影响",
+      "properties": {}
+    },
+    {
+      "from": "EDU_pmax",
+      "to": "power",
+      "relation": "影响",
+      "properties": {}
+    },
+    {
+      "from": "EDU_tmax",
+      "to": "power",
+      "relation": "影响",
+      "properties": {}
+    },
+    {
+      "from": "EDU_spd_max",
+      "to": "power",
+      "relation": "影响",
+      "properties": {}
+    },
+    {
+      "from": "Bat_Pmax",
+      "to": "power",
+      "relation": "影响",
+      "properties": {}
+    },
+    {
+      "from": "Bat_300s_Pmax",
+      "to": "power",
+      "relation": "影响",
+      "properties": {}
+    },
+    {
+      "from": "Bat_30m_Pmax",
+      "to": "power",
+      "relation": "影响",
+      "properties": {}
+    },
+    {
+      "from": "Bat_eng",
+      "to": "economy",
+      "relation": "影响",
+      "properties": {}
+    },
+    {
+      "from": "Bat_deepth",
+      "to": "economy",
+      "relation": "影响",
+      "properties": {}
+    },
+    {
+      "from": "M_B_Energy",
+      "to": "economy",
+      "relation": "影响",
+      "properties": {}
+    }
+  ]
+}

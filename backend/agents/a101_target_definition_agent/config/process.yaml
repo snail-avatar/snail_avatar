@@ -1,0 +1,237 @@
+# =============================================================================
+# 目标值定义 Agent 工作流编排配置
+# =============================================================================
+# 由 process.yaml 驱动生成工作流，为后续 Planner/Scheduler 动态工作流做准备
+# 支持多平行循环和动态条件分支
+# =============================================================================
+#
+# 流程步骤：采用纯属性模式定义执行路径
+#   - 每个步骤通过 next_step 指定后续步骤，替代隐式列表顺序
+#   - 条件节点通过 next_step_on_fail 指定失败分支，next_step 指定成功分支
+#   - step_level 指定层级：top_level（顶层）或 loop_level（循环内）
+#   - loop_level 步骤通过 loop_name 标识所属循环组
+#
+# 执行模型：
+#   1. 从第一个 top_level 步骤开始执行
+#   2. 每执行完一个步骤，按 next_step 跳转到下一个步骤
+#   3. 当遇到 loop_level 步骤时，进入循环组（按 loop_name 分组）
+#   4. 循环组内按 next_step 链式执行，遇到指向循环外的 next_step 时结束当前循环项
+#   5. 所有循环项完成后，继续执行循环外的 next_step
+# =============================================================================
+
+workflow:
+  name: "目标值定义流程"
+  version: "4.0"
+  description: "根据产品定义信息确定 VTS 和 SSTS 目标值的完整工作流"
+
+# =============================================================================
+# 流程步骤：基于属性的流程定义
+# =============================================================================
+# 字段说明：
+#   step_level: top_level（顶层步骤）| loop_level（循环内步骤）
+#   loop_name:  所属循环组名称（仅 loop_level 步骤需要）
+#   next_step:  正常流程的下一步骤 ID
+#   next_step_on_fail: 条件节点失败分支的目标步骤 ID
+# =============================================================================
+
+steps:
+  # ==================== 顶层步骤 ====================
+
+  # 初始化步骤
+  - step_id: "INIT"
+    role: "init"
+    step_name: "初始化"
+    type: "init"
+    step_level: "top_level"
+    next_step: "DETECT_CATEGORIES"
+    description: "初始化流程状态、加载数据"
+
+  # 检测步骤（获取循环项列表）
+  - step_id: "DETECT_CATEGORIES"
+    role: "detect"
+    step_name: "检测专业"
+    type: "llm"
+    config_file: "step1_detect_categories_llm"
+    step_level: "top_level"
+    next_step: "ANALYZE_PRODUCT"
+    description: "读取VTS首层分类，LLM确定执行顺序和专家/计算流映射"
+
+  # ==================== 循环步骤（loop_categories） ====================
+
+  # 分析产品定义
+  - step_id: "ANALYZE_PRODUCT"
+    step_name: "分析产品定义"
+    type: "llm"
+    config_file: "step2_1_analyze_product_llm"
+    step_level: "loop_level"
+    loop_name: "loop_categories"
+    next_step: "DETERMINE_MAPPING"
+    description: "读取产品定义信息，提取专业相关内容"
+
+  # 确定映射关系
+  - step_id: "DETERMINE_MAPPING"
+    step_name: "确定映射关系"
+    type: "agent"
+    config_file: "step2_2_determine_mapping_agent"
+    step_level: "loop_level"
+    loop_name: "loop_categories"
+    next_step: "CHECK_REGULATIONS_AND_REFERENCES"
+    description: "调用workflow agent确定VTS/SSTS映射关系"
+
+  # 获取法规与参考数据
+  - step_id: "CHECK_REGULATIONS_AND_REFERENCES"
+    step_name: "获取法规与参考数据"
+    type: "agent"
+    config_file: "step2_3_check_regulations_agent"
+    query_mode: "pipeline"
+    step_level: "loop_level"
+    loop_name: "loop_categories"
+    next_step: "DEFINE_INITIAL"
+    description: "调用expert agent获取法规要求和参考数据"
+
+  # 定义初版目标值
+  - step_id: "DEFINE_INITIAL"
+    step_name: "定义初版目标值"
+    type: "llm"
+    config_file: "step2_4_define_initial_llm"
+    step_level: "loop_level"
+    loop_name: "loop_categories"
+    next_step: "VALIDATE_SSTS"
+    description: "由LLM推理确定初版VTS、SSTS目标值"
+
+  # SSTS数值合理性校核
+  - step_id: "VALIDATE_SSTS"
+    step_name: "SSTS校核"
+    type: "agent"
+    config_file: "step2_5_validate_targets_agent"
+    step_level: "loop_level"
+    loop_name: "loop_categories"
+    next_step: "CHECK_VALIDATION"
+    description: "校核SSTS目标值是否满足VTS要求"
+
+  # 条件节点：根据校核结果分支
+  # - next_step: YES/pass 时跳转的目标（直接进入总结）
+  # - next_step_on_fail: NO/fail 时跳转的目标（执行优化）
+  - step_id: "CHECK_VALIDATION"
+    step_name: "校核结果判断"
+    type: "condition"
+    step_level: "loop_level"
+    loop_name: "loop_categories"
+    check_step: "VALIDATE_SSTS"
+    evaluate_by: "structured_data.status"
+    yes_value: "pass"
+    no_value: "fail"
+    next_step: "SUMMARIZE_CATEGORY"
+    next_step_on_fail: "OPTIMIZE_SSTS"
+    description: "检查根据SSTS计算的VTS是否全部通过，若不通过则执行SSTS优化"
+
+  # 优化SSTS（仅在校核不达标时执行）
+  - step_id: "OPTIMIZE_SSTS"
+    step_name: "优化SSTS"
+    type: "agent"
+    config_file: "step2_6_optimize_ssts_agent"
+    step_level: "loop_level"
+    loop_name: "loop_categories"
+    next_step: "SUMMARIZE_CATEGORY"
+    description: "调用workflow agent执行SSTS优化计算"
+
+  # 专业总结
+  - step_id: "SUMMARIZE_CATEGORY"
+    step_name: "专业总结"
+    type: "llm"
+    config_file: "step2_7_summarize_category_llm"
+    step_level: "loop_level"
+    loop_name: "loop_categories"
+    next_step: "FINAL_SUMMARY"
+    description: "总结该专业的指标定义过程"
+
+  # ==================== 顶层步骤 ====================
+
+  # 最终总结步骤
+  - step_id: "FINAL_SUMMARY"
+    role: "final"
+    step_name: "整体总结"
+    type: "llm"
+    config_file: "step3_final_summary_llm"
+    step_level: "top_level"
+    description: "生成所有专业的最终总结报告"
+
+# =============================================================================
+# Step 类型行为定义
+# =============================================================================
+# llm类型: 两阶段LLM调用（工具调用 + JSON格式化）
+# agent类型: 子Agent调用 + result_formatter格式化
+# process类型: 直接执行型，调用public functions处理数据
+# condition类型: 条件判断节点，根据前置步骤结果决定分支
+#   - evaluate_by + yes_value/no_value: 从结构化结果字段判断
+#   - next_step: 条件满足时的下一步
+#   - next_step_on_fail: 条件不满足时的下一步
+# init类型: 初始化节点
+
+# =============================================================================
+# 全局公共配置
+# =============================================================================
+global_config:
+  # Public Functions 注册路径
+  public_functions_path: "snail_avatar.backend.agents.core.public_functions"
+  
+  # 默认内置函数
+  default_builtin_functions:
+    - "calculator"
+
+  # 步骤间数据传递方式
+  data_passing:
+    context_source: "step_context"  # 使用前置步骤结果作为上下文
+    format: "json"                  # 数据格式
+
+# =============================================================================
+# 参数构建配置（通用实例参数系统）
+# =============================================================================
+args_config:
+  # 实例标识（必填，框架注入）
+  instance_key_arg: "instance_key"
+
+  # 循环节点配置（基于 loop_name 关联步骤）
+  loop_nodes:
+    - node_id: "loop_categories"
+      item_arg: "professional_category"
+      source:
+        type: "init_config"
+
+  # 预计算属性配置（通过函数获取，注入到所有 step 参数）
+  pre_computed_attrs:
+    vehicle_suffix:
+      function: "get_vehicle_suffix"
+      args_mapping:
+        instance_key: "$args.instance_key"
+
+    vehicle_display_name:
+      function: "get_vehicle_display_name"
+      args_mapping:
+        memory_db: "$memory_db"
+        instance_key: "$args.instance_key"
+
+# =============================================================================
+# 初始化配置（单步执行模式使用）
+# =============================================================================
+init_config:
+  function: "vts_ssts_data_reader"
+  args_mapping:
+    operation: "get_vts_categories"
+  result_field: "categories"
+
+# =============================================================================
+# 上下文变量配置 (Context Vars)
+# =============================================================================
+context_vars:
+  controller_key:
+    mapping: "instance_key"
+    description: "用于查找对应实例控制器的键"
+
+  professional_category:
+    mapping: "professional_category"
+    description: "当前正在分析的专业名称（如空气动力学、动力性）"
+
+  agent_name:
+    value: "目标值定义 Agent"
+    description: "当前 Agent 名称"

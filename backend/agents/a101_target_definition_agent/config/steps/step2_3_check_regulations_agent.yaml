@@ -1,0 +1,157 @@
+# =============================================================================
+# 步骤2.3：获取法规与参考数据 - 任务指令配置
+# =============================================================================
+# 此步骤调用专家agent，同时获取法规要求和参考数据
+# ProcessAgentStep类型步骤通过agent.send_message(query)调用子agent，
+# task_prompt作为查询的一部分发送，LLM调用由子agent内部管理。
+
+step_type: "agent"
+query_mode: "pipeline"
+
+# Agent 类型：calculator（计算型）/ expert（专家型）/ fix（固定型）
+# calculator: 从 sandbox 的 calculator_mapping 动态获取 agent_id
+# expert: 从 sandbox 的 expert_mapping 动态获取 agent_id
+# fix: 直接使用本文件配置的 agent_id
+agent_type: "expert"
+
+step_id: "CHECK_REGULATIONS_AND_REFERENCES"
+step_name: "获取法规与参考数据"
+
+# =============================================================================
+# 数据源声明（data_sources）
+# =============================================================================
+# 从沙箱中提取车型背景信息和VTS/SSTS数据供子Agent使用
+
+data_sources:
+  # 从 step_results 提取车型背景信息
+  # （私有函数：a101_step2_3_extract_data.py）
+  - function: "step2_3_extract_data"
+    args_mapping:
+      operation: "extract_vehicle_info"
+      sandbox: "$sandbox"
+    output: "vehicle_info_text"
+
+  # 从 step_results 提取 VTS/SSTS 格式化文本（供模板变量使用）
+  # （私有函数：a101_step2_3_extract_data.py）
+  - function: "step2_3_extract_data"
+    args_mapping:
+      operation: "extract_vts_ssts_text"
+      sandbox: "$sandbox"
+    output: "vts_ssts_text"
+
+  # 从 step_results 提取 VTS/SSTS 原始列表（供 pipeline_config 使用）
+  # （私有函数：a101_step2_3_extract_data.py）
+  - function: "step2_3_extract_data"
+    args_mapping:
+      operation: "extract_vts_ssts_mapping"
+      sandbox: "$sandbox"
+    output: "vts_ssts_mapping"
+
+  # 构建管道查询配置（私有函数：a101_step2_3_build_pipeline_config.py）
+  # 基于以上数据源结果构建多Agent管道查询配置
+  # 生成 kg_query/vector_query/rules_query/case_query
+  - function: "step2_3_build_pipeline_config"
+    args_mapping:
+      professional_category: "$args.professional_category"
+      vehicle_suffix: "$args.vehicle_suffix"
+      vts_ssts_mapping: "$data_sources.vts_ssts_mapping"
+      vehicle_info_text: "$data_sources.vehicle_info_text"
+      vts_ssts_text: "$data_sources.vts_ssts_text"
+    output: "pipeline_config"
+
+# 动态指令模版，包含专业、车型、VTS/SSTS指标、任务要求
+query_template: |
+  请根据专业「{professional_category}」的以下信息，完成以下任务：
+
+  【车型信息】
+  车型后缀：{vehicle_suffix}
+  车型名称：{vehicle_display_name}
+
+  【车型产品定义背景信息】
+  {vehicle_info_text}
+
+  【VTS/SSTS 指标】
+  {vts_ssts_text}
+
+  {task_prompt}
+
+
+# 指令信息静态部分；
+
+task_prompt: |
+
+  【任务内容】
+  1. 基于以上产品定义背景信息，提供适用的国家标准和行业标准。包括但不限于关键法规限值和测试方法、对于该车型的具体要求、法规合规性检查要点等。
+  2. 为上面列出的VTS/SSTS指标的目标值定义工作，提供参考信息。
+
+  【重要约束】
+  - 只根据从向量库、规则库和案例库中检索的信息进行推理，不要增加任何额外的信息。
+
+  【输出格式要求】
+  请严格按照以下JSON格式输出，不要包含任何额外文字,允许包含空白的字段：
+
+  {
+    "structured_data": {
+      "regulations": [
+        {
+          "standards": "国家标准1",
+          "key_limits": [
+            {"name": "法规参数名", "limit": "限值说明", "test_method": "测试方法"}
+          ]
+        }
+      ],
+      "VTS/SSTS_references": {
+        "knowledge": [
+          {"name": "参考知识标题", "content": "参考知识内容"}
+        ],
+        "rules": [
+          {"name": "规则标题", "content": "规则说明", "formula": "公式表达"}
+        ],
+        "cases": [
+          {"name": "案例标题", "content": "案例说明"}
+        ]
+      }
+    },
+    "reasoning_logic": "法规与参考数据获取的推理逻辑说明、背景信息等，用于后续分析、决策和总结"
+  }
+
+
+  【术语说明】
+  - VTS: Vehicle Technical Specification，整车技术规格
+  - SSTS: Sub-System Technical Specification，子系统技术规格
+
+
+# =============================================================================
+# formatter_config（格式整理器配置）
+# =============================================================================
+# agent 类型步骤的 Stage 2（格式整理器）配置
+# 用于将法规查询结果和VTS/SSTS参考数据整理为结构化JSON格式
+# =============================================================================
+
+formatter_config:
+  system_prompt: |
+    你是一个严格的格式保留专家。你的唯一任务是将输入文本整理为标准JSON格式。
+    
+    【核心约束 - 必须严格遵守，不得违反】
+    1. 严格保留原始数据的所有字段名、数据结构和嵌套层级
+    2. 禁止修改任何字段名，特别是以下关键字段名必须严格保留：
+       - "regulations"（法规列表）
+       - "VTS/SSTS_references"（VTS/SSTS参考数据，注意包含斜杠/）
+       - "knowledge"、"rules"、"cases"（参考数据分类）
+       - "standards"、"key_limits"、"limit"、"test_method"（法规字段）
+       - "name"、"content"、"formula"（通用字段）
+    3. 禁止修改数据结构（如 [{key: value}] 不能改为 [key_str1, key_str2]）
+    4. 禁止移除 list 包装
+    5. 保留所有文本内容、法规名称、限值说明等细节信息，不得省略
+    6. 如果输入中已包含正确的JSON结构，直接提取，不要做任何格式变形
+    
+    【输出格式】
+    请严格按照以下JSON格式输出，不要包含任何额外文字：
+    {
+      "structured_data": {完整保留原始JSON结构},
+      "reasoning_logic": "从原始文本中提取的推理逻辑说明"
+    }
+  llm_config:
+    temperature: 0.1
+    presence_penalty: 0.0
+    top_p: 0.9

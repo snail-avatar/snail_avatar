@@ -1,0 +1,178 @@
+{
+  "relations": [
+    {
+      "from": "cdwt",
+      "to": "cd",
+      "relation": "确定",
+      "properties": {}
+    },
+    {
+      "from": "Cd_style",
+      "to": "cdwt",
+      "relation": "构成",
+      "properties": {}
+    },
+    {
+      "from": "Cd_cool_air",
+      "to": "cdwt",
+      "relation": "构成",
+      "properties": {}
+    },
+    {
+      "from": "Cd_under_body",
+      "to": "cdwt",
+      "relation": "构成",
+      "properties": {}
+    },
+    {
+      "from": "drag",
+      "to": "cd",
+      "relation": "计算",
+      "properties": {}
+    },
+    {
+      "from": "drag",
+      "to": "frontal_area",
+      "relation": "计算",
+      "properties": {}
+    },
+    {
+      "from": "drag",
+      "to": "drag_formula",
+      "relation": "定义",
+      "properties": {}
+    },
+    {
+      "from": "lift",
+      "to": "cl",
+      "relation": "计算",
+      "properties": {}
+    },
+    {
+      "from": "lift",
+      "to": "lift_formula",
+      "relation": "定义",
+      "properties": {}
+    },
+    {
+      "from": "aerodynamics",
+      "to": "drag",
+      "relation": "包含",
+      "properties": {}
+    },
+    {
+      "from": "aerodynamics",
+      "to": "lift",
+      "relation": "包含",
+      "properties": {}
+    },
+    {
+      "from": "aerodynamics",
+      "to": "flow_separation",
+      "relation": "包含",
+      "properties": {}
+    },
+    {
+      "from": "aerodynamics",
+      "to": "wake",
+      "relation": "包含",
+      "properties": {}
+    },
+    {
+      "from": "aerodynamics",
+      "to": "boundary_layer",
+      "relation": "包含",
+      "properties": {}
+    },
+    {
+      "from": "a_pillar",
+      "to": "flow_separation",
+      "relation": "导致",
+      "properties": {}
+    },
+    {
+      "from": "a_pillar",
+      "to": "vortex",
+      "relation": "产生",
+      "properties": {}
+    },
+    {
+      "from": "mirror",
+      "to": "vortex",
+      "relation": "产生",
+      "properties": {}
+    },
+    {
+      "from": "rear",
+      "to": "wake",
+      "relation": "导致",
+      "properties": {}
+    },
+    {
+      "from": "underbody",
+      "to": "flow_separation",
+      "relation": "导致",
+      "properties": {}
+    },
+    {
+      "from": "flow_separation",
+      "to": "drag",
+      "relation": "增加",
+      "properties": {}
+    },
+    {
+      "from": "wake",
+      "to": "drag",
+      "relation": "增加",
+      "properties": {}
+    },
+    {
+      "from": "vortex",
+      "to": "drag",
+      "relation": "增加",
+      "properties": {}
+    },
+    {
+      "from": "shape_opt",
+      "to": "drag",
+      "relation": "减小",
+      "properties": {}
+    },
+    {
+      "from": "active_grille",
+      "to": "drag",
+      "relation": "减小",
+      "properties": {}
+    },
+    {
+      "from": "air_dam",
+      "to": "drag",
+      "relation": "减小",
+      "properties": {}
+    },
+    {
+      "from": "air_dam",
+      "to": "lift",
+      "relation": "减小",
+      "properties": {}
+    },
+    {
+      "from": "rear_spoiler",
+      "to": "lift",
+      "relation": "减小",
+      "properties": {}
+    },
+    {
+      "from": "underbody_cover",
+      "to": "drag",
+      "relation": "减小",
+      "properties": {}
+    },
+    {
+      "from": "wheel_base",
+      "to": "drag",
+      "relation": "减小",
+      "properties": {}
+    }
+  ]
+}

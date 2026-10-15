@@ -1,0 +1,190 @@
+# =============================================================================
+# 步骤2.5：SSTS数值合理性校核 - Agent配置
+# =============================================================================
+# 此步骤调用 vts_ssts_agent，将初版SSTS目标值复制到当前值中，
+# 由Agent执行VTS校核计算，检查达标情况。
+# 目标值定义发生在项目初始阶段（尚无当前值），因此无需备份/恢复操作。
+#
+# 流程：
+#   1. data_sources：复制目标值到当前值 → 查询车型显示名 → 提取VTS参数列表
+#   2. Agent调用：vts_ssts_agent 调用 get_category_pass_status 校核达标情况
+#      Agent按约定JSON格式输出（含 structured_data.status 字段）
+#   3. _format_result：LLM整理为标准JSON格式
+#   4. post_process：parse_result 验证 status 字段并透传结果
+#   5. CHECK_VALIDATION：条件节点读取 structured_data.status 判断是否跳过优化步骤
+# =============================================================================
+
+step_type: "agent"
+# =============================================================================
+# Agent 配置
+# =============================================================================
+
+# Agent 类型：calculator（计算型）/ expert（专家型）/ fix（固定型）
+# calculator: 从 sandbox 的 calculator_mapping 动态获取 agent_id
+# expert: 从 sandbox 的 expert_mapping 动态获取 agent_id
+# fix: 直接使用本文件配置的 agent_id
+agent_type: "fix"
+agent_id: "vts_ssts_agent"
+
+step_id: "VALIDATE_SSTS"
+step_name: "SSTS校核"
+
+query_mode: "auto"
+
+# =============================================================================
+# 数据源声明（data_sources）
+# =============================================================================
+# 在调用子Agent之前执行，准备内存数据和查询上下文
+# 执行顺序：复制目标值 → 提取VTS参数文本
+# 注：车型显示名（vehicle_display_name）由框架预计算属性自动注入
+
+data_sources:
+  # ① 将SSTS目标值复制到当前值（供VTS计算使用）
+  - function: "vts_calc"
+    args_mapping:
+      operation: "copy_target_to_current"
+      memory_db: "$memory_db"
+      sandbox: "$sandbox"
+      instance_key: "$args.instance_key"
+      professional_category: "$args.professional_category"
+    output: "copy_result"
+
+  # ② 提取当前专业的VTS参数列表文本（供Agent查询使用）
+  - function: "step2_5_extract_data"
+    args_mapping:
+      operation: "extract_vts_params"
+      sandbox: "$sandbox"
+      professional_category: "$args.professional_category"
+      vehicle_suffix: "$args.vehicle_suffix"
+    output: "vts_params_text"
+
+# =============================================================================
+# Query模板
+# =============================================================================
+# {变量} 会被 data_sources 输出和 args 替换
+
+query_template: |
+  请检查车型「{vehicle_display_name}」专业「{professional_category}」的 VTS 达标情况。
+
+  【VTS参数列表】
+  {vts_params_text}
+
+  请调用 get_category_pass_status 工具查询该专业的达标情况，
+  参数 category 使用「{professional_category}」，
+  参数 vehicle_name 使用车型「{vehicle_display_name}」。
+
+  {task_prompt}
+
+# =============================================================================
+# task_prompt（任务指令模板）
+# =============================================================================
+# 作为 query_template 中 {task_prompt} 变量的值
+# 定义了 Agent 的任务要求、输出格式和字段说明
+
+task_prompt: |
+  【输出格式要求】
+  请严格按照以下JSON格式输出，不要包含任何额外文字：
+
+  {
+    "structured_data": {
+      "status": "pass 或 fail",
+      "total": 参数总数,
+      "passed": 达标数,
+      "failed": 不达标数,
+      "failed_VTS_items": [
+        {"name": "VTS参数名", "unit": 单位, "db_key": "xxx","current": 当前值, "target": 目标值}
+      ]
+    },
+    "reasoning_logic": "达标分析的推理逻辑说明、差距分析、不达标条目说明、改进建议、待优化的SSTS参数等"
+  }
+
+  【示例1：全部达标】
+  {
+    "structured_data": {
+      "status": "pass",
+      "total": 20,
+      "passed": 20,
+      "failed": 0,
+      "failed_VTS_items": []
+    },
+    "reasoning_logic": "专业「空气动力学」共20项VTS参数，全部达标。目标值设定合理，无需优化。"
+  }
+
+  【示例2：部分不达标】
+  {
+    "structured_data": {
+      "status": "fail",
+      "total": 20,
+      "passed": 16,
+      "failed": 4,
+      "failed_VTS_items": [
+        {"name": "风洞风阻系数", "unit": 1, "db_key": "cd_wt_target_reevlto", "current": 0.35, "target": 0.32},
+        {"name": "底盘风阻系数", "unit": 1, "db_key": "cd_under_target_reevlto", "current": 0.18, "target": 0.15}
+      ]
+    },
+    "reasoning_logic": "专业「空气动力学」共20项VTS参数，4项不达标。风洞风阻系数差距0.03，需优化造型设计；底盘风阻系数差距0.03，需优化底盘导流。"
+  }
+
+  【字段说明】
+  - status: 必填字段。"pass"表示所有参数达标，"fail"表示存在不达标参数
+  - total: 该专业VTS参数总数
+  - passed: 达标参数数
+  - failed: 不达标参数数
+  - failed_VTS_items: 不达标参数清单（仅当failed>0时填写）
+  - reasoning_logic: 分析过程说明，包括差距分析和改进建议
+
+  【术语说明】
+  - VTS: Vehicle Technical Specification，整车技术规格
+  - SSTS: Sub-System Technical Specification，子系统技术规格
+
+# =============================================================================
+# 后处理（post_process）
+# =============================================================================
+# Agent返回后执行：读取Agent输出的结构化结果，确保status字段可用
+# 执行顺序：读取$result中的status字段，验证并透传结果
+
+post_process:
+  # 读取Agent格式化后的结果，验证structured_data.status字段
+  # $result 是 Agent 结果经 _format_result 格式化后的 JSON 字符串
+  # 包含 {structured_data: {status, total, ...}, reasoning_logic}
+  - function: "step2_5_parse_result"
+    args_mapping:
+      operation: "read_status_from_result"
+      result: "$result"
+
+
+# =============================================================================
+# formatter_config（格式整理器配置）
+# =============================================================================
+# agent 类型步骤的 Stage 2（格式整理器）配置
+# 用于将VTS校核计算结果整理为结构化JSON格式
+# 特别关注 status 字段，用于后续条件分支判断
+# =============================================================================
+
+formatter_config:
+  system_prompt: |
+    你是一个严格的格式保留专家。你的唯一任务是将输入文本整理为标准JSON格式。
+    
+    【核心约束 - 必须严格遵守，不得违反】
+    1. 严格保留原始数据的所有字段名、数据结构和嵌套层级
+    2. 禁止修改任何字段名，特别是以下关键字段名必须严格保留：
+       - "status"（达标状态，值为 "pass" 或 "fail"，下游条件判断依赖此字段）
+       - "total"、"passed"、"failed"（数值统计字段，必须保留为数字类型）
+       - "failed_VTS_items"（不达标VTS列表，数组结构）
+       - "name"、"unit"、"db_key"、"current"、"target"（VTS详情字段）
+    3. 禁止修改数据结构（如 [{key: value}] 不能改为 [key_str1, key_str2]）
+    4. 禁止移除 list 包装
+    5. 保留所有数值、单位、db_key 后缀（_target_）等细节信息
+    6. 如果输入中已包含正确的JSON结构，直接提取，不要做任何格式变形
+    7. ⚠️ 最重要：status 字段值只能是 "pass" 或 "fail"，不要修改此值
+    
+    【输出格式】
+    请严格按照以下JSON格式输出，不要包含任何额外文字：
+    {
+      "structured_data": {完整保留原始JSON结构},
+      "reasoning_logic": "从原始文本中提取的推理逻辑说明"
+    }
+  llm_config:
+    temperature: 0.1
+    presence_penalty: 0.0
+    top_p: 0.9

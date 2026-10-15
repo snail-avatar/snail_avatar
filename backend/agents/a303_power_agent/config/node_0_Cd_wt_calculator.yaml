@@ -1,0 +1,60 @@
+# =============================================================================
+# Cd_wt_calculator 节点说明文件
+# =============================================================================
+node_type_id: "Cd_wt_calculator"
+node_display_name: "风阻系数综合计算"
+node_category: "空气动力学"
+node_description: "根据造型风阻系数、冷却风阻系数、下车体风阻系数计算风洞测试风阻系数。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  cd_style:
+    name: "造型风阻系数"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "车身造型产生的风阻系数"
+    default: 0.20
+
+  cd_cool_air:
+    name: "冷却风阻系数"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "冷却气流产生的风阻系数"
+    default: 0.02
+
+  cd_under_body:
+    name: "下车体及车轮附件风阻"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "下车体、车轮及附件产生的风阻系数"
+    default: 0.03
+
+# =============================================================================
+# 输出变量定义
+# =============================================================================
+outputs:
+  cd_wt:
+    name: "风洞测试风阻系数"
+    unit: ""
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "风洞测试风阻系数（cd_wt = cd_style + cd_cool_air + cd_under_body）"
+
+  cd_wt_stats:
+    name: "风阻系数统计特征"
+    unit: "dict"
+    type: "dict"
+    schema_type: "intermediate"
+    description: "各风阻分量及占比统计信息"
+
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "风阻系数计算分析的自然语言摘要"

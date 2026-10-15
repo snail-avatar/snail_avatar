@@ -1,0 +1,241 @@
+# =============================================================================
+# 汽车空气动力学专家 Agent 配置文件
+# =============================================================================
+# 用于存放 AeroExpertAgent 的系统提示词、LLM参数、路由关键词、上下文压缩参数
+# 修改此文件后无需修改Python代码即可调整Agent行为
+# =============================================================================
+
+agent_id: "aero_expert_agent"
+agent_name: "汽车空气动力学专家"
+agent_description: "专注于汽车空气动力学专业知识输出，可查询专业知识库、知识图谱和设计规则"
+
+module_path: "snail_avatar.backend.agents.core.agent_base.expert_agent_base"
+
+routing_keywords:
+  - "空气动力学"
+  - "风阻"
+  - "Cd"
+  - "气动阻力"
+  - "升力"
+  - "边界层"
+  - "湍流"
+  - "风洞"
+  - "CFD"
+  - "气动优化"
+  - "风噪声"
+  - "外部污染物"
+
+# Agent 昵称：用于路由器识别用户对 Agent 的显式指定（如"Aero专家反馈"）
+agent_nicknames:
+  - "Aero专家"
+  - "空气动力学专家"
+  - "aero专家"
+  - "气动专家"
+
+# Agent 运行时配置：控制 function calling 循环轮数、memory_db 依赖
+# 说明：YAML 中的值优先级最高；若 YAML 未配置，则使用 .py 中类属性作为默认兜底
+agent_runtime_config:
+  # function calling 循环的最大轮数（专家知识检索涉及多轮工具调用）
+  max_tool_rounds: 10
+  # 是否需要 memory_db（专家 Agent 主要做知识检索，不需要）
+  needs_memory_db: false
+
+# =============================================================================
+# 工具注册配置（配置驱动，动态创建工具函数）
+# =============================================================================
+tools:
+  - type: "vector"
+    name: "search_aero_knowledge"
+    domain_name: "汽车空气动力学"
+    default_top_k: 10
+    embedding_config: "components/embedding/embedding.yaml"
+  
+  - type: "image"
+    name: "search_aero_image"
+    domain_name: "汽车空气动力学"
+    default_top_k: 10
+    embedding_config: "components/embedding/embedding.yaml"
+  
+  - type: "text_to_image"
+    name: "search_aero_image_by_text"
+    domain_name: "汽车空气动力学"
+    default_top_k: 10
+    embedding_config: "components/embedding/embedding.yaml"
+  
+  - type: "rules"
+    name: "search_aero_rules"
+    domain_name: "汽车空气动力学"
+    default_top_k: 30
+    domain_key: "aero"
+    data_path: "components/rules/physics_rules.yaml"
+    embedding_config: "components/embedding/embedding.yaml"
+
+  - type: "cases"
+    name: "search_aero_cases"
+    domain_name: "汽车空气动力学"
+    default_top_k: 10
+    domain_key: "aero"
+    data_path: "components/cases/reference_cases.yaml"
+    embedding_config: "components/embedding/embedding.yaml"
+
+  - type: "kg"
+    name: "search_knowledge_graph"
+    domain_name: "汽车空气动力学"
+    default_top_k: 20
+    domain_key: "aero"
+    data_path: "components/kg"
+    embedding_config: "components/embedding/embedding.yaml"
+
+# =============================================================================
+# UI面板配置（配置驱动，动态创建面板和标签页）
+# =============================================================================
+ui_config:
+  panel_id: "aero_expert"
+  panel_name: "Aero专家"
+  panel_icon: "icons/aero.png"
+  tabs:
+    - type: "knowledge_base"
+      label: "建库管理"
+      embedding_config: "components/embedding/embedding.yaml"
+      data_dir: "data"
+
+    - type: "knowledge_graph"
+      label: "知识图谱"
+      data_dir: "components/kg"
+      embedding_config: "components/embedding/embedding.yaml"
+      vector_collection_name: "aero_kg"
+
+    - type: "rules"
+      label: "规则管理"
+      data_path: "components/rules/physics_rules.yaml"
+      embedding_config: "components/embedding/embedding.yaml"
+      vector_collection_name: "aero_rules"
+
+    - type: "cases"
+      label: "案例库"
+      data_path: "components/cases/reference_cases.yaml"
+      embedding_config: "components/embedding/embedding.yaml"
+      vector_collection_name: "aero_cases"
+
+# =============================================================================
+# 上下文与摘要参数分组（两套独立用途，共享 summary_config）
+# =============================================================================
+# 摘要系统有两个独立的触发场景：
+#   A. 本 Agent 内部裁剪：当对话超过 max_messages / max_tokens 时，
+#      从最旧消息开始裁剪为"长期记忆"摘要（由 ConversationManager 执行）
+#   B. 路由传递给其他 Agent：当主 Agent 切换到子 Agent 时，将源 Agent 的
+#      对话打包（最近对话原文 + 更早对话摘要）传递给目标 Agent
+#      （由 agent_router 执行）
+#
+# summary_config 是两个场景共享的：控制摘要器本身的行为（模型、长度、截断）
+# =============================================================================
+
+# 场景 A：本 Agent 内部对话历史规模（控制"保留多少"，决定何时触发裁剪/摘要）
+conversation_config:
+  # 最多保留的消息条数（超过则从最旧开始丢弃并摘要，1轮 = user+assistant 2条）
+  max_messages: 22
+  # 最多保留的 token 数（超过则从最旧开始成对移除并摘要）
+  max_tokens: 150000
+
+# 场景 B：路由传递时的上下文压缩（控制"传递给其他 Agent 时保留多少"）
+# 由 agent_router 在从源 Agent 路由到目标 Agent 时使用
+context_config:
+  # 源 Agent 的 system prompt 截断字符数：只给目标 Agent 看角色描述的开头
+  source_prompt_truncate: 200
+  # 最近对话完整保留的轮数（1轮 = user+assistant 2条）
+  # 最近的 recent_summary_max_rounds 轮对话完整传递给目标 Agent
+  # 更早的对话由 ConversationSummarizer 压缩为摘要（长度参数见下方 summary_config）
+  recent_summary_max_rounds: 3
+
+# 两个场景共享：摘要器参数（控制"摘要如何生成"）
+# 当本 Agent 的对话需要摘要时，使用以下配置覆盖 summarizer.yaml 默认值
+# 同时被场景 A（内部裁剪）和场景 B（路由传递）使用
+# 空气动力学领域技术性较强，摘要需保留关键概念和公式
+summary_config:
+  # 注入到摘要器 system_prompt 模板中的长度提示
+  # 替换 {summary_length_hint}，在摘要任务中要求 LLM 按此长度控制输出
+  summary_length_hint: "300字"
+  # LLM 参数
+  llm_config:
+    # 单次摘要生成的最大 token 数（硬上限，实际输出通常由 summary_length_hint 控制）
+    max_new_tokens: 800
+    # 摘要任务使用轻量模型降低成本和延迟
+    # 【重要】必须使用阿里云百炼 API 支持的真实模型名
+    model_name: "qwen3.5-flash"
+    temperature: 0.3
+    top_p: 0.8
+    presence_penalty: 1.0
+    context_window: 64000
+  # 规则摘要（LLM 调用失败时的降级方案）参数
+  rule_summary_config:
+    # 规则摘要中单条用户消息的最大字符数
+    user_truncate: 120
+    # 规则摘要中单条助手消息的最大字符数
+    assistant_truncate: 180
+
+# 两轮式方案 3 —— Phase 1 工具目录选择专用 Prompt
+# 功能：让 LLM 从简短目录中先挑出可能用到的工具，Phase 2 再给它这些工具的完整 schema
+tool_catalog_prompt: |
+  你是一个工具选择器。你的任务是：根据用户的问题，从下面的工具目录中
+  选择最可能需要调用的工具。请只返回工具名称，多个工具用英文逗号分隔。
+  如果不需要任何工具，回答：NONE。不要输出任何其他文字，不要解释。
+  如果不确定，宁多勿漏，把可能相关的工具都列出来。
+
+  【工具目录】
+  {catalog}
+
+# 系统提示词
+system_prompt: |
+  你是一位资深的汽车空气动力学专家，拥有丰富的理论知识和工程经验。
+
+  你的能力：
+  1. 专业知识库检索：可以搜索本地向量库中的工程书籍、标准、技术文档等资料（工具：search_aero_knowledge）
+  2. 知识图谱查询：可以查询空气动力学概念、实体及其关联关系（工具：search_knowledge_graph）
+  3. 规则查询：可以查询物理公式、经验公式、设计准则等（工具：search_aero_rules）
+  4. 案例查询：可以查询参考案例（工具：search_aero_cases）
+  5. 图片检索（以图搜图）：当用户提供图片文件路径时，可以搜索知识库中相似的图片（工具：search_aero_image）
+  6. 图片检索（以文搜图）：当用户用文字描述想找的图片时（如"压力云图"、"阻力曲线图"），可以搜索知识库中匹配的图片（工具：search_aero_image_by_text）
+
+    ## 工具调用策略（请严格按照此顺序执行）：
+  1. 首先调用 search_knowledge_graph 查询知识图谱，确定问题涉及的核心概念及相关知识点
+     - 如果知识图谱查询有结果：提取相关知识点，作为后续检索的扩展关键词
+     - 如果知识图谱查询无结果或未找到相关概念：使用原始问题直接进行下一步
+  2. 调用 search_aero_knowledge 查询向量库，查询词 = 原始问题 + 知识图谱返回的相关知识点（如果有）
+  3. 根据向量库查询结果，判断是否需要补充查询：
+     - 如果问题涉及公式、计算、设计准则：调用 search_aero_rules 查询规则库
+     - 如果问题需要参考案例：调用 search_aero_cases 查询案例库
+     - 规则查询和案例查询可以并行进行
+  4. 将所有检索结果（知识图谱、向量库、规则库、案例库）综合整理后，生成最终回答
+  5. 当用户的输入中，包含了完整的计算方法说明时，并且上下文中有完备的计算参数数据时，优先调用 CalculatorFunction 工具进行计算。
+
+    ## 特殊情况处理：
+  - 当用户输入包含图片文件路径（如 .png、.jpg）时：优先调用 search_aero_image 进行以图搜图
+  - 当用户用文字描述想找某种图片时（如"找一张压力云图"、"有没有阻力曲线图"）：优先调用 search_aero_image_by_text 进行以文搜图
+  - 简单事实查询（如概念定义）可以跳过知识图谱和案例查询，直接使用向量检索
+
+    ## 回答原则：
+  - 优先使用检索到的专业知识，确保回答有据可依
+  - 当工具返回多个结果时，综合判断最相关的内容
+  - 对于不确定的内容，明确指出并建议用户查阅原始资料
+  - 回答应专业、准确、简洁
+
+    ## 领域范围：
+  - 汽车空气动力学基础理论（阻力、升力、边界层、湍流等）
+  - 车身造型与气动性能的关系
+  - 气动阻力系数Cd的优化方法
+  - 气动升力与操控稳定性
+  - 冷却系统气动设计
+  - 底盘空气动力学
+  - 风洞试验与CFD仿真
+
+
+
+# LLM配置
+llm_config:
+  # 【重要】必须使用阿里云百炼 API 支持的真实模型名
+  model_name: "qwen3.5-plus"
+  max_new_tokens: 64000
+  temperature: 0.7
+  top_p: 0.95
+  presence_penalty: 1.5
+  context_window: 256000

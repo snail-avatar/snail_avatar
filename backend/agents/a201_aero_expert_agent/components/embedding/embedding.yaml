@@ -1,0 +1,28 @@
+# embedding 配置文件
+
+# 模型配置
+provider: dashscope
+model: "qwen3-vl-embedding"
+dimension: 2048
+
+# 批量处理配置
+batch:
+  max_text_length: 32000
+  batch_size: 4
+  rpm_limit: 2400
+  tpm_limit: 1200000
+
+# 文档处理配置
+document_processor:
+  max_chunk_size: 2000
+  ocr_lang: "chi_sim+eng"
+  scanned_threshold: 100
+  scanned_check_pages: 3
+
+# 向量库存储配置
+vector_store:
+  persist_dir: "../../data/vector_db"
+  collection_name: "aero_docs"
+
+# 数据目录配置
+data_dir: "../../data"

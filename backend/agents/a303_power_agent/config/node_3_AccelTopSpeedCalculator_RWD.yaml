@@ -1,0 +1,310 @@
+node_type_id: AccelTopSpeedCalculator_RWD
+node_display_name: 加速时间&最高车速
+node_category: 动力性计算
+node_description: 计算后驱配置下的加速时间和最高车速（包括1km最高车速和30min最高车速）
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+
+inputs:
+  # intermediate 输入变量
+  mass_half_load:
+    name: 半载质量
+    unit: kg
+    type: float
+    schema_type: intermediate
+    description: 半载质量
+    source_node: "node_1A_TireAdhesionLimit"
+
+  mass_half_load_equ:
+    name: 加速等效质量
+    unit: kg
+    type: float
+    schema_type: intermediate
+    description: 加速计算等效质量
+    source_node: "node_1A_TireAdhesionLimit"
+
+  f_half_r:
+    name: 静态后轮附着力
+    unit: N
+    type: float
+    schema_type: intermediate
+    description: 半载状态下后轮静态附着力
+    source_node: "node_1A_TireAdhesionLimit"
+
+  edu_spd_max:
+    name: 电驱综合最高转速
+    unit: rpm
+    type: float
+    schema_type: intermediate
+    description: 电驱综合最高转速
+    source_node: "node_2_PowerLimitCalculator_RWD"
+    source_var: edu_spd_max_final
+
+  bat_pmax:
+    name: 电池轮端峰值功率
+    unit: kW
+    type: float
+    schema_type: intermediate
+    description: 电池峰值功率轮端等效值
+    source_node: "node_2_PowerLimitCalculator_RWD"
+    source_var: bat_pmax_wheel
+
+  edp_30m_pmax:
+    name: 三电系统轮端持续功率
+    unit: kW
+    type: float
+    schema_type: intermediate
+    description: 三电系统轮端最大持续功率@30min
+    source_node: "node_2_PowerLimitCalculator_RWD"
+    source_var: edp_30m_pmax_wheel
+
+  # ssts_vts 输入变量
+
+  axle_eff:
+    name: 半轴效率
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    direction: input
+    description: 半轴传动效率（RWD模式使用后轴效率）
+    default: 0.99
+
+  edu_tmax_r:
+    name: 后电驱最大扭矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 后电驱最大轮端扭矩
+    default: 2923.5
+
+  edu_pmax_r:
+    name: 后电驱峰值功率
+    unit: kW
+    type: float
+    schema_type: ssts_vts
+    description: 后电驱峰值功率
+    default: 151.2
+
+  edu_spd_max_r:
+    name: 后电驱最高转速
+    unit: rpm
+    type: float
+    schema_type: ssts_vts
+    description: 后电驱最高轮端转速
+    default: 1358.0
+
+  edu_pow_gain_r:
+    name: 后电驱功率衰减系数
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 后电驱功率衰减系数
+    default: 0.9
+
+  dst:
+    name: 空气密度
+    unit: kg/m^3
+    type: float
+    schema_type: ssts_vts
+    description: 空气密度
+    default: 1.225
+
+  cd_wt:
+    name: 风洞风阻系数
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 风洞风阻系数
+    default: 0.28
+
+  cd_gain:
+    name: 风阻修正系数
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 风阻修正系数
+    default: 1.15
+
+  aero:
+    name: 正投影面积
+    unit: m^2
+    type: float
+    schema_type: ssts_vts
+    description: 正投影面积
+    default: 2.45
+
+  rr_part:
+    name: 滚阻系数
+    unit: ‰
+    type: float
+    schema_type: ssts_vts
+    description: 滚阻系数（千分比）
+    default: 6.5
+
+  rr_gain:
+    name: 滚阻修正系数
+    unit: ''
+    type: float
+    schema_type: ssts_vts
+    description: 滚阻修正系数
+    default: 1.2
+
+  f_brake_res:
+    name: 前轮制动卡钳拖滞力矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 前轮制动卡钳拖滞力矩
+    default: 1.5
+
+  r_brake_res:
+    name: 后轮制动卡钳拖滞力矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 后轮制动卡钳拖滞力矩
+    default: 1.5
+  
+  f_bearing_res:
+    name: 前轮轴承拖滞力矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 前轮轴承拖滞力矩
+    default: 0.8
+
+  r_bearing_res:
+    name: 后轮轴承拖滞力矩
+    unit: Nm
+    type: float
+    schema_type: ssts_vts
+    description: 后轮轴承拖滞力矩
+    default: 0.8
+
+  rad:
+    name: 轮胎滚动半径
+    unit: m
+    type: float
+    schema_type: ssts_vts
+    description: 轮胎滚动半径
+    default: 0.359
+
+  # 加速时间修正参数
+  acc_0_50_delta:
+    name: 0-50km/h加速时间修正
+    unit: s
+    type: float
+    schema_type: ssts_vts
+    description: 0-50km/h加速时间修正值（计算值+修正值=最终值）
+    default: 0.15
+
+  acc_0_100_delta:
+    name: 0-100km/h加速时间修正
+    unit: s
+    type: float
+    schema_type: ssts_vts
+    description: 0-100km/h加速时间修正值（计算值+修正值=最终值）
+    default: 0.2
+
+  acc_50_80_delta:
+    name: 50-80km/h加速时间修正
+    unit: s
+    type: float
+    schema_type: ssts_vts
+    description: 50-80km/h加速时间修正值（计算值+修正值=最终值）
+    default: 0.2
+
+  acc_80_120_delta:
+    name: 80-120km/h加速时间修正
+    unit: s
+    type: float
+    schema_type: ssts_vts
+    description: 80-120km/h加速时间修正值（计算值+修正值=最终值）
+    default: 0.0
+
+  # 最高车速修正参数
+  v_max_1km_delta:
+    name: 1km最高车速修正
+    unit: km/h
+    type: float
+    schema_type: ssts_vts
+    description: 1km最高车速修正值（计算值+修正值=最终值）
+    default: -2.0
+
+  v_max_30min_delta:
+    name: 30min最高车速修正
+    unit: km/h
+    type: float
+    schema_type: ssts_vts
+    description: 30min最高车速修正值（计算值+修正值=最终值）
+    default: -2.0
+
+# =============================================================================
+# 数值求解器输出变量定义
+# =============================================================================
+
+outputs:
+  # 加速时间指标（单位：s）- 修正后
+  t_0_50:
+    name: "0-50km/h加速时间"
+    unit: "s"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "0到50km/h加速时间（修正后）"
+
+  t_0_100:
+    name: "0-100km/h加速时间"
+    unit: "s"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "0到100km/h加速时间（修正后）"
+
+  t_50_80:
+    name: "50-80km/h加速时间"
+    unit: "s"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "50到80km/h加速时间（修正后）"
+
+  t_80_120:
+    name: "80-120km/h加速时间"
+    unit: "s"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "80到120km/h加速时间（修正后）"
+
+  # 最高车速指标（单位：km/h）- 修正后
+  v_max_1km:
+    name: "1km最高车速"
+    unit: "km/h"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "1km区间最高车速（修正后）"
+
+  v_max_30min:
+    name: "30min最高车速"
+    unit: "km/h"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "30min持续最高车速（修正后）"
+
+  # 中间变量
+  v_max_acc:
+    name: 加速最高速度
+    unit: km/h
+    type: float
+    schema_type: intermediate
+    description: 加速计算得出的最高速度
+
+# =============================================================================
+# 语义求解器输出变量定义
+# =============================================================================
+
+  semantic_summary:
+    name: 语义分析摘要
+    unit: ''
+    type: str
+    schema_type: intermediate
+    description: 动力性能计算的自然语言摘要

@@ -1,0 +1,147 @@
+# =============================================================================
+# VTS 状态分析 Agent 配置文件
+# =============================================================================
+# 用于存放 VtsSstsAgent 的系统提示词、LLM参数、路由关键词、上下文压缩参数
+# =============================================================================
+
+agent_id: "vts_ssts_agent"
+agent_name: "VTS 状态分析专家"
+agent_description: "专注于新能源汽车 VTS（整车目标值）指标状态与达标判断分析，可按照不同车型、不同性能指标进行达标状态分析；进而提供VTS指标相关性分析"
+
+# Python 模块路径（用于 agent_router 懒加载 agent 实例）
+module_path: "snail_avatar.backend.agents.a301_VTS_SSTS_agent.vts_ssts_agent"
+
+# 路由关键词：用户消息中出现任一关键词即转交给此 Agent
+routing_keywords:
+  - "VTS"
+  - "vts"
+  - "达标"
+  - "达标率"
+  - "不达标"
+  - "整车目标"
+  - "整车目标值"
+  - "VTS结果"
+
+# Agent 昵称：用于路由器识别用户对 Agent 的显式指定（如"VTS专家反馈"）
+agent_nicknames:
+  - "VTS专家"
+  - "VTS分析专家"
+  - "vts专家"
+  - "目标值专家"
+
+# Agent 运行时配置：控制 function calling 循环轮数、memory_db 依赖
+# 说明：YAML 中的值优先级最高；若 YAML 未配置，则使用 .py 中类属性作为默认兜底
+agent_runtime_config:
+  # function calling 循环的最大轮数（VTS 分析可能涉及多轮工具调用）
+  max_tool_rounds: 5
+  # 是否需要 memory_db（VTS Agent 需要读取整车参数，为 true）
+  needs_memory_db: true
+
+# =============================================================================
+# 上下文与摘要参数分组（两套独立用途，共享 summary_config）
+# =============================================================================
+# 摘要系统有两个独立的触发场景：
+#   A. 本 Agent 内部裁剪：当对话超过 max_messages / max_tokens 时，
+#      从最旧消息开始裁剪为"长期记忆"摘要（由 ConversationManager 执行）
+#   B. 路由传递给其他 Agent：当主 Agent 切换到子 Agent 时，将源 Agent 的
+#      对话打包（最近对话原文 + 更早对话摘要）传递给目标 Agent
+#      （由 agent_router 执行）
+#
+# summary_config 是两个场景共享的：控制摘要器本身的行为（模型、长度、截断）
+# =============================================================================
+
+# 场景 A：本 Agent 内部对话历史规模（控制"保留多少"，决定何时触发裁剪/摘要）
+# VTS 分析可能涉及多轮工具调用，保留的消息数与主 Agent 相同，但 token 预算更紧
+# 超过阈值后，旧消息会被 ConversationSummarizer 压缩为"长期记忆"摘要
+# 摘要长度和模型参数由下方 summary_config 节控制
+conversation_config:
+  # 最多保留的消息条数（超过则从最旧开始丢弃并摘要，1轮 = user+assistant 2条）
+  max_messages: 10
+  # 最多保留的 token 数（超过则从最旧开始成对移除并摘要）
+  max_tokens: 120000
+
+# 场景 B：路由传递时的上下文压缩（控制"传递给其他 Agent 时保留多少"）
+# 由 agent_router 在从源 Agent 路由到目标 Agent 时使用
+# VTS Agent 作为源 Agent 的场景较少，保持与主 Agent 一致的默认值
+context_config:
+  # 源 Agent 的 system prompt 截断字符数：只给目标 Agent 看角色描述的开头
+  source_prompt_truncate: 200
+  # 最近对话完整保留的轮数（1轮 = user+assistant 2条）
+  # 最近的 recent_summary_max_rounds 轮对话完整传递给目标 Agent
+  # 更早的对话由 ConversationSummarizer 压缩为摘要（长度参数见下方 summary_config）
+  recent_summary_max_rounds: 3
+
+# 两个场景共享：摘要器参数（控制"摘要如何生成"）
+# 当本 Agent 的对话需要摘要时，使用以下配置覆盖 summarizer.yaml 默认值
+# 同时被场景 A（内部裁剪）和场景 B（路由传递）使用
+# VTS 领域技术性较强，摘要需保留参数名、具体数值等关键信息
+summary_config:
+  # 注入到摘要器 system_prompt 模板中的长度提示
+  # 替换 {summary_length_hint}，在摘要任务中要求 LLM 按此长度控制输出
+  summary_length_hint: "300字"
+  # LLM 参数
+  llm_config:
+    # 单次摘要生成的最大 token 数（硬上限，实际输出通常由 summary_length_hint 控制）
+    max_new_tokens: 800
+    # 摘要任务使用轻量模型降低成本和延迟
+    # 【重要】必须使用阿里云百炼 API 支持的真实模型名
+    model_name: "qwen3.5-flash"
+    temperature: 0.3
+    top_p: 0.8
+    presence_penalty: 1.0
+    context_window: 64000
+  # 规则摘要（LLM 调用失败时的降级方案）参数
+  # VTS 领域助手响应中可能包含较多参数，适度放宽助手消息截断长度
+  rule_summary_config:
+    # 规则摘要中单条用户消息的最大字符数
+    user_truncate: 120
+    # 规则摘要中单条助手消息的最大字符数
+    assistant_truncate: 200
+
+# 两轮式方案 3 —— Phase 1 工具目录选择专用 Prompt
+# 功能：让 LLM 从简短目录中先挑出可能用到的工具，Phase 2 再给它这些工具的完整 schema
+# 调整说明：修改此 Prompt 后，无需修改代码即可调优工具选择策略
+tool_catalog_prompt: |
+  你是一个工具选择器。你的任务是：根据用户的问题，从下面的工具目录中
+  选择最可能需要调用的工具。请只返回工具名称，多个工具用英文逗号分隔。
+  如果不需要任何工具，回答：NONE。不要输出任何其他文字，不要解释。
+  如果不确定，宁多勿漏，把可能相关的工具都列出来。
+
+  【工具目录】
+  {catalog}
+
+system_prompt: |
+  你是 VTS 状态分析工程师，专注于新能源汽车整车目标值（VTS）的状态分析。
+  你具备 function calling 能力，可以调用工具与内存数据库交互。
+
+  ## 工作原则
+  - 当用户问题涉及 VTS/SSTS 参数时，优先使用工具查询，不要仅凭记忆回答
+  - 工具会自动检测参数是否已计算，必要时自动触发 VTS 计算和达标标识刷新，不需要你关心这一点
+  - 当用户问 "整车达标情况"、"VTS 状态"、"哪些参数不达标" 等问题时，优先调用 get_pass_status_summary
+  - 当用户问某专业分类的达标情况（如"经济性达标情况"、"动力性达标情况"）时，调用 get_category_pass_status
+  - 当用户问 "有哪些车型" 时，调用 list_all_vehicles
+  - 当用户问某参数具体值时，调用 get_parameter_value（需知道 db_key）或 list_vts_parameters
+  - 当用户使用模糊车型名称（如"增程"、"纯电"、"混动"）或不确定精确车型名称时，先调用 list_all_vehicles 获取可用车型列表，再根据返回结果推理用户输入与精准车型名称的对应关系
+  - 当用户使用模糊专业术语（如"能耗"、"续航"、"加速"、"爬坡"、"风阻"）或不确定精确专业分类名称时，先调用 list_vts_categories 获取可用专业分类列表，再根据返回结果推理用户输入与精准分类名称的对应关系
+  - 工具返回结果后，基于结果用自然语言回答用户问题，不要直接输出原始工具返回文本
+
+  ## 响应要求
+  - 保持专业、准确的技术语言风格
+  - 用列表或表格形式展示多组数据
+  - 不达标项需重点标注
+  - 缺少必要信息时请主动询问用户（例如不确定查询哪个车型时）
+  - 当工具返回结果已包含结构化数据（表格/列表）时，你的回复应聚焦于数据分析、规律总结和优化建议，不要在回复中用 markdown 表格重复展示相同数据
+
+  ## 术语说明
+  - VTS: Vehicle Technical Specification，整车技术规格，用于定义车辆层面的技术特征和性能指标
+  - SSTS: Sub-System Technical Specification，子系统技术规格，用于定义各子系统的功能和性能指标，是VTS的向下拆解物
+
+# LLM配置
+llm_config:
+  # 【重要】必须使用阿里云百炼 API 支持的真实模型名
+  model_name: "qwen3.5-plus"
+  max_new_tokens: 64000
+  temperature: 0.2
+  top_p: 0.95
+  presence_penalty: 1.5
+  context_window: 256000

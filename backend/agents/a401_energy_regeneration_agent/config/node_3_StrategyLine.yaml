@@ -1,0 +1,124 @@
+# =============================================================================
+# StrategyLine 节点说明文件
+# =============================================================================
+node_type_id: "StrategyLine"
+node_display_name: "最优制动力分配策略线"
+node_category: "策略规划"
+node_description: "根据驱动形式（FWD/RWD/AWD）生成最优回收制动力分配 map。FWD 4 段（§5），RWD 3 段（§6），AWD 沿 I 曲线（补充）。"
+
+# =============================================================================
+# 输入变量定义
+# =============================================================================
+inputs:
+  # --- 从 node_0_VehicleParam ---
+  G:
+    name: "整车重力"
+    unit: "N"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "G"
+
+  L_m:
+    name: "轴距"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "L_m"
+
+  b:
+    name: "质心到后轴距离"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "b"
+
+  hg:
+    name: "质心高度"
+    unit: "m"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_0_VehicleParam"
+    source_var: "hg"
+
+  # --- 从 node_1_IBuilder（I 曲线反查函数用）---
+  # 注意：策略线函数直接用参数方程反查，不需要全数组
+  # 但为了完整性，引入 F_mu1_I 数组作为参考
+
+  # --- 从 node_2_MBuilder ---
+  Z_B1:
+    name: "段①段②分界 Z"
+    unit: "-"
+    type: "float"
+    schema_type: "intermediate"
+    source_node: "node_2_MBuilder"
+    source_var: "Z_B1"
+
+  # --- SSTS 参数：策略阈值（无前驱/后驱独有，两参数都保留）---
+  # 注：本节点为通用理论分析模块，同时计算 FWD/RWD/AWD 三链路，
+  #     不再需要 drive_type 参数。
+  Z_C1:
+    name: "前驱段②段③分界 Z"
+    unit: "-"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "典型 0.4"
+    default: 0.4
+
+  Z_D1:
+    name: "前驱段③段④分界 Z"
+    unit: "-"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "典型 0.7"
+    default: 0.7
+
+  Z_B2:
+    name: "后驱段①段②分界 Z"
+    unit: "-"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "典型 0.1"
+    default: 0.1
+
+  Z_C2:
+    name: "后驱段②段③分界 Z"
+    unit: "-"
+    type: "float"
+    schema_type: "ssts_vts"
+    description: "典型 0.15"
+    default: 0.15
+
+# =============================================================================
+# 输出变量定义（风格 A：dict 嵌套 ndarray）
+# =============================================================================
+outputs:
+  Z_array:
+    name: "制动强度扫描数组"
+    unit: "-"
+    type: "ndarray"
+    schema_type: "intermediate"
+    description: "Z ∈ [0, 0.8] 均匀采样点，步长 0.01"
+
+  strategy_curves:
+    name: "三链路策略曲线"
+    unit: "dict"
+    type: "object"
+    schema_type: "intermediate"
+    description: |
+      {"fwd": {"F_drive": ndarray, "F_front": ndarray, "F_rear": ndarray,
+               "segment_id": ndarray, "valid": True},
+       "rwd": {...}, "awd": {...}}
+
+  # =============================================================================
+  # 语义求解器输出变量定义
+  # =============================================================================
+
+  semantic_summary:
+    name: "语义分析摘要"
+    unit: ""
+    type: "str"
+    schema_type: "intermediate"
+    description: "最优制动力分配策略线计算节点的自然语言分析报告（Markdown 格式）"
