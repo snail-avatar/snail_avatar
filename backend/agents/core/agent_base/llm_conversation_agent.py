@@ -383,6 +383,7 @@ class LLMConversationAgent:
             agent_id=self._agent_id,
             all_tools_list=self._tools_list,
             catalog_prompt=self._catalog_prompt,
+            conversation_history=self.conversation.get_history(),
         )
 
         cumulative_usage: dict[str, int] = {
@@ -753,8 +754,13 @@ class LLMConversationAgent:
         # 获取完整的对话历史（包含 user → tool_calls → tool results）
         history = self.conversation.get_history()
 
+        # ★ 从 pipeline_config 读取调用方指定的汇总指令；
+        #   调用方可以传入 summary_instruction 来引导 LLM 按固定格式汇总检索结果；
+        #   不传则默认为空字符串（原始行为）。
+        summary_instruction = (pipeline_config or {}).get("summary_instruction", "")
+
         # 调用 LLM 进行汇总（不传 tools，让 LLM 直接基于已有对话历史回答）
-        response = self.llm.generate_response("", history, None)
+        response = self.llm.generate_response(summary_instruction, history, None)
 
         if response is None:
             fallback = "Pipeline 模式 LLM 汇总失败"

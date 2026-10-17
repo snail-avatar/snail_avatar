@@ -70,6 +70,7 @@
               :disabled="pendingFiles.length === 0 || importing"
               :loading="importing"
               :icon="VideoPlay"
+              @click="startIngest"
             >
               {{ importing ? '入库中...' : '开始入库' }}
             </el-button>
@@ -92,24 +93,51 @@
             <el-button size="small" :icon="Refresh" @click="loadKbStats">刷新</el-button>
             <span class="kb-stats-summary" v-if="kbStats.ok">
               <el-tag v-if="kbStats.persist_dir_exists" type="success" effect="plain" size="small">
-                已存在 · {{ kbStats.vector_file_count }} 个文件 · {{ formatSize(kbStats.vector_total_size) }}
+                已存在 · {{ kbStats.total_vectors || 0 }} 向量 · {{ kbStats.ingested_file_count || 0 }} 文档
               </el-tag>
               <el-tag v-else type="info" effect="plain" size="small">目录不存在</el-tag>
             </span>
           </div>
-          <div class="kb-list-box">
-            <div v-if="!kbStats.ok" class="empty-hint">读取失败：{{ kbStats.reason }}</div>
-            <template v-else-if="kbStats.persist_dir_exists">
-              <div v-if="kbStats.vector_files.length === 0" class="empty-hint">向量库目录为空</div>
+
+          <!-- 已入库文档（语义层，跨 collection 聚合） -->
+          <div v-if="kbStats.persist_dir_exists" class="kb-ingested-block">
+            <div class="kb-ingested-title">已入库文档（{{ kbStats.ingested_file_count || 0 }} · 共 {{ kbStats.total_vectors || 0 }} 向量）</div>
+            <div class="kb-list-box" style="max-height: 140px;">
+              <div v-if="!kbStats.ingested_file_count" class="empty-hint">暂无文档入库</div>
+              <div v-for="f in kbStats.ingested_files" :key="f.name" class="kb-file-row">
+                <span class="kb-file-name">{{ f.name }}</span>
+                <span class="kb-file-meta">{{ f.chunks }} 块</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chroma collection 概览 -->
+          <details v-if="kbStats.persist_dir_exists && kbStats.collection_count > 0" class="kb-physical-details">
+            <summary class="kb-physical-summary">
+              Collection 概览（{{ kbStats.collection_count }} 个 · {{ kbStats.total_vectors }} 向量）
+            </summary>
+            <div class="kb-list-box" style="max-height: 160px;">
+              <div v-for="c in kbStats.all_collections" :key="c.collection_name" class="kb-collection-row">
+                <span class="kb-collection-name">{{ c.collection_name }}</span>
+                <span class="kb-file-meta">{{ c.vector_count }} 向量</span>
+              </div>
+            </div>
+          </details>
+
+          <!-- Chroma 物理文件（诊断层，默认折叠） -->
+          <details v-if="kbStats.persist_dir_exists && kbStats.vector_files.length > 0" class="kb-physical-details">
+            <summary class="kb-physical-summary">物理文件（{{ kbStats.vector_file_count }} 个 · {{ formatSize(kbStats.vector_total_size) }}）</summary>
+            <div class="kb-list-box" style="max-height: 120px;">
               <div v-for="f in kbStats.vector_files" :key="f.name" class="kb-file-row">
                 <span class="kb-file-name">{{ f.name }}</span>
                 <span class="kb-file-meta">{{ formatSize(f.size) }}</span>
               </div>
-            </template>
-            <div v-else class="empty-hint">向量库目录尚未创建（{{ kbStats.persist_dir }}）</div>
-          </div>
+            </div>
+          </details>
+
+          <div v-if="!kbStats.persist_dir_exists" class="empty-hint">向量库目录尚未创建（{{ kbStats.persist_dir }}）</div>
           <div class="kb-path-hint">向量库路径：{{ kbStats.persist_dir || '（未配置）' }}</div>
-          <div class="kb-path-hint" v-if="kbStats.collection_name">集合名：{{ kbStats.collection_name }}</div>
+          <div class="kb-path-hint" v-if="kbStats.default_collection">默认集合：{{ kbStats.default_collection }}</div>
         </div>
 
       </div>
@@ -122,10 +150,8 @@
         <div class="btn-row">
           <el-button size="small" @click="onExport('knowledge_graph')" :icon="Download">导出Excel</el-button>
           <el-button size="small" @click="triggerImport('knowledge_graph')" :icon="Upload">导入Excel</el-button>
-          <el-button size="small" :disabled="!hasVectorIndex" type="primary" plain :icon="MagicStick">构建向量索引</el-button>
+          <el-button size="small" :disabled="!hasVectorIndex" :loading="buildingVectorIndex" type="primary" plain :icon="MagicStick" @click="buildVectorIndex('knowledge_graph')">构建向量索引</el-button>
         </div>
-        <!-- 隐藏的 file input -->
-        <input type="file" ref="importFileRef" accept=".xlsx" style="display:none" @change="onImportFile" />
         <div v-if="graphError" class="err-text">{{ graphError }}</div>
 
         <div class="split-row">
@@ -178,7 +204,7 @@
         <div class="btn-row">
           <el-button size="small" @click="onExport('rules')" :icon="Download">导出Excel</el-button>
           <el-button size="small" @click="triggerImport('rules')" :icon="Upload">导入Excel</el-button>
-          <el-button size="small" :disabled="!hasVectorIndex" type="primary" plain :icon="MagicStick">构建向量索引</el-button>
+          <el-button size="small" :disabled="!hasVectorIndex" :loading="buildingVectorIndex" type="primary" plain :icon="MagicStick" @click="buildVectorIndex('rules')">构建向量索引</el-button>
         </div>
         <div v-if="rulesError" class="err-text">{{ rulesError }}</div>
         <div class="card-list" v-if="rules.length > 0">
@@ -202,7 +228,7 @@
         <div class="btn-row">
           <el-button size="small" @click="onExport('cases')" :icon="Download">导出Excel</el-button>
           <el-button size="small" @click="triggerImport('cases')" :icon="Upload">导入Excel</el-button>
-          <el-button size="small" :disabled="!hasVectorIndex" type="primary" plain :icon="MagicStick">构建向量索引</el-button>
+          <el-button size="small" :disabled="!hasVectorIndex" :loading="buildingVectorIndex" type="primary" plain :icon="MagicStick" @click="buildVectorIndex('cases')">构建向量索引</el-button>
         </div>
         <div v-if="casesError" class="err-text">{{ casesError }}</div>
         <div class="card-list" v-if="cases.length > 0">
@@ -222,6 +248,13 @@
       </div>
 
     </div>
+
+    <!-- 始终在 DOM 中（不能放在某个 v-if / v-else-if tab 内，否则切换 tab 时 ref 为 null） -->
+    <input type="file" ref="importFileRef" accept=".xlsx" style="display:none" @change="onImportFile" />
+    <!-- 建库管理：选择多个文档文件（不加 accept 限制，让 JS 过滤，避免浏览器过滤行为差异） -->
+    <input type="file" ref="kbPickFilesRef" multiple style="display:none" @change="onKbPickFilesChange" />
+    <!-- 建库管理：选择整个文件夹 -->
+    <input type="file" ref="kbPickFolderRef" webkitdirectory directory multiple style="display:none" @change="onKbPickFilesChange" />
   </div>
 </template>
 
@@ -245,6 +278,15 @@ const activeTab = ref('')
 const importTargetTab = ref('')
 const importFileRef = ref<HTMLInputElement | null>(null)
 
+// 建库管理：文件/文件夹选择 input ref（始终在 DOM 中）
+const kbPickFilesRef = ref<HTMLInputElement | null>(null)
+const kbPickFolderRef = ref<HTMLInputElement | null>(null)
+// 保存 File 对象，用于后续上传
+const pendingFileObjects = ref<File[]>([])
+
+// 构建向量索引 loading 状态（全局，同一时间只能构建一个）
+const buildingVectorIndex = ref(false)
+
 // --- 建库管理 ---
 const pendingFiles = ref<string[]>([])
 const importing = ref(false)
@@ -258,7 +300,12 @@ const kbStats = reactive({
   reason: '',
   persist_dir: '',
   persist_dir_exists: false,
-  collection_name: '',
+  default_collection: '',
+  collection_count: 0,
+  all_collections: [] as { collection_name: string; vector_count: number; sources?: { name: string; chunks: number }[] }[],
+  total_vectors: 0,
+  ingested_files: [] as { name: string; chunks: number }[],
+  ingested_file_count: 0,
   vector_files: [] as { name: string; size: number; mtime: number }[],
   vector_file_count: 0,
   vector_total_size: 0,
@@ -304,13 +351,97 @@ function formatSize(bytes: number): string {
 
 // ========= 建库管理：待处理文件 =========
 function pickFiles() {
-  ElMessage.info('选择文件对话框（Phase 9：调用后端 multipart 上传）')
+  kbPickFilesRef.value?.click()
 }
 function pickFolder() {
-  ElMessage.info('选择文件夹对话框（Phase 9：遍历后端 data_dir）')
+  kbPickFolderRef.value?.click()
 }
-function clearPending() { pendingFiles.value = [] }
-function removePending(i: number) { pendingFiles.value.splice(i, 1) }
+
+const KB_SUPPORTED_EXT = /\.(pdf|png|jpe?g|bmp|tiff|gif|txt|md)$/i
+
+function onKbPickFilesChange(e: Event) {
+  console.log('[KB v2] === onKbPickFilesChange 触发 ===')
+  const input = e.target as HTMLInputElement
+  const files = input.files
+  console.log('[KB v2] files =', files?.length, 'input.accept =', JSON.stringify(input.accept))
+
+  if (!files || files.length === 0) {
+    console.warn('[KB v2] files 为空, 提前 return, 不弹任何提示')
+    return
+  }
+
+  console.log('[KB v2] files 详情:', Array.from(files).map(f => f.name))
+
+  let added = 0
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i]
+    if (KB_SUPPORTED_EXT.test(f.name)) {
+      pendingFileObjects.value.push(f)
+      pendingFiles.value.push(f.name.includes('/') ? f.name.split('/').pop()! : f.name)
+      added++
+    }
+  }
+
+  if (added > 0) {
+    ElMessage.info(`已添加 ${added} 个文件到待处理列表`)
+  } else {
+    ElMessage.warning(`所选 ${files.length} 个文件均不支持（支持: PDF / 图片 / TXT / MD）`)
+  }
+}
+
+function clearPending() {
+  pendingFiles.value = []
+  pendingFileObjects.value = []
+}
+function removePending(i: number) {
+  pendingFiles.value.splice(i, 1)
+  pendingFileObjects.value.splice(i, 1)
+}
+
+async function startIngest() {
+  if (pendingFileObjects.value.length === 0 || importing.value) return
+
+  importing.value = true
+  importProgress.value = 0
+  importStatus.value = ''
+  importStatusText.value = '正在上传文档到后端...'
+  importError.value = false
+
+  try {
+    const fd = new FormData()
+    for (const f of pendingFileObjects.value) {
+      fd.append('files', f)
+    }
+
+    const resp = await fetch(`/api/expert/${props.agentId}/knowledge_base/ingest`, {
+      method: 'POST',
+      body: fd,
+    })
+    const data = await resp.json()
+
+    if (resp.ok && data.ok) {
+      importStatus.value = 'success'
+      importProgress.value = 100
+      importStatusText.value = `入库完成：${data.files_ok}/${data.files_total} 文件，写入 ${data.chunks_added} 向量块，耗时 ${data.elapsed_seconds}s`
+      ElMessage.success(importStatusText.value)
+      // 清空待处理 + 刷新向量库状态
+      clearPending()
+      await loadKbStats()
+    } else {
+      importStatus.value = 'exception'
+      importError.value = true
+      importStatusText.value = `入库失败：${data.detail || data.message || '未知错误'}`
+      ElMessage.error(importStatusText.value)
+    }
+  } catch (err: any) {
+    importStatus.value = 'exception'
+    importError.value = true
+    importStatusText.value = `入库异常：${err.message}`
+    ElMessage.error(importStatusText.value)
+  } finally {
+    importing.value = false
+  }
+}
 
 // ========= 节点选中 =========
 function onSelectNode(n: any) { selectedNodeId.value = n.id }
@@ -325,7 +456,36 @@ function onExport(tabType: string) {
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
-  ElMessage.success('已开始下载 Excel')
+    ElMessage.success('已开始下载 Excel')
+}
+
+// ========= 构建向量索引 =========
+async function buildVectorIndex(tabType: string) {
+    if (buildingVectorIndex.value) return
+
+    // 简单二次确认，避免误操作（会清空并重建 Chroma 集合）
+    const confirmText = `确定要重建 ${tabType} 的向量索引吗？这会清空该集合下的旧向量。`
+    // @ts-ignore Element Plus 全局方法
+    if (!window.confirm(confirmText)) return
+
+    buildingVectorIndex.value = true
+    try {
+        const resp = await fetch(`/api/expert/${props.agentId}/${tabType}/build-vector-index`, {
+            method: 'POST',
+        })
+        const data = await resp.json()
+        if (resp.ok && data.ok) {
+            ElMessage.success(
+                `构建成功：集合 ${data.collection_name}，共 ${data.total_items} 条，写入 ${data.added} 条，耗时 ${data.elapsed_seconds}s`
+            )
+        } else {
+            ElMessage.error(`构建失败: ${data.detail || data.message || '未知错误'}`)
+        }
+    } catch (err: any) {
+        ElMessage.error(`构建异常: ${err.message}`)
+    } finally {
+        buildingVectorIndex.value = false
+    }
 }
 
 // ========= 导入 Excel =========
@@ -578,6 +738,48 @@ onMounted(() => { onRefresh() })
   font-size: 11px;
   color: #909399;
   margin-top: 4px;
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+/* 已入库文档（语义层） */
+.kb-ingested-block {
+  margin-top: 6px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+.kb-ingested-title {
+  font-size: 11px;
+  color: #606266;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.kb-ingested-block .kb-list-box {
+  flex-shrink: 0;
+}
+
+/* Chroma 物理文件（诊断层，默认折叠） */
+.kb-physical-details {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #909399;
+}
+.kb-physical-summary {
+  cursor: pointer;
+  padding: 2px 0;
+  user-select: none;
+}
+.kb-collection-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  font-size: 12px;
+  border-bottom: 1px dashed #ebeef5;
+}
+.kb-collection-row:last-child { border-bottom: none; }
+.kb-collection-name {
+  color: #606266;
   font-family: ui-monospace, Consolas, monospace;
 }
 

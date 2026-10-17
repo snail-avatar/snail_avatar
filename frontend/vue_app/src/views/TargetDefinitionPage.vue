@@ -78,7 +78,6 @@
       <el-button size="small" type="primary" :icon="Promotion" :disabled="!selectedInstanceKey || store.isStreaming" :loading="isLoading" @click="onStart">连续执行</el-button>
       <el-button size="small" type="primary" :icon="store.isPaused ? VideoPlay : VideoPause" :disabled="!store.isStreaming" @click="store.isPaused ? onResume() : onPause()">{{ store.isPaused ? '继续' : '暂停' }}</el-button>
       <el-button size="small" type="primary" :icon="CircleCloseFilled" :disabled="!store.isStreaming" @click="onStop">停止</el-button>
-      <el-button size="small" type="primary" :icon="Delete" :disabled="!hasAnyData" @click="onReset">重置</el-button>
       <span class="btn-sep" />
       <!-- 区域2：单步操作（绿色 success） -->
       <el-button size="small" type="success" :icon="VideoPlay" :disabled="!canStep" @click="onStep">单步执行</el-button>
@@ -264,7 +263,7 @@ import {
   Promotion, VideoPause, VideoPlay, RefreshRight, Connection, Document, Loading,
   CircleCheckFilled, CircleCloseFilled, MoreFilled, Tickets, ArrowLeft, ArrowRight,
   Check, CircleCheck,
-  InfoFilled, CopyDocument, Delete, WarningFilled,
+  InfoFilled, CopyDocument, WarningFilled,
 } from '@element-plus/icons-vue'
 import { ElMessage, ElSelect, ElOption } from 'element-plus'
 import { useProcess } from '../composables/useProcess'
@@ -289,6 +288,8 @@ const activeSheet = ref('STEP_RESULTS')
 
 // StepResultViewer 状态
 const resultViewerIndex = ref(-1)
+/** 用户是否手动导航过 StepResultViewer（点前进/后退）。手动导航后自动跟随暂停，直到流程结束或重置 */
+const viewerUserNavigated = ref(false)
 const copyResultsStatus = ref('')
 const copyFlowDataStatus = ref('')
 
@@ -358,13 +359,21 @@ function registerHeaderControls() {
 // loopItems 变化 → 重置 viewer 索引（新的结果列表）
 watch(
   () => store.stepResults.length,
-  () => {
+  (newLen) => {
     const list = filteredStepResults.value
-    if (list.length > 0 && resultViewerIndex.value < 0) {
+    if (!list.length) return
+
+    if (resultViewerIndex.value < 0) {
+      // 首次加载 → 跳到最新
       resultViewerIndex.value = list.length - 1
     } else if (resultViewerIndex.value >= list.length) {
+      // 索引越界（如结果被重置）→ 修正
       resultViewerIndex.value = Math.max(0, list.length - 1)
+    } else if (!viewerUserNavigated.value && newLen > (resultViewerIndex.value + 1)) {
+      // 有新结果到来且用户未手动导航 → 自动跟随到最新
+      resultViewerIndex.value = list.length - 1
     }
+    // 用户手动导航过 → 保持不动
   },
 )
 
@@ -408,13 +417,6 @@ const resultViewerTitle = computed(() => {
   const name = r.step_name || r.step_id || ''
   return cat ? `[${cat}] ${name}` : name
 })
-
-// 是否有任何数据（重置按钮 disabled 判断）
-const hasAnyData = computed(() =>
-  filteredStepResults.value.length > 0 ||
-  store.sandboxData != null ||
-  store.productDef.length > 0
-)
 
 /** 单步执行是否可用：
  *   场景A 主循环已暂停 → 可以点（让主循环走一步再自动 pause）
@@ -648,6 +650,7 @@ function shortName(name: string): string {
 function navViewer(delta: number) {
   const total = filteredStepResults.value.length
   if (!total) return
+  viewerUserNavigated.value = true
   resultViewerIndex.value = Math.max(0, Math.min(total - 1, resultViewerIndex.value + delta))
 }
 
@@ -775,20 +778,6 @@ async function onResume() { await resumeProcess() }
 async function onStep() { await stepProcess() }
 async function onRepeat() { await repeatProcess() }
 
-async function onReset() {
-  // 先清后端锁（如果有）
-  if (selectedInstanceKey.value && store.isStreaming) {
-    try {
-      await stopProcess()
-    } catch { /* 后端可能已经不在执行，忽略 */ }
-  }
-  store.reset()
-  resultViewerIndex.value = -1
-  copyResultsStatus.value = ''
-  copyFlowDataStatus.value = ''
-  selectedInstanceKey.value = ''
-}
-
 function onVehicleChanged() {
   // 车型切换时，清除所有已加载的数据 + 暂停状态 + viewer 索引
   store.stepResults = []
@@ -798,6 +787,7 @@ function onVehicleChanged() {
   store.sstsSheet = null
   store.isPaused = false
   resultViewerIndex.value = -1
+  viewerUserNavigated.value = false
   // 同时刷新当前 tab
   onRefreshCurrentTab(activeSheet.value)
 }
@@ -824,12 +814,14 @@ async function onRefreshCurrentTab(sheetKey?: string) {
   }
 }
 
-/** 监听 store.finalStatus — 流程结束后触发所有 tab 数据加载 */
+/** 监听 store.finalStatus — 流程结束后触发所有 tab 数据加载 + 重置导航标志 */
 watch(
   () => store.finalStatus,
   (status) => {
     if (status && store.instanceKey) {
       loadAllAfterDone(store.instanceKey, selectedSuffix.value)
+      // 流程结束后重置手动导航标志，下一次流程执行自动跟随
+      viewerUserNavigated.value = false
     }
   },
   { immediate: false },

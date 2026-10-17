@@ -792,11 +792,14 @@ class ProcessService:
             PRODUCT_DEF_SHEET_KEY, VTS_SHEET_KEY, SSTS_SHEET_KEY,
         )
 
-        ctx = get_process_context()
-        db = getattr(ctx, "_memory_db", None)
+        from snail_avatar.backend.agents.core.public_functions_core.common.memory_db import get_memory_db
+
+        # 优先使用全局 memory_db（Excel 重载后 get_memory_db() 是最新的，
+        # ctx._memory_db 可能还是 ProcessContext 首次创建时缓存的旧对象）
+        db = get_memory_db()
         if db is None:
-            from snail_avatar.backend.agents.core.public_functions_core.common.memory_db import get_memory_db
-            db = get_memory_db()
+            ctx = get_process_context()
+            db = getattr(ctx, "_memory_db", None)
 
         if db is None:
             return {"instance_key": instance_key, "sheet_key": sheet_key, "data": None, "note": "数据库未加载"}

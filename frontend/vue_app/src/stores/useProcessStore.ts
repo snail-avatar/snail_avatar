@@ -166,6 +166,7 @@ export const useProcessStore = defineStore('process', () => {
   }
 
   function reset() {
+    // 只清执行痕迹，保留 Excel 静态参数数据（productDef / vtsSheet / sstsSheet）
     events.value = []
     statesTree.value = []
     finalStatus.value = null
@@ -175,10 +176,7 @@ export const useProcessStore = defineStore('process', () => {
     isStreaming.value = false
     isPaused.value = false
     stepResults.value = []
-    productDef.value = []
     sandboxData.value = null
-    vtsSheet.value = null
-    sstsSheet.value = null
   }
 
   function addEvent(ev: ProcessEvent) {

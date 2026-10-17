@@ -764,8 +764,8 @@ class ProcessEngine:
                 step_result = ctx._execute_step(step_class, args, context=ctx)
                 result = step_result.get("result", {})
 
-                # 检查是否为网络错误导致的失败
-                if result.get("is_error") and result.get("error_type") == "network":
+                # 检查是否为网络错误导致的失败（同时匹配英文 "network" 和中文 "网络错误"）
+                if result.get("is_error") and result.get("error_type") in ("network", "网络错误"):
                     # 标记步骤为失败但不推进状态，支持继续重试
                     controller.advance(step_id, completed=False,
                                       step_result=self._wrap_step_result(result),

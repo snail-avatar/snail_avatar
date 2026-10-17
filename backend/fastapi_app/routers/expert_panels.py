@@ -26,6 +26,7 @@ import importlib
 import json
 import os
 import tempfile
+import time
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, UploadFile, File
@@ -259,7 +260,7 @@ def get_graph(agent_id: str):
 
 @router.get("/{agent_id}/kb-stats")
 def get_kb_stats(agent_id: str):
-    """返回向量库状态（从 embedding.yaml 读 persist_dir，检查目录）"""
+    """返回向量库状态：物理文件 + 所有 Chroma collection 的统计"""
     agent_dir = _get_agent_dir(agent_id)
 
     # 找 embedding.yaml
@@ -275,7 +276,7 @@ def get_kb_stats(agent_id: str):
 
     vs = embedding_cfg.get("vector_store", {})
     persist_rel = vs.get("persist_dir", "")
-    collection_name = vs.get("collection_name", "")
+    default_collection = vs.get("collection_name", "")
 
     if not persist_rel:
         return {"ok": False, "reason": "persist_dir 未配置", "exists": False}
@@ -298,6 +299,59 @@ def get_kb_stats(agent_id: str):
                     "mtime": f.stat().st_mtime,
                 })
 
+    # --- 从 Chroma 读取所有 collection 的统计 ---
+    all_collections: List[Dict[str, Any]] = []
+    total_vectors = 0
+    ingested_files: List[Dict[str, Any]] = []
+    if exists:
+        try:
+            from snail_avatar.backend.agents.core.tools.embedding.vector_store import VectorStore
+            vs_obj = VectorStore(
+                persist_dir=str(persist_path),
+                embedding_fn=None,
+            )
+            # Chroma client 实例已存在于 vs_obj._client
+            client = vs_obj._client
+            all_names = [c.name for c in client.list_collections()]
+
+            for col_name in sorted(all_names):
+                col = client.get_collection(name=col_name)
+                cnt = col.count()
+                total_vectors += cnt
+
+                col_info: Dict[str, Any] = {
+                    "collection_name": col_name,
+                    "vector_count": cnt,
+                }
+
+                # 聚合 source 统计（仅当有数据时）
+                if cnt > 0:
+                    try:
+                        results = col.get(include=["metadatas"])
+                        source_counts: Dict[str, int] = {}
+                        for meta in results.get("metadatas", []) or []:
+                            src = meta.get("source", "") if meta else ""
+                            if src:
+                                source_counts[src] = source_counts.get(src, 0) + 1
+                        # 单个 collection 内的 source 列表
+                        col_info["sources"] = [
+                            {"name": s, "chunks": c} for s, c in sorted(source_counts.items())
+                        ]
+                        # 汇总到全局 ingested_files
+                        for src, c in sorted(source_counts.items()):
+                            existing = next((x for x in ingested_files if x["name"] == src), None)
+                            if existing:
+                                existing["chunks"] += c
+                            else:
+                                ingested_files.append({"name": src, "chunks": c})
+                    except Exception:
+                        pass
+
+                all_collections.append(col_info)
+        except Exception:
+            # Chroma 读取失败不影响主状态返回
+            pass
+
     # data_dir 下有哪些可入库文件
     data_dir = agent_dir / "data"
     data_files = []
@@ -311,7 +365,12 @@ def get_kb_stats(agent_id: str):
         "ok": True,
         "persist_dir": str(persist_path),
         "persist_dir_exists": exists,
-        "collection_name": collection_name,
+        "default_collection": default_collection,
+        "all_collections": all_collections,
+        "collection_count": len(all_collections),
+        "total_vectors": total_vectors,
+        "ingested_files": sorted(ingested_files, key=lambda x: x["name"]),
+        "ingested_file_count": len(ingested_files),
         "vector_files": files,
         "vector_file_count": len(files),
         "vector_total_size": total_size,
@@ -454,3 +513,287 @@ async def import_excel(agent_id: str, tab_type: str, file: UploadFile = File(...
             tmp_path.unlink(missing_ok=True)
         except Exception:
             pass
+
+
+# ============================================================
+# 9. 构建向量索引（遍历引擎数据 → embedding → Chroma）
+# ============================================================
+
+
+def _items_to_chunks(tab_type: str, items: List[Dict[str, Any]]) -> List[Any]:
+    """把引擎返回的条目转为 DocumentChunk，用于 VectorStore.add_documents
+
+    不同 tab_type 拼接不同的文本字段作为 embedding 输入。
+    """
+    from snail_avatar.backend.agents.core.tools.embedding.data_types import DocumentChunk
+
+    chunks = []
+    for item in items:
+        item_id = str(item.get("id", item.get("node_id", "")))
+        if not item_id:
+            continue
+
+        if tab_type == "rules":
+            # 规则：name + category + description + formula
+            text_parts = [
+                item.get("name", ""),
+                item.get("category", ""),
+                item.get("description", ""),
+                item.get("formula", ""),
+            ]
+            source = item.get("source", "rules")
+        elif tab_type == "cases":
+            # 案例：title + category + vehicle_type + description + key_params + results
+            text_parts = [
+                item.get("title", ""),
+                item.get("category", ""),
+                item.get("vehicle_type", ""),
+                item.get("description", ""),
+                item.get("key_params", ""),
+                item.get("results", ""),
+            ]
+            source = item.get("source", "cases")
+        elif tab_type == "knowledge_graph":
+            # 知识图谱节点：name + type + desc
+            text_parts = [
+                item.get("name", ""),
+                item.get("type", ""),
+                item.get("desc", item.get("description", "")),
+            ]
+            source = "knowledge_graph"
+        else:
+            continue
+
+        text = "\n".join(p for p in text_parts if p).strip()
+        if not text:
+            continue
+
+        # 把条目所有字段透传到 metadata（VectorStore 会清洗成 Chroma 支持的类型）
+        meta = dict(item)
+        meta["source"] = source
+
+        chunks.append(DocumentChunk(
+            chunk_id=item_id,
+            text=text,
+            metadata=meta,
+        ))
+
+    return chunks
+
+
+@router.post("/{agent_id}/{tab_type}/build-vector-index")
+def build_vector_index(agent_id: str, tab_type: str):
+    """用引擎的全量数据重建 Chroma 向量索引（先清空，再全量写入）"""
+    if tab_type not in ENGINE_MAP:
+        raise HTTPException(status_code=400, detail=f"不支持的 tab_type: {tab_type}")
+
+    agent_dir = _get_agent_dir(agent_id)
+    cfg = get_panel_config(agent_id)
+    tabs_raw = cfg.tabs_raw
+
+    # 从 tabs_raw 拿 embedding_config 路径和 vector_collection_name
+    tab_cfg = next((t for t in tabs_raw if t.get("type") == tab_type), {})
+    embedding_rel = tab_cfg.get("embedding_config")
+    collection_name = tab_cfg.get("vector_collection_name")
+
+    if not embedding_rel:
+        raise HTTPException(status_code=400, detail=f"该 tab 未配置 embedding_config")
+    if not collection_name:
+        raise HTTPException(status_code=400, detail=f"该 tab 未配置 vector_collection_name")
+
+    embedding_cfg_path = _resolve_agent_path(agent_dir, embedding_rel)
+    if not embedding_cfg_path.exists():
+        raise HTTPException(status_code=400, detail=f"embedding 配置文件不存在: {embedding_cfg_path}")
+
+    # 1. 实例化引擎 → 取全量条目
+    try:
+        engine = _get_engine_for_tab(agent_id, tab_type)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"引擎加载失败: {e}")
+
+    t0 = time.time()
+    if tab_type == "knowledge_graph":
+        items = engine.get_all_nodes()
+    else:
+        items = engine.get_all()
+
+    if not items:
+        return {"ok": False, "message": "引擎无数据，跳过构建向量索引", "count": 0}
+
+    # 2. 条目 → DocumentChunk
+    chunks = _items_to_chunks(tab_type, items)
+    if not chunks:
+        return {"ok": False, "message": f"共 {len(items)} 条数据，但无有效文本可向量化", "count": 0}
+
+    # 3. 构造 VectorStore + MultiModalEmbedding（VectorStore 默认从 embedding.yaml 读 persist_dir，
+    #    但 collection_name 需用 tab_cfg 里的覆盖值，因为 embedding.yaml 里默认是 docs 的集合名）
+    try:
+        from snail_avatar.backend.agents.core.tools.embedding import MultiModalEmbedding, VectorStore
+
+        embed_fn = MultiModalEmbedding(config_path=str(embedding_cfg_path))
+
+        # 先加载 embedding.yaml 拿到 persist_dir，然后覆盖 collection_name 构造 VectorStore
+        with open(embedding_cfg_path, "r", encoding="utf-8") as f:
+            emb_cfg = yaml.safe_load(f) or {}
+        vs_cfg = emb_cfg.get("vector_store", {})
+        persist_dir = vs_cfg.get("persist_dir", "../../data/vector_db")
+        # 相对 embedding.yaml 的路径
+        persist_dir = str((embedding_cfg_path.parent / persist_dir).resolve())
+
+        vs = VectorStore(
+            persist_dir=persist_dir,
+            embedding_fn=embed_fn,
+        )
+        # 切换到当前 tab 专属的 collection
+        vs._collection_name = collection_name
+        vs._collection = vs._client.get_or_create_collection(
+            name=collection_name,
+            metadata={"hnsw:space": "cosine"},
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"向量库初始化失败: {e}")
+
+    # 4. 清空旧索引 → 全量写入
+    try:
+        vs.clear_all()
+        added = vs.add_documents(chunks)
+        elapsed = round(time.time() - t0, 2)
+
+        return {
+            "ok": True,
+            "message": "向量索引构建成功",
+            "collection_name": collection_name,
+            "total_items": len(items),
+            "added": added,
+            "elapsed_seconds": elapsed,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"向量写入失败: {e}")
+
+
+# ============================================================
+# 10. 建库管理：文档入库（多文件上传 → 分块 → Chroma）
+# ============================================================
+
+SUPPORTED_DOC_EXT = {".pdf", ".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".gif", ".txt", ".md"}
+
+
+@router.post("/{agent_id}/knowledge_base/ingest")
+async def ingest_documents(agent_id: str, files: List[UploadFile] = File(...)):
+    """接收上传的多份文档 → DocumentProcessor 分块 → VectorStore 写入"""
+    agent_dir = _get_agent_dir(agent_id)
+
+    # 1. 找 embedding.yaml（knowledge_base 的 embedding_config 在 tabs 里）
+    cfg = get_panel_config(agent_id)
+    kb_tab = next((t for t in cfg.tabs_raw if t.get("type") == "knowledge_base"), {})
+    embedding_rel = kb_tab.get("embedding_config", "components/embedding/embedding.yaml")
+    embedding_cfg_path = _resolve_agent_path(agent_dir, embedding_rel)
+
+    if not embedding_cfg_path.exists():
+        raise HTTPException(status_code=400, detail=f"embedding 配置文件不存在: {embedding_cfg_path}")
+
+    # 2. 保存上传文件到临时目录
+    import asyncio
+    tmp_dir = tempfile.mkdtemp(prefix="expert_ingest_")
+    saved_paths = []
+    try:
+        for f in files:
+            if not f.filename:
+                continue
+            ext = os.path.splitext(f.filename)[1].lower()
+            if ext not in SUPPORTED_DOC_EXT:
+                continue  # 跳过不支持的类型
+            tmp_path = Path(tmp_dir) / f.filename
+            content = await f.read()
+            tmp_path.write_bytes(content)
+            saved_paths.append(str(tmp_path))
+    except Exception as e:
+        # 清理
+        for p in Path(tmp_dir).iterdir():
+            try:
+                p.unlink(missing_ok=True)
+            except Exception:
+                pass
+        try:
+            Path(tmp_dir).rmdir()
+        except Exception:
+            pass
+        raise HTTPException(status_code=400, detail=f"文件保存失败: {e}")
+
+    if not saved_paths:
+        return {"ok": False, "message": "没有支持的文档文件（支持类型: PDF / 图片 / TXT / MD）"}
+
+    # 3. 构造 DocumentProcessor + VectorStore + MultiModalEmbedding
+    try:
+        from snail_avatar.backend.agents.core.tools.embedding import (
+            DocumentProcessor, MultiModalEmbedding, VectorStore,
+        )
+
+        # 加载 embedding 配置
+        with open(embedding_cfg_path, "r", encoding="utf-8") as f:
+            emb_cfg = yaml.safe_load(f) or {}
+
+        doc_proc_cfg = emb_cfg.get("document_processor", {})
+        embed_fn = MultiModalEmbedding(config_path=str(embedding_cfg_path))
+
+        # VectorStore：persist_dir 相对于 embedding.yaml
+        vs_cfg = emb_cfg.get("vector_store", {})
+        persist_dir = vs_cfg.get("persist_dir", "../../data/vector_db")
+        persist_dir = str((embedding_cfg_path.parent / persist_dir).resolve())
+
+        vs = VectorStore(
+            persist_dir=persist_dir,
+            embedding_fn=embed_fn,
+            config_path=str(embedding_cfg_path),
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"向量库初始化失败: {e}")
+
+    # 4. 逐文件分块 + 写入
+    t0 = time.time()
+    proc = DocumentProcessor(config=doc_proc_cfg)
+
+    total_chunks = 0
+    files_ok = 0
+    files_fail = 0
+    per_file = []
+
+    try:
+        for fpath in saved_paths:
+            fname = os.path.basename(fpath)
+            try:
+                chunks = proc.process_file(fpath)
+                if chunks:
+                    added = vs.add_documents(chunks)
+                    total_chunks += added
+                    files_ok += 1
+                    per_file.append({"file": fname, "chunks": len(chunks), "added": added})
+                else:
+                    files_ok += 1
+                    per_file.append({"file": fname, "chunks": 0, "added": 0, "note": "无可分块内容"})
+            except Exception as e:
+                files_fail += 1
+                per_file.append({"file": fname, "error": str(e)})
+    finally:
+        # 清理临时文件
+        try:
+            for p in Path(tmp_dir).iterdir():
+                p.unlink(missing_ok=True)
+            Path(tmp_dir).rmdir()
+        except Exception:
+            pass
+
+    elapsed = round(time.time() - t0, 2)
+    return {
+        "ok": True,
+        "message": "文档入库完成",
+        "collection_name": vs._collection_name,
+        "files_total": len(saved_paths),
+        "files_ok": files_ok,
+        "files_fail": files_fail,
+        "chunks_added": total_chunks,
+        "elapsed_seconds": elapsed,
+        "details": per_file,
+    }

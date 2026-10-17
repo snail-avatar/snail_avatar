@@ -1,6 +1,6 @@
 cases:
-- id: mona_mo3_cd
-  title: 小鹏MONA M03 风阻优化
+- id: A_electric_sedan_cd
+  title: A级电动轿车风阻优化
   category: 电动车风阻优化
   description: 在开发初期即将风阻和能耗作为重点性能指标，风阻开发获得了造型部门的积极配合，并且获得了较多的风洞测试资源。
   vehicle_type: A+级、纯电动、sedan(轿车)
@@ -11,5 +11,5 @@ cases:
 
     3.最终经过样车测试，Cd=0.208'
   source: 个人经验
-  created_at: '2026-07-24 13:47:41'
-  updated_at: '2026-07-24 13:47:41'
+  created_at: '2026-10-17 07:47:38'
+  updated_at: '2026-10-17 07:47:38'

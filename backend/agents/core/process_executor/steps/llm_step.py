@@ -347,8 +347,8 @@ class ProcessLLMStep(ProcessStep):
                 # 调用 LLM（支持函数调用）
                 result = llm.generate_response("", conversation_history, tools=functions)
 
-                # 检查是否为网络错误（结构化检测）
-                if isinstance(result, dict) and result.get("error_type") == "network":
+                # 检查是否为网络错误（结构化检测，同时匹配英文 "network" 和中文 "网络错误"）
+                if isinstance(result, dict) and result.get("error_type") in ("network", "网络错误"):
                     raise NetworkError(result.get("content", "网络连接失败"))
 
                 # 添加到 debug（仅第一轮添加 user message）
@@ -589,8 +589,8 @@ class ProcessLLMStep(ProcessStep):
             _t_llm = _time2.time()
             result = llm.generate_response("", conversation_history, tools=None)
 
-            # 检查是否为网络错误（结构化检测）
-            if isinstance(result, dict) and result.get("error_type") == "network":
+            # 检查是否为网络错误（结构化检测，同时匹配英文 "network" 和中文 "网络错误"）
+            if isinstance(result, dict) and result.get("error_type") in ("network", "网络错误"):
                 raise NetworkError(result.get("content", "网络连接失败"))
 
             # 解析结果

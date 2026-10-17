@@ -143,6 +143,19 @@ class ProcessAgentStep(ProcessStep):
         query_mode = step_config.get('query_mode', 'auto')
         # 从数据源结果获取 pipeline_config（如果有）
         pipeline_config = data_sources_result.get('pipeline_config') if data_sources_result else None
+
+        # ★ Pipeline 模式：自动注入 summary_instruction（如果调用方未显式指定）。
+        #   原因：Pipeline 模式执行完固定顺序的工具后，LLM 需要一个明确的汇总指令。
+        #   这里用已经渲染好的 query（含输出格式模板）作为基础，避免基础设施层硬编码业务逻辑。
+        if query_mode == "pipeline" and isinstance(pipeline_config, dict):
+            if not pipeline_config.get("summary_instruction"):
+                pipeline_config = dict(pipeline_config)  # 拷贝避免修改数据源原始值
+                pipeline_config["summary_instruction"] = (
+                    "以上是知识图谱、向量库、规则库、案例库的全部检索结果。\n\n"
+                    "请基于以上检索结果，完成以下任务（含输出格式要求）：\n\n"
+                    f"{query}"
+                )
+
         raw_result = cls._call_sub_agent(
             cls.agent_id, query, args, context,
             query_mode=query_mode,
@@ -337,13 +350,13 @@ class ProcessAgentStep(ProcessStep):
                 # tuple 结构: (response_text, usage_info, structured_data)
                 if len(result) > 0:
                     content = result[0]
-                    # 检查 structured_data 中的网络错误标记
+                    # 检查 structured_data 中的网络错误标记（同时匹配英文 "network" 和中文 "网络错误"）
                     if len(result) > 2 and result[2] is not None:
                         structured_data = result[2]
-                        if isinstance(structured_data, dict) and structured_data.get("error_type") == "network":
+                        if isinstance(structured_data, dict) and structured_data.get("error_type") in ("network", "网络错误"):
                             raise NetworkError(structured_data.get("content", "网络连接失败"))
                     # 检查 content 本身是否为网络错误
-                    if isinstance(content, dict) and content.get("error_type") == "network":
+                    if isinstance(content, dict) and content.get("error_type") in ("network", "网络错误"):
                         raise NetworkError(content.get("content", "网络连接失败"))
                     if isinstance(content, str):
                         # 尝试从字符串中提取 JSON
@@ -355,7 +368,7 @@ class ProcessAgentStep(ProcessStep):
                 return None
             elif isinstance(result, dict):
                 # 检查是否为网络错误的结构化返回
-                if result.get("error_type") == "network":
+                if result.get("error_type") in ("network", "网络错误"):
                     raise NetworkError(result.get("content", "网络连接失败"))
                 content = result.get('content', str(result))
                 if isinstance(content, str):

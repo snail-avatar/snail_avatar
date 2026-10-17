@@ -108,6 +108,44 @@ def _parse_tool_names(text: str, registry: Any) -> List[str]:
 # 主函数：select_tools
 # =============================================================================
 
+def _format_history_for_phase1(conversation_history: Any, max_chars: int = 4000) -> str:
+    """将对话历史格式化为 Phase 1 LLM 可理解的紧凑文本。
+
+    Args:
+        conversation_history: 消息列表，每条为 {"role": "user"|"assistant", "content": "..."}
+        max_chars: 历史文本的最大字符数（超过则从最早开始截断）
+
+    Returns:
+        格式化后的历史文本，如：
+        [user]: 你好
+        [assistant]: 你好，请问需要什么帮助？
+    """
+    if not conversation_history:
+        return ""
+
+    lines = []
+    # 从新到旧排列，保证保留的是最近的
+    for msg in reversed(conversation_history):
+        role = msg.get("role", "?")
+        content = msg.get("content", "") or ""
+        if role not in ("user", "assistant"):
+            continue
+        # 单条消息截断到 500 字符，避免工具返回的长文本撑爆
+        content_short = content[:500] if len(content) > 500 else content
+        lines.append(f"[{role}]: {content_short}")
+
+    # 反转回正常顺序
+    lines.reverse()
+
+    result = "\n".join(lines)
+
+    # 整体截断：从最早开始切掉
+    if len(result) > max_chars:
+        result = result[-max_chars:]
+
+    return result
+
+
 def select_tools(
     llm_instance: Any,
     registry: Any,
@@ -115,6 +153,7 @@ def select_tools(
     agent_id: str,
     all_tools_list: List[Dict[str, Any]],
     catalog_prompt: Optional[str] = None,
+    conversation_history: Optional[List[Dict[str, Any]]] = None,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     """
     Phase 1：两轮式工具选择器。
@@ -123,17 +162,20 @@ def select_tools(
     挑中工具的完整 schema 发给 LLM，从而减少 token 消耗。
 
     Args:
-        llm_instance:     LLM 实例，需实现 generate_response(system_prompt,
-                          conversation_history, tools_list) 接口
-        registry:         FunctionRegistry 实例，需实现
-                          get_tools_catalog() / has_function(name) /
-                          get_tools_by_names(names) 接口
-        user_input:       用户输入的原始问题
-        agent_id:         当前 Agent 的 ID（用于日志记录）
-        all_tools_list:   所有工具的完整 schema 列表（作为兜底回退）
-        catalog_prompt:   可选，自定义 Phase 1 Prompt（从 YAML 读取时传入）。
-                          必须包含 "{catalog}" 占位符用于插入工具目录。
-                          为 None 时使用 DEFAULT_CATALOG_PROMPT。
+        llm_instance:        LLM 实例，需实现 generate_response(system_prompt,
+                              conversation_history, tools_list) 接口
+        registry:            FunctionRegistry 实例，需实现
+                              get_tools_catalog() / has_function(name) /
+                              get_tools_by_names(names) 接口
+        user_input:          用户输入的原始问题
+        agent_id:            当前 Agent 的 ID（用于日志记录）
+        all_tools_list:      所有工具的完整 schema 列表（作为兜底回退）
+        catalog_prompt:      可选，自定义 Phase 1 Prompt（从 YAML 读取时传入）。
+                              必须包含 "{catalog}" 占位符用于插入工具目录。
+                              为 None 时使用 DEFAULT_CATALOG_PROMPT。
+        conversation_history: 可选，完整对话历史（[{role, content}, ...]）。
+                              传入后 Phase 1 LLM 能看到上下文，
+                              解决延续性指代短句（如"按此修改"）因缺少历史而误判 NONE 的问题。
 
     Returns:
         tuple: (selected_tools_list, phase1_usage_info)
@@ -141,7 +183,7 @@ def select_tools(
             - phase1_usage_info:   Phase 1 的 token 使用信息（dict，可能为空）
 
     【兜底策略】
-    Phase 1 任何阶段失败（LLM 调用异常 / 解析失败 / 无有效工具名）：
+    Phase 1 任何阶段失败（LLM 调用异常 / 解析失败）：
     自动回退到"发全部工具"，保证 Phase 2 至少能正常工作。
     """
     # 默认：发全部工具（即原有行为，作为初始值和兜底值）
@@ -159,14 +201,22 @@ def select_tools(
         catalog_system = prompt_template.format(catalog=catalog_text)
         catalog_history = [
             {"role": "system", "content": catalog_system},
-            {"role": "user", "content": user_input},
         ]
+
+        # ②a 注入对话历史（如果有）——让 Phase 1 能理解上下文指代
+        history_text = _format_history_for_phase1(conversation_history) if conversation_history else ""
+        if history_text:
+            catalog_history.append({"role": "user", "content": f"【历史对话上下文】\n{history_text}"})
+
+        # ②b 当前用户输入
+        catalog_history.append({"role": "user", "content": user_input})
 
         # ③ 调用 LLM（这一轮不发任何工具 schema）
         AgentMessageLogger.log(
             agent_id, "agent_receive",
             f"Phase 1：工具目录选择（目录 {len(catalog_text)} 字符，"
-            f"工具总数 {len(all_tools_list)} 个）",
+            f"工具总数 {len(all_tools_list)} 个"
+            f"{', 含对话历史' if history_text else ''}）",
             tools_catalog=catalog_text,
         )
 
