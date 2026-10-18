@@ -128,7 +128,7 @@ class AbstractGetWorkflowInfoFunction(FunctionBase):
         else:
             lines.append("  本工作流未定义VTS输出参数。")
 
-        lines.append(f"  提示：可使用 get_node_info(node_id, vehicle_suffix) 查看某个节点的详细输入输出。")
+        lines.append(f"  提示：可查询节点信息工具查看某个节点的详细输入输出。")
 
         lines.append("=" * 60)
         return "\n".join(lines)

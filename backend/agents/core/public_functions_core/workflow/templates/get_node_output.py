@@ -102,7 +102,7 @@ class AbstractGetNodeOutputFunction(FunctionBase):
 
         if not result.get("var_found"):
             lines.append(f"  错误：节点 '{node_id}' 未找到输出变量 '{output_var_name}'。")
-            lines.append(f"  提示：可先调用 get_node_info(node_id) 查看该节点的所有输出变量。")
+            lines.append(f"  提示：可先查询节点信息工具，查看该节点的所有输出变量。")
             lines.append("=" * 60)
             return "\n".join(lines)
 

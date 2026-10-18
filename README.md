@@ -260,3 +260,50 @@ A: 正常。ChromaDB 在首次加载专家知识库时才会创建向量索引�
 **Q: 哪些文件不随 git 提交？**
 
 A: `config.ini`（含 API Key）、`backend/agents/*_expert_agent/data/vector_db/`（运行时向量库）、`uploads/`（上传临时文件）、`*.db`（本地数据库）、`node_modules/`、Python `__pycache__/`、以及除两个主数据源外的所有 `*.xlsx` 文件。详见 [.gitignore](./.gitignore)。
+
+## 开发踩坑记录
+
+### 2026-10-17：Function Calling Phase 1 工具选择无上下文 & Pipeline 汇总指令丢失
+
+**故障现象**
+
+1. economy_agent 收到"先按此修改SSTS当前值"（短句 + 指代，依赖上一轮 DOE 分析上下文），Phase 1 返回 NONE，Phase 2 以 0 个工具运行，LLM 只能纯文本回复，无法实际执行 modify_economy_ssts_and_recalculate
+2. target_definition_agent 的 CHECK_REGULATIONS_AND_REFERENCES 步骤走 pipeline 模式，空气动力学 / 动力性两个专业的 LLM 汇总返回空字符串，仅经济性专业成功
+
+**根因 1：Phase 1 工具选择器看不到对话历史**
+
+`tool_selector.py` 中的 `select_tools` 只传了 `user_input`（用户当前那一句话），不传 conversation_history。Phase 1 LLM 面对短句"先按此修改SSTS当前值"，不知道"此"指代什么（上一轮 economy_agent 列出的 5 个 DOE 优化参数），返回 NONE。Phase 2 以 0 工具运行 → 工具调用链彻底断开。
+
+**根因 2：Pipeline 模式 summary_instruction 没有注入 LLM history**
+
+LLMConversationAgent 的 `_run_pipeline_query` 用 `generate_response(summary_instruction, history, None)` 调用 LLM 做汇总，但 `generate_response` 的 `prompt` 参数从设计上就不被使用（deploy.py 注释明确写了 "prompt 参数被忽略"）。summary_instruction 根本没传给 LLM，LLM 汇总时只看到 system_prompt + 原始 task_prompt + 4 轮工具返回，完全没拿到字段级约束（"regulations 可以为空"等），不确定怎么组织输出 → 返回空。
+
+**根因 3：基础设施层 → 业务层的层次越界**
+
+排查过程中曾在 agent_step.py（基础设施层）硬编码了 "regulations 字段优先放法规，若无法规可以为空数组" 等业务知识。这些字段约束属于 CHECK_REGULATIONS_AND_REFERENCES 这个特定 step 的业务逻辑，不应该出现在通用的 ProcessAgentStep 基类里。
+
+**修复**
+
+1. **Phase 1 注入对话历史**：`select_tools` 新增可选参数 `conversation_history`，`_run_tool_calling_loop` 调用时把 `self.conversation.get_history()` 传进去。Phase 1 构造的 catalog_history 里追加最近对话，让工具选择器能看到指代内容。
+2. **Pipeline 汇总触发指令改为追加到 history**：在 `_run_pipeline_query` 中，工具执行完毕后，把 `summary_instruction` 作为一条新的 user 消息追加到 history 末尾，再调用 LLM 汇总。LLM API 要求序列以非 assistant 结尾，这条 user 消息同时满足"触发汇总"和"序列合法"两个要求。
+3. **业务约束下沉到 task_prompt**：字段级约束（regulations 允许空、knowledge/rules/cases 不受法规影响等）合并到 step YAML 的 task_prompt 末尾。summary_instruction 只负责触发汇总（"以上是工具检索结果，请完成任务"），不含业务知识。
+4. **agent_step.py 最小化兜底**：agent_step.py 只负责当 data_sources 没提供 summary_instruction 时，用 "以上是工具检索结果。请完成以下任务：{query}" 兜底注入。query 本身已包含 task_prompt（含完整字段约束），所以兜底也不会丢失业务信息。基础设施层不硬编码任何业务知识。
+
+**修改文件**
+
+| 文件 | 改动 |
+|------|------|
+| `backend/agents/core/public_functions_core/tool_selector.py` | select_tools 新增 conversation_history 参数，Phase 1 构造 history 时追加最近对话 |
+| `backend/agents/core/agent_base/llm_conversation_agent.py` | Phase 1 调用 select_tools 时传入 conversation_history；_run_pipeline_query 中把 summary_instruction 追加到 history 末尾再调 LLM |
+| `backend/agents/core/process_executor/steps/agent_step.py` | 兜底注入 summary_instruction，不含业务逻辑 |
+| `backend/agents/a101_target_definition_agent/config/steps/step2_3_check_regulations_agent.yaml` | task_prompt 末尾加字段级汇总约束；新增顶层 summary_instruction 配置（后因与 task_prompt 合并而删除） |
+| `backend/agents/a303_power_agent/config/power_agent.yaml` | VTS/SSTS 映射任务指导从 `semantic_economy_logic` 修正为 `semantic_power_logic`（复制粘贴错误） |
+| `.trae/rules/project_rules.md` | 新增规则：不要在基础设施层硬编码业务逻辑，业务逻辑放在 YAML 配置和业务专属公共函数中 |
+
+**教训**
+
+- Phase 1 是独立的轻量 LLM 调用，和 Phase 2 看到的上下文不一致。任何依赖指代（"此"、"按此"、"就这么办"）的延续性请求，Phase 1 都必须能看到对话历史，否则会误判 NONE
+- `generate_response(prompt, history, tools)` 的 prompt 参数在 deploy.py 实现中被忽略。不要用它传任何需要 LLM 看到的内容，追加到 history 里才靠谱
+- Pipeline 模式工具执行完毕后，LLM 对话序列以 tool 角色结尾，需要一条 user 消息触发汇总
+- 基础设施层（agent_base、process_executor）只负责通用流程和最小化兜底。业务知识（特定字段约束、特定步骤的 prompt 文案）必须放在业务层（YAML 配置、业务专属函数）
+- LLM 行为异常时（返回空、返回 function call 格式而非 JSON），优先查"LLM 到底收到了什么 messages"——加 debug print 遍历 history 每条消息的 role 和 content_preview，能快速定位是 history 没注入、prompt 被忽略、还是工具返回内容质量问题

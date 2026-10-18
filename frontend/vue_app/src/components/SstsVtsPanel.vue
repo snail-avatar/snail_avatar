@@ -1,7 +1,7 @@
 // @Time    : 2026
 // @Author  : 李涛
 // @File    : SstsVtsPanel.vue
-// @Desc    : SstsVtsPanel
+// @Desc    : SstsVtsPanel — VTS/SSTS 参数表（共享组件）
 // Copyright (c) 2026 保留所有权利，开源遵循 MIT 开源协议
 // 本代码可自由使用、修改、商用、二次分发，仅需保留本版权声明。
 
@@ -46,12 +46,32 @@
           <el-table-column prop="达标判据" label="达标判据" width="80" />
           <el-table-column label="当前值" width="90">
             <template #default="{ row }">
-              <span :class="{ 'val-null': row['当前值'] == null }">{{ formatValue(row['当前值']) }}</span>
+              <!-- 可编辑模式：用 ParamEdit -->
+              <ParamEdit
+                v-if="editable && (row['当前值_db_key'] || row.db_key)"
+                :model-value="formatDisplayValue(row['当前值'] ?? row['值'])"
+                :is-warn="isNotPassed(row['达标标识'])"
+                @save="(v: string) => emitEditSave(row, '当前值', row['当前值_db_key'] || row.db_key, v)"
+              />
+              <!-- 只读模式 -->
+              <span v-else :class="{ 'val-null': row['当前值'] == null && row['值'] == null }">
+                {{ formatDisplayValue(row['当前值'] ?? row['值']) }}
+              </span>
             </template>
           </el-table-column>
           <el-table-column label="目标值" width="90">
             <template #default="{ row }">
-              <span :class="{ 'val-null': row['目标值'] == null }">{{ formatValue(row['目标值']) }}</span>
+              <!-- 可编辑模式：目标值也可编辑 -->
+              <ParamEdit
+                v-if="editable && row['目标值_db_key']"
+                :model-value="formatDisplayValue(row['目标值'])"
+                :is-warn="isNotPassed(row['达标标识'])"
+                @save="(v: string) => emitEditSave(row, '目标值', row['目标值_db_key'], v)"
+              />
+              <!-- 只读模式 -->
+              <span v-else :class="{ 'val-null': row['目标值'] == null }">
+                {{ formatDisplayValue(row['目标值']) }}
+              </span>
             </template>
           </el-table-column>
           <el-table-column label="达标标识" width="80">
@@ -84,24 +104,23 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import ParamEdit from './ParamEdit.vue'
+import { formatDisplayValue, isNotPassed } from '../utils/valueFormat'
 
-// 对齐 flet flatten_items 输出格式
 interface VtsRow {
   cat1: string
   cat2: string
   名称?: string
   单位?: string
   达标判据?: string
-  标杆数据?: any
-  备注?: any
-  "当前值"?: any
-  "当前值_db_key"?: string
-  "目标值"?: any
-  "目标值_db_key"?: string
-  "达标标识"?: any
-  "达标标识_db_key"?: string
-  db_key?: string           // 简单参数（计算条件类）的直接 db_key
-  值?: any                  // 简单参数的直接值
+  '当前值'?: any
+  '当前值_db_key'?: string
+  '目标值'?: any
+  '目标值_db_key'?: string
+  '达标标识'?: any
+  '达标标识_db_key'?: string
+  db_key?: string
+  值?: any
   [key: string]: any
 }
 
@@ -119,6 +138,21 @@ const props = defineProps<{
   } | null
   title?: string
   type?: 'vts' | 'ssts'
+  /** 是否可编辑当前值/目标值列。a301 VtsSstsPage 传 true，a101 TargetDefinitionPage 不传（默认 false） */
+  editable?: boolean
+}>()
+
+const emit = defineEmits<{
+  /**
+   * 编辑保存事件。
+   * a301 VtsSstsPage 监听此事件，调 PUT /api/vts-ssts/param 写回 memory_db。
+   */
+  (e: 'edit-save', payload: {
+    row: VtsRow
+    field: '当前值' | '目标值'
+    dbKey: string
+    newValue: string
+  }): void
 }>()
 
 const activeCategories = ref<string[]>([])
@@ -143,22 +177,13 @@ const emptyDesc = computed(() => {
   return `暂无 ${props.type === 'vts' ? 'VTS' : 'SSTS'} 数据`
 })
 
-function formatValue(v: any): string {
-  if (v === null || v === undefined) return '-'
-  if (typeof v === 'number') {
-    // 对齐 flet a301 的 .2f 格式：保留 2 位小数，去掉多余零
-    const rounded = Math.round(v * 100) / 100
-    return String(rounded)
-  }
-  if (typeof v === 'object') {
-    try { return JSON.stringify(v) } catch { return String(v) }
-  }
-  return String(v)
+function emitEditSave(row: VtsRow, field: '当前值' | '目标值', dbKey: string, newValue: string) {
+  emit('edit-save', { row, field, dbKey, newValue })
 }
 
 // 达标标识=0 的行红色高亮
 function rowClassName({ row }: { row: VtsRow }): string {
-  if (row['达标标识'] != null && row['达标标识'] === 0) return 'row-fail'
+  if (isNotPassed(row['达标标识'])) return 'row-fail'
   return ''
 }
 
@@ -230,7 +255,7 @@ function makeCat2SpanMethod(params: VtsRow[]) {
   --el-table-tr-bg-color: #fef0f0;
 }
 
-/* 表格字号：对齐 flet a301 VTS — 表头 12px bold，内容 11px */
+/* 表格字号：表头 12px bold，内容 11px */
 :deep(.el-table .el-table__header th .cell) {
   font-size: 12px;
   font-weight: 700;
@@ -250,11 +275,5 @@ function makeCat2SpanMethod(params: VtsRow[]) {
 :deep(.el-table .cell) {
   padding-left: 4px !important;
   padding-right: 4px !important;
-}
-.panel-footer {
-  margin-top: 8px;
-  font-size: 11px;
-  color: #909399;
-  text-align: right;
 }
 </style>

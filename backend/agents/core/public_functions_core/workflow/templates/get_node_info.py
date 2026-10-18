@@ -115,7 +115,7 @@ class AbstractGetNodeInfoFunction(FunctionBase):
                 # 显示完整的 db_key（用于 modify_ssts_and_recalculate）
                 if var_info.get("db_key"):
                     lines.append(f"      db_key: {var_info['db_key']}")
-                    lines.append(f"      修改方式: modify_economy_ssts_and_recalculate(db_key='{var_info['db_key']}', value=新值)")
+                    lines.append(f"      修改方式: 可调用参数修改工具，db_key='{var_info['db_key']}', value=新值")
 
         # 中间变量输入
         inter_inputs = info.get("intermediate_inputs", {})
@@ -154,7 +154,7 @@ class AbstractGetNodeInfoFunction(FunctionBase):
                 lines.append(f"      当前值: {var_info.get('current_value', '未计算')}")
 
         lines.append("")
-        lines.append(f"  提示：可使用 get_node_output(node_id, output_var_name, vehicle_suffix) 查询某个输出变量的详细值。")
+        lines.append(f"  提示：可查询节点输出工具查看某个输出变量的详细值。")
 
         lines.append("=" * 60)
         return "\n".join(lines)

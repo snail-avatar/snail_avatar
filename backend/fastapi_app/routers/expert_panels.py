@@ -569,7 +569,9 @@ def _items_to_chunks(tab_type: str, items: List[Dict[str, Any]]) -> List[Any]:
             continue
 
         # 把条目所有字段透传到 metadata（VectorStore 会清洗成 Chroma 支持的类型）
+        # 同时统一写入 item_id 字段，供检索侧 _vector_search 按 id 回查引擎
         meta = dict(item)
+        meta["item_id"] = str(item.get("id", item.get("node_id", "")))
         meta["source"] = source
 
         chunks.append(DocumentChunk(

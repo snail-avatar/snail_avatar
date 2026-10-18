@@ -140,7 +140,7 @@ class AbstractListSSTSParamsFunction(FunctionBase):
                     "rows": [{"db_key": param_info["db_key"], "值": param_info["value"]}],
                 }
             else:
-                return {"type": "text", "content": f"[{cls.tool_title}]\n未找到 db_key: {db_key}\n提示：可调用 list_*_ssts_params() 不带参数获取所有参数列表。"}
+                return {"type": "text", "content": f"[{cls.tool_title}]\n未找到 db_key: {db_key}\n提示：可调用参数列表工具不带参数获取所有参数列表。"}
 
         workflow = None
         if context is not None and hasattr(context, "get_workflow_for_vehicle"):

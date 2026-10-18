@@ -754,13 +754,15 @@ class LLMConversationAgent:
         # 获取完整的对话历史（包含 user → tool_calls → tool results）
         history = self.conversation.get_history()
 
-        # ★ 从 pipeline_config 读取调用方指定的汇总指令；
-        #   调用方可以传入 summary_instruction 来引导 LLM 按固定格式汇总检索结果；
-        #   不传则默认为空字符串（原始行为）。
-        summary_instruction = (pipeline_config or {}).get("summary_instruction", "")
+        # ★ 追加一条 user 消息作为汇总触发指令
+        #   LLM 对话序列中最后一条是 tool_result，需要一条 user 指令告诉它输出最终答案。
+        #   summary_instruction 必须由调用方通过 pipeline_config 传入（业务层负责），
+        #   基础设施层不提供任何兜底，避免硬编码业务逻辑。
+        summary_trigger = (pipeline_config or {}).get("summary_instruction", "")
+        history = history + [{"role": "user", "content": summary_trigger}]
 
-        # 调用 LLM 进行汇总（不传 tools，让 LLM 直接基于已有对话历史回答）
-        response = self.llm.generate_response(summary_instruction, history, None)
+        # ★ 调用 LLM 进行汇总（不传 tools，让 LLM 直接基于已有对话历史回答）
+        response = self.llm.generate_response("", history, None)
 
         if response is None:
             fallback = "Pipeline 模式 LLM 汇总失败"

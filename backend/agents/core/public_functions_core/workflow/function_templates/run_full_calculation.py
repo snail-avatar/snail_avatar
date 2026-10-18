@@ -116,7 +116,7 @@ class AbstractRunFullCalculationFunction(FunctionBase):
                     }
                 }
             else:
-                return {"type": "text", "content": f"[{cls.tool_title}]\n目标车型: {vehicle_suffix}\n[成功] 计算完成\n\n未检测到 VTS 输出参数。\n提示：可调用 get_node_info(node_id) 查看中间计算结果，或使用 get_node_output(node_id, output_var_name, vehicle_suffix) 查看任意节点的详细输出值。"}
+                return {"type": "text", "content": f"[{cls.tool_title}]\n目标车型: {vehicle_suffix}\n[成功] 计算完成\n\n未检测到 VTS 输出参数。\n提示：可查询节点信息工具查看中间计算结果，或查询节点输出工具查看任意节点的详细输出值。"}
 
         except Exception as e:
             import traceback

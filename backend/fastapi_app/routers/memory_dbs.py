@@ -32,6 +32,19 @@ class ParamWriteRequest(BaseModel):
 @router.get("/memory-dbs", summary="获取 MemoryDatabase 全量数据")
 async def list_memory_dbs():
     try:
+        # 返回前先重算一遍达标标识（幂等操作，确保 NaN/空值行不再被误标为不达标）
+        # 之前的问题：VtsSstsPage 直接读 memory_db，里面达标标识是旧值（NaN→0），
+        # ensure_pass_flags_calculated 只在 a301 agent function 里调，页面刷新永远看不到更新
+        try:
+            from snail_avatar.backend.agents.core.public_functions_core.vts.pass_flag_calculator import (
+                ensure_pass_flags_calculated,
+            )
+            db = get_memory_database()
+            if db is not None:
+                ensure_pass_flags_calculated(db)
+        except Exception:
+            pass  # 重算失败不阻塞正常查询
+
         data = get_memory_db_data()
         return {"ok": True, **data}
     except Exception as e:

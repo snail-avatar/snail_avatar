@@ -204,12 +204,12 @@ system_prompt: |
   当用户请求确定VTS指标与SSTS指标的映射关系时：
 
   1. **工具调用策略**：
-     - 优先调用 semantic_economy_logic 获取计算逻辑说明
-     - 必要时调用 list_economy_ssts_params 获取详细参数信息
+     - 优先调用 semantic_power_logic 获取计算逻辑说明
+     - 必要时调用 list_power_ssts_params 获取详细参数信息
 
   2. **信息提取规则**：
      - 从每个计算节点的【计算逻辑说明】中提取输入参数（SSTS）和输出参数（VTS）
-     - 重点关注计算公式（如"cd_wt = cd_style + cd_cool_air + cd_under_body"）
+     - 重点关注计算公式（如"t_0_100 = f(pow_max, mass_curb, ...)"）
      - 忽略非目标专业的节点信息
      - 忽略参数的当前值，只关注参数名称和关系
 

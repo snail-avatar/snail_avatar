@@ -64,28 +64,9 @@ class SearchKnowledgeGraphFunctionTemplate(BaseSearchFunction):
         }
 
     @classmethod
-    def _get_engine_instance(cls):
-        """获取知识图谱引擎实例"""
-        import importlib as _il
-        module_path, class_name = cls.engine_class.rsplit(".", 1)
-        _mod = _il.import_module(module_path)
-        EngineClass = getattr(_mod, class_name)
-        return EngineClass(data_dir=cls.data_dir)
-
-    @classmethod
     def _get_item_by_id(cls, engine, item_id: str):
         """从知识图谱引擎中按 id 获取节点"""
         return engine.get_node(item_id)
-
-    @classmethod
-    def _build_index_text(cls, item: Dict[str, Any]) -> str:
-        """构建知识图谱节点的向量索引文本"""
-        parts = []
-        for key in ("id", "name", "type", "desc"):
-            val = item.get(key, "")
-            if val:
-                parts.append(str(val))
-        return " ".join(parts)
 
     @classmethod
     def execute(cls, args: Dict[str, Any], context: Any = None) -> Dict[str, Any]:

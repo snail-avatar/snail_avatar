@@ -297,16 +297,11 @@ class PassFlagCalculator:
     @staticmethod
     def _evaluate_criterion(
         criterion: Any, current_val: Any, target_val: Any
-    ) -> int:
+    ) -> Optional[int]:
         """根据达标判据对比当前值与目标值
 
-        Args:
-            criterion: 运算符字符串，如 "<=", ">", "==" 等
-            current_val: 当前值
-            target_val: 目标值
-
         Returns:
-            1 表示达标，0 表示不达标
+            1 表示达标，0 表示不达标，None 表示无数据（不参与达标判断）
         """
         # 规范化判据：去除空白，转字符串
         if criterion is None:
@@ -314,13 +309,13 @@ class PassFlagCalculator:
         else:
             op_str = str(criterion).strip()
 
-        # 无判据时，默认不达标
+        # 无判据 → 无法判断，返回 None
         if not op_str or op_str.lower() in {"nan", "none", "null", "-"}:
-            return 0
+            return None
 
-        # 当前值或目标值为空时，默认不达标
+        # 当前值或目标值为空 → 无数据，返回 None
         if current_val is None or target_val is None:
-            return 0
+            return None
 
         # 尝试将当前值和目标值转换为浮点数进行比较
         try:
@@ -333,11 +328,11 @@ class PassFlagCalculator:
         except (TypeError, ValueError):
             tgt_num = None
 
-        # 当前值或目标值为 nan/inf 时，默认不达标
+        # 当前值或目标值为 nan/inf → 视为无数据，返回 None
         if cur_num is not None and (math.isnan(cur_num) or math.isinf(cur_num)):
-            return 0
+            return None
         if tgt_num is not None and (math.isnan(tgt_num) or math.isinf(tgt_num)):
-            return 0
+            return None
 
         # 如果两侧都能转成数字，按数字比较
         if cur_num is not None and tgt_num is not None:
@@ -351,8 +346,8 @@ class PassFlagCalculator:
         if op_str == "!=":
             return 1 if str(current_val) != str(target_val) else 0
 
-        # 未知运算符，默认不达标
-        return 0
+        # 未知运算符 → 无法判断，返回 None（之前是返回 0，可能误把未知算成不达标）
+        return None
 
     @staticmethod
     def _numbers_equal(a: Any, b: Any) -> bool:

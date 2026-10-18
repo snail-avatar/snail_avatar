@@ -133,10 +133,10 @@ class AbstractModifyAndRecalculateFunction(FunctionBase):
         vehicle_suffix = args.get("vehicle_suffix", "")
 
         if new_value_raw == "" or not vehicle_suffix:
-            return {"type": "text", "content": f"[{cls.tool_title}]\n参数错误：必须提供 new_value 和 vehicle_suffix。\n\n使用方式：\n  方式1（推荐）：modify_economy_ssts_and_recalculate(db_key='xxx_result_veh', new_value=xxx, vehicle_suffix='veh')\n  方式2（兼容）：modify_economy_ssts_and_recalculate(node_id='xxx', input_var_name='yyy', new_value=xxx, vehicle_suffix='veh')"}
+            return {"type": "text", "content": f"[{cls.tool_title}]\n参数错误：必须提供 new_value 和 vehicle_suffix。\n\n使用方式：\n  方式1（推荐）：{cls.name}(db_key='xxx_result_veh', new_value=xxx, vehicle_suffix='veh')\n  方式2（兼容）：{cls.name}(node_id='xxx', input_var_name='yyy', new_value=xxx, vehicle_suffix='veh')"}
 
         if not db_key and (not node_id or not input_var_name):
-            return {"type": "text", "content": f"[{cls.tool_title}]\n参数错误：必须提供 db_key，或同时提供 node_id 和 input_var_name。\n\n使用方式：\n  方式1（推荐）：modify_economy_ssts_and_recalculate(db_key='xxx_result_veh', new_value=xxx, vehicle_suffix='veh')\n  方式2（兼容）：modify_economy_ssts_and_recalculate(node_id='xxx', input_var_name='yyy', new_value=xxx, vehicle_suffix='veh')"}
+            return {"type": "text", "content": f"[{cls.tool_title}]\n参数错误：必须提供 db_key，或同时提供 node_id 和 input_var_name。\n\n使用方式：\n  方式1（推荐）：{cls.name}(db_key='xxx_result_veh', new_value=xxx, vehicle_suffix='veh')\n  方式2（兼容）：{cls.name}(node_id='xxx', input_var_name='yyy', new_value=xxx, vehicle_suffix='veh')"}
 
         db = get_memory_db()
         if db is None:
@@ -217,7 +217,7 @@ class AbstractModifyAndRecalculateFunction(FunctionBase):
                 else:
                     return {
                         "type": "text",
-                        "content": f"[{cls.tool_title}]\n目标车型: {vehicle_suffix}\n修改方式: {'db_key' if db_key else 'node_id+input_var_name'}\n目标: {db_key if db_key else f'{node_id}/{input_var_name}'}\n新值: {new_value}\n重新计算: {'成功' if recalc_success else '跳过'}\n\n未检测到 VTS 输出参数。\n提示：可使用 get_node_output(node_id, output_var_name, vehicle_suffix) 查看详细输出。"
+                        "content": f"[{cls.tool_title}]\n目标车型: {vehicle_suffix}\n修改方式: {'db_key' if db_key else 'node_id+input_var_name'}\n目标: {db_key if db_key else f'{node_id}/{input_var_name}'}\n新值: {new_value}\n重新计算: {'成功' if recalc_success else '跳过'}\n\n未检测到 VTS 输出参数。\n提示：可查询节点输出工具查看详细输出。"
                     }
             else:
                 suggestions = []
@@ -226,7 +226,7 @@ class AbstractModifyAndRecalculateFunction(FunctionBase):
                 
                 error_msg = f"[{cls.tool_title}]\n目标车型: {vehicle_suffix}\n[警告] 参数修改未成功。"
                 if db_key:
-                    error_msg += f"\n提示：请检查 db_key 是否正确。可先调用 get_economy_node_info 获取正确的 db_key。"
+                    error_msg += f"\n提示：请检查 db_key 是否正确，可先查询参数列表工具获取正确的 db_key。"
                     if suggestions:
                         error_msg += f"\n\n可能的正确 db_key：\n" + "\n".join([f"  • {key}" for key in suggestions])
                 else:

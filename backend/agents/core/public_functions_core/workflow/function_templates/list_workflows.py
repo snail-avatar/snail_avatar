@@ -76,7 +76,7 @@ class AbstractListWorkflowsFunction(FunctionBase):
                 lines.append(f"     支持工况: {', '.join(conditions)}")
             lines.append("")
 
-        lines.append(f"  提示：可使用 get_workflow_info(workflow_id, vehicle_suffix) 查询某个工作流的详情。")
+        lines.append(f"  提示：可查询工作流详情工具查看某个工作流的具体信息。")
 
         lines.append("=" * 60)
         return "\n".join(lines)

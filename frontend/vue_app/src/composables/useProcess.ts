@@ -23,6 +23,7 @@ import { ref, onBeforeUnmount } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useProcessStore, type ProcessEvent } from '../stores/useProcessStore'
 import { api } from '../api/request'
+import { flattenSheetData } from './useVtsFlatItems'
 
 // 绝对 URL 避开 Vite proxy SSE buffering（跟 useChat.ts 一致）
 const SSE_BASE = 'http://localhost:8000/api'
@@ -317,77 +318,6 @@ export function useProcess() {
     }
   }
 
-  /**
-   * 把后端 /process/{ik}/sheet 返回的 dict-of-dict 展平成 SstsVtsPanel 组件期望的格式
-   *
-   * 完全对齐 flet VehicleDataCollector.flatten_items + _append_multi_value_item 逻辑：
-   *   - 多值参数：参数值 list 合并到同一行，输出 8 列完整字段
-   *   - 简单参数：原样输出（计算条件类，直接有 db_key + 值）
-   *   - 每行附带 cat1/cat2 一级/二级分类
-   *
-   * 后端 data 结构:
-   *   { "空气动力学": { "正投影": {"名称": "...", "参数值": [{"名称":"当前值", "db_key":"...", "值":...}, ...]}, ... } }
-   *
-   * 输出:
-   *   { categories: [{ name: "空气动力学", params: [完整行, ...] }], total }
-   *   每行字段: cat1, cat2, 名称, 单位, 达标判据, 当前值, 当前值_db_key, 目标值, 目标值_db_key, 达标标识, 达标标识_db_key, ...
-   */
-  function _adaptVtsSheet(rawData: any): { categories: any[]; flatItems: any[]; total: number } {
-    const categories: any[] = []
-    const flatItems: any[] = []
-    let total = 0
-    if (!rawData || typeof rawData !== 'object') return { categories, flatItems, total }
-
-    // 子项"名称"到字段前缀的映射（对齐 flet name_to_field_prefix）
-    const nameToFieldPrefix: Record<string, string> = {
-      "当前值": "当前值", "实际值": "当前值", "现在值": "当前值",
-      "目标值": "目标值", "标准值": "目标值", "基准值": "目标值",
-      "达标标识": "达标标识", "是否达标": "达标标识", "状态": "达标标识",
-    }
-
-    for (const [cat1, cat1Data] of Object.entries(rawData)) {
-      if (!cat1Data || typeof cat1Data !== 'object') continue
-      const params: any[] = []
-
-      // cat1Data 可能直接是 list（扁平 sheet），或 dict（分二级分类）
-      const subEntries = Array.isArray(cat1Data)
-        ? [["<未分类>", cat1Data]]
-        : Object.entries(cat1Data as object)
-
-      for (const [cat2, items] of subEntries) {
-        if (!Array.isArray(items)) continue
-        for (const item of items) {
-          if (!item || typeof item !== 'object') continue
-          const entry: any = { ...item, cat1, cat2 }
-
-          const paramValues = (item as any)["参数值"]
-          if (Array.isArray(paramValues) && paramValues.length > 0) {
-            // 多值参数：合并到 entry 同一行
-            for (const p of paramValues) {
-              if (!p || typeof p !== 'object') continue
-              const subName = String((p as any)["名称"] || "").trim()
-              const prefix = nameToFieldPrefix[subName]
-              if (!prefix) continue
-              entry[prefix] = (p as any)["值"]
-              entry[`${prefix}_db_key`] = (p as any).db_key
-            }
-            entry["_has_multi_values"] = true
-          } else if ((item as any).db_key) {
-            // 简单参数（计算条件类）：直接有 db_key + 值
-            entry["当前值"] = (item as any)["值"] ?? null
-            entry["当前值_db_key"] = (item as any).db_key
-          }
-
-          params.push(entry)
-          flatItems.push(entry)
-          total++
-        }
-      }
-      categories.push({ name: cat1, params })
-    }
-    return { categories, flatItems, total }
-  }
-
   async function loadVehicleSheets(ik: string) {
     if (!ik) return
     try {
@@ -397,12 +327,10 @@ export function useProcess() {
         api.get(`/process/${ik}/sheet`, { params: { sheet_key: 'target_ssts' } }),
       ])
       if (vts.status === 'fulfilled') {
-        const raw = vts.value?.data || {}
-        store.vtsSheet = _adaptVtsSheet(raw)
+        store.vtsSheet = flattenSheetData(vts.value?.data || {})
       }
       if (ssts.status === 'fulfilled') {
-        const raw = ssts.value?.data || {}
-        store.sstsSheet = _adaptVtsSheet(raw)
+        store.sstsSheet = flattenSheetData(ssts.value?.data || {})
       }
     } catch (e) {
       console.warn('[Process] VTS/SSTS 加载失败:', e?.message)

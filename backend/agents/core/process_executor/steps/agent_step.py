@@ -148,13 +148,18 @@ class ProcessAgentStep(ProcessStep):
         #   原因：Pipeline 模式执行完固定顺序的工具后，LLM 需要一个明确的汇总指令。
         #   这里用已经渲染好的 query（含输出格式模板）作为基础，避免基础设施层硬编码业务逻辑。
         if query_mode == "pipeline" and isinstance(pipeline_config, dict):
+            pipeline_config = dict(pipeline_config)  # 拷贝避免修改数据源原始值
+            # 优先顺序：data_sources 显式生成 > YAML 顶层配置 > 通用兜底
             if not pipeline_config.get("summary_instruction"):
-                pipeline_config = dict(pipeline_config)  # 拷贝避免修改数据源原始值
-                pipeline_config["summary_instruction"] = (
-                    "以上是知识图谱、向量库、规则库、案例库的全部检索结果。\n\n"
-                    "请基于以上检索结果，完成以下任务（含输出格式要求）：\n\n"
-                    f"{query}"
-                )
+                yaml_summary = step_config.get("summary_instruction", "")
+                if yaml_summary:
+                    pipeline_config["summary_instruction"] = yaml_summary
+                else:
+                    pipeline_config["summary_instruction"] = (
+                        "以上是工具检索结果。\n\n"
+                        "请基于以上结果，完成以下任务：\n\n"
+                        f"{query}"
+                    )
 
         raw_result = cls._call_sub_agent(
             cls.agent_id, query, args, context,
